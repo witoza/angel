@@ -1,0 +1,156 @@
+<md-dialog ng-controller="videoRecordingCtrl" flex-gt-md="40">
+
+    <div class="md-toolbar-tools">
+        <h2>{{::i18n("%rec_videos.video_recording%")}}</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="closeDialog()">
+            <md-icon>clear</md-icon>
+        </md-button>
+    </div>
+
+    <md-dialog-content>
+        <div class="md-dialog-content">
+
+            <md-card ng-show="video != null">
+                <md-card-title>
+                    <md-card-title-text>
+
+                        <div layout="row">
+                            <md-input-container flex>
+                                <input type="text" ng-model="video.title">
+                            </md-input-container>
+                        </div>
+
+                        <span class="md-subhead">
+                            <p class="no_margins"><b>{{::i18n("%fw.recording_length%")}}</b> {{ video.duration_sec }} sec</p>
+                            <p class="no_margins"><b>{{::i18n("%fw.file_size%")}}</b> {{video.blob.size | bytes}}</p>
+                            <p class="no_margins"><b>Video quality</b> {{videoQuality}}</p>
+                        </span>
+
+                    </md-card-title-text>
+                </md-card-title>
+
+                <md-card-content>
+                    <div flex>
+                        <video class="video-js vjs-big-play-centered" controls data-setup='{}'
+                               src="{{video.weburl}}"
+                               vjs-video></video>
+                    </div>
+                </md-card-content>
+
+                <md-card-actions layout="row" layout-align="center center">
+
+                    <div ng-show="video.upload.is_uploading">
+                        <p> {{::i18n("%rec_videos.uploading%")}}
+                            <md-button class="md-accent md-raised" ng-click="video.upload.cancel()">
+                                {{::i18n("%btn.cancel%")}}
+                            </md-button>
+                        </p>
+                        <md-progress-linear md-mode="determinate"
+                                            value="{{video.upload.upload_progress}}"></md-progress-linear>
+                    </div>
+
+                    <div ng-show="!video.upload.is_uploading">
+
+                        <md-button class="md-primary"
+                                   ng-click="upload_to_myfiles();"
+                                   ng-show="curr_msg == null">
+                            <md-icon>file_upload</md-icon>
+                            {{::i18n("%btn.upload%")}}
+                        </md-button>
+
+                        <md-button class="md-primary"
+                                   ng-click="upload_to_myfiles();"
+                                   ng-show="curr_msg != null">
+                            <md-icon>file_upload</md-icon>
+                            {{::i18n("%btn.upload_and_attach%")}}
+                        </md-button>
+
+                        <md-button ng-click="discard_movie();">
+                            <md-icon>clear</md-icon>
+                            {{::i18n("%btn.discard%")}}
+                        </md-button>
+
+                    </div>
+
+                </md-card-actions>
+            </md-card>
+
+            <md-card ng-show="video == null">
+                <md-card-title>
+                    <md-card-title-text >
+
+                        <span class="md-subhead" ng-show="isRecording">
+                            <p class="no_margins"><b>{{::i18n("%fw.recording_length%")}}</b> {{ videoLenght }} sec</p>
+                            <p class="no_margins"><b>{{::i18n("%fw.file_size%")}}</b> {{(videoLenght * currentVideoBps() / 8) | bytes }}</p>
+                            <p class="no_margins"><b>Video quality</b> {{videoQuality}}</p>
+                        </span>
+
+                    </md-card-title-text>
+                </md-card-title>
+
+                <md-card-content>
+                    <div flex>
+                        <video id="theRecorder2" class="video-js"></video>
+                    </div>
+                </md-card-content>
+
+                <md-card-actions layout="row" layout-align="center center">
+
+                        <span layout="row" layout-align="center center" ng-show="isPlayerReady">
+
+                            <md-button class="md-primary" ng-click="start_recording();" ng-show="!isRecording">
+                                <md-icon>fiber_manual_record</md-icon>
+                                {{::i18n("%btn.camera.record%")}}
+                            </md-button>
+
+                            <md-button ng-click="pause_recording();" ng-show="isRecording && !isRecordingPaused">
+                                <md-icon>pause</md-icon>
+                                {{::i18n("%btn.camera.pause%")}}
+                            </md-button>
+
+                            <md-button class="md-primary" ng-click="resume_recording();"
+                                       ng-show="isRecording && isRecordingPaused">
+                                <md-icon>fiber_manual_record</md-icon>
+                                {{::i18n("%btn.camera.resume%")}}
+                            </md-button>
+
+                            <md-button class="md-primary" ng-click="stop_recording();" ng-show="isRecording">
+                                <md-icon>done</md-icon>
+                                {{::i18n("%btn.done%")}}
+                            </md-button>
+
+                            <md-button ng-click="click_discard_recording();">
+                                <md-icon>clear</md-icon>
+                                {{::i18n("%btn.discard%")}}
+                        </span>
+
+                    <div layout="column" ng-show="!isPlayerReady">
+                        <div layout="row" layout-align="center center">
+                            <span>Video quality:</span>
+                            <md-input-container>
+                                <md-select ng-model="videoQuality">
+                                    <md-option value="High">High</md-option>
+                                    <md-option value="Medium">Medium</md-option>
+                                    <md-option value="Low">Low</md-option>
+                                </md-select>
+                            </md-input-container>
+                        </div>
+
+                        <div layout="row" layout-align="center center">
+                            <md-button class="md-primary" ng-click="clickOnCamera();">
+                                <md-icon>videocam</md-icon>
+                                {{::i18n("%camera.turnon_info%")}}
+                            </md-button>
+
+                            <md-button ng-click="closeDialog()">
+                                {{::i18n("%btn.cancel%")}}
+                            </md-button>
+                        </div>
+                    </div>
+
+                </md-card-actions>
+            </md-card>
+        </div>
+    </md-dialog-content>
+</md-dialog>

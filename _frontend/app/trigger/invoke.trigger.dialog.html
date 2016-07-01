@@ -1,0 +1,39 @@
+<md-dialog ng-controller="triggerCtrl">
+
+    <div class="md-toolbar-tools">
+        <h2>Send notifications</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="closeDialog()">
+            <md-icon>clear</md-icon>
+        </md-button>
+    </div>
+
+    <md-dialog-content>
+        <div class="md-dialog-content">
+
+            <md-radio-group ng-model="sendEmailOnlyToUser">
+                <md-radio-button value="true">
+                    {{::i18n("%trigger.reminder_info1%")}}: <br/>
+                    <b>{{user.username}}</b>
+                </md-radio-button>
+
+                <md-radio-button value="false">
+                    {{::i18n("%trigger.reminder_info2%")}}: <br/>
+                    <span ng-repeat="email in emails">
+                        <b>{{email}}</b> <br/>
+                    </span>
+                </md-radio-button>
+            </md-radio-group>
+
+        </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+        <md-button ng-click="closeDialog()">
+            {{::i18n("%btn.cancel%")}}
+        </md-button>
+        <md-button class="md-primary" ng-click="invokeTrigger()">
+            {{::i18n("%btn.send%")}}
+        </md-button>
+    </md-dialog-actions>
+</md-dialog>

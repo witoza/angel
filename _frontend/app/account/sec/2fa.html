@@ -1,0 +1,94 @@
+<div ng-controller="2faCtrl">
+    <md-toolbar>
+        <h2 class="md-toolbar-tools">
+            <span>{{::i18n("%menu._2fa%")}}</span>
+        </h2>
+    </md-toolbar>
+    <br/>
+
+
+    <p class="md-body-1">
+        Two-factor authentication (2FA) provides an extra layer of security for your account.
+        It employs
+        <a href="https://en.wikipedia.org/wiki/Time-based_One-time_Password_Algorithm">TOTP</a>
+        algorithm to generate <a href="https://en.wikipedia.org/wiki/Security_token">Security Tokens</a> (6 digit
+        number) which you must provide during login.
+        The tokens are generated based on current time and on <b>Secret</b> random value.
+        <br/>
+        During login, after providing your username and password you will have 30 seconds to type in the correct
+        Security Token. Every 30 seconds the token changes so you have to start over if you don't managed to type it
+        in in time.
+    </p>
+
+    <p class="md-headline">Step 1: Install OTP Authentication app on your Device</p>
+    <p class="md-body-1">
+        To use 2FA you must install application which generates tokens. Kindly install it on your secondary device like
+        mobile phone or tablet. We recommend using
+        <b>FreeOTP Authenticator</b> (<a href="https://play.google.com/store/apps/details?id=org.fedorahosted.freeotp"
+                                         target="_blank">Android</a>,
+        <a href="https://itunes.apple.com/pl/app/freeotp-authenticator/id872559395">iOS</a>,
+        <a href="https://www.microsoft.com/en-US/store/apps/Authenticator/9WZDNCRFJ3RJ">Windows Phone</a>) but you may
+        use any OTP Authenticator of your choice.
+        <br/>
+        <br/>
+        Make sure that the time at your device is synchronized up to 15 seconds with <a href="https://time.is/">https://time.is/</a>
+        as generating tokens depends on current time.
+    </p>
+
+    <p class="md-headline">Step 2: Add OTP key</p>
+
+    <span class="md-body-1">
+                Configure OTP Authenticator to be able to generate Tokens for you by adding OTP key.
+                To do that, open the application and scan provided QR code or type in following OTP key details:
+            </span>
+
+
+    <div layout-xs="column" layout="row" layout-padding layout-align="center">
+        <div>
+            <img src="/api/user/totpQR?ttt={{ttt}}"/>
+        </div>
+        <div>
+            <pre>{{otpDetails(user.totpUri)}}</pre>
+        </div>
+    </div>
+
+    <p class="md-body-1">
+        If your OTP key got compromised (for example your phone with the key had been stolen) <a href
+                                                                                                 ng-click="generate_totp_secret()">generate
+        new OTP key</a>.
+        <br/>
+        If you loose your OTP key you have an option to recover it. It will be send to the following email address:
+        <md-input-container md-no-float class="email_filed">
+            <input ng-model="user_copy.totpRecoveryEmail" placeholder="OTP key recovery email">
+        </md-input-container>
+        <md-icon class="md-warn">priority_high</md-icon>
+        We strongly recommend using other email address than the one used for password recovery (which is the same as
+        login), as attacker won't be able to log in to your account even after they gain access to your email account.
+
+        <md-button class="md-primary md-raised" ng-click="updateUser($event)">
+            {{::i18n("%btn.save%")}}
+        </md-button>
+    </p>
+
+    <p class="md-headline">Step 3: Enable 2FA and enter Security Token</p>
+
+
+    <div layout="row" layout-align="center" ng-if="user.enableTotp">
+        <p class="md-body-2">2FA is Enabled</p>
+    </div>
+
+    <div layout="row" layout-align="center">
+        <md-button class="md-primary md-raised" ng-click="enable2FA($event)"
+                   ng-if="!user.enableTotp">
+            Enable Two-Factor Authentication
+        </md-button>
+
+        <md-button class="md-primary md-raised" ng-click="disable2FA($event)"
+                   ng-if="user.enableTotp">
+            Disable Two-Factor Authentication
+        </md-button>
+    </div>
+</div>
+
+
+

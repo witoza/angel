@@ -1,0 +1,45 @@
+<md-dialog flex-gt-sm="50">
+    <md-dialog-content>
+        <div class="md-dialog-content">
+
+            <center>
+                <h2 class="md-headline">Resolve issue</h2>
+            </center>
+
+            <pre>{{item | json}}</pre>
+
+            <div layout="row">
+                <md-input-container flex>
+                    <textarea placeholder="User's input" flex rows="4" ng-model="input"></textarea>
+                </md-input-container>
+            </div>
+
+            <div ng-show="item.userUuid">
+                <md-button class="md-primary" ng-click="getUserEncryptedEncryptionKey($event)">
+                    Get User's Encrypted Encryption Key
+                </md-button>
+
+                <div layout="row">
+                    <md-input-container flex>
+                        <input placeholder='User encryption key' ng-model="userEncryptionKeyBase64">
+                    </md-input-container>
+                </div>
+            </div>
+
+        </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+        <md-button ng-click="closeDialog()">
+            {{::i18n("%btn.cancel%")}}
+        </md-button>
+
+        <md-button class="md-primary" ng-click="reject()">
+            Reject
+        </md-button>
+
+        <md-button class="md-primary" ng-click="resolve()">
+            Resolve
+        </md-button>
+    </md-dialog-actions>
+</md-dialog>

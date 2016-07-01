@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Routing name="Routing">
+            <Routes pattern="$${ctx:reqType}">
+
+                <Route key="EmailProcessor">
+                    <RollingFile name="job_EmailProcessor" fileName="job_EmailProcessor.log"
+                                 filePattern="log_archive/job_EmailProcessor-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout
+                                pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} | %15.15t | %-5level | %-40.40logger{36} | %X{reqId} | %msg%n"/>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy/>
+                            <SizeBasedTriggeringPolicy size="1 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+
+                <Route key="AccountRemoverJob">
+                    <RollingFile name="job_AccountRemoverJob" fileName="job_AccountRemoverJob.log"
+                                 filePattern="log_archive/job_AccountRemoverJob-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout
+                                pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} | %15.15t | %-5level | %-40.40logger{36} | %X{reqId} | %msg%n"/>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy/>
+                            <SizeBasedTriggeringPolicy size="1 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+
+                <Route key="AccountMessageReleaserJob">
+                    <RollingFile name="job_AccountMessageReleaserJob" fileName="job_AccountMessageReleaserJob.log"
+                                 filePattern="log_archive/job_AccountMessageReleaserJob-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout
+                                pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} | %15.15t | %-5level | %-40.40logger{36} | %X{reqId} | %msg%n"/>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy/>
+                            <SizeBasedTriggeringPolicy size="1 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+
+                <Route key="AccountDBPersisterJob">
+                    <RollingFile name="job_AccountDBPersisterJob" fileName="job_AccountDBPersisterJob.log"
+                                 filePattern="log_archive/job_AccountDBPersisterJob-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout
+                                pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} | %15.15t | %-5level | %-40.40logger{36} | %X{reqId} | %msg%n"/>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy/>
+                            <SizeBasedTriggeringPolicy size="1 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+
+                <Route key="admin">
+                    <RollingFile name="app_admin" fileName="admin.log"
+                                 filePattern="log_archive/admin-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout
+                                pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} | %15.15t | %-5level | %-40.40logger{36} | %X{reqId} | %msg%n"/>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy/>
+                            <SizeBasedTriggeringPolicy size="1 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+
+                <Route>
+                    <RollingFile name="app_request" fileName="main.log"
+                                 filePattern="log_archive/main-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout
+                                pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} | %15.15t | %-5level | %-40.40logger{36} | %X{reqId} | %msg%n"/>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy/>
+                            <SizeBasedTriggeringPolicy size="1 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+
+            </Routes>
+        </Routing>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Routing"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

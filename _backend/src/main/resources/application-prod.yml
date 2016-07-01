@@ -1,0 +1,13 @@
+server:
+  port: 8080
+  servlet-path: /api/
+  session:
+    timeout: 600
+tomcat.ajp.port: 8009
+
+logging.config: classpath:log4j2-prod.xml
+emailProcessor.logEmails: false
+my.secret_config_file: /home/ubuntu/apps/postscriptum/prod/ps_config-prod.properties
+my.host.url: https://postscriptum.co
+test.data.dir: /home/ubuntu/apps/postscriptum/prod/postscriptum.co/test_users_files/
+admin.public_key_path: /home/ubuntu/apps/postscriptum/prod/public.pem

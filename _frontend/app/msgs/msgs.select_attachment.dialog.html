@@ -1,0 +1,79 @@
+<md-dialog flex-gt-md="80" ng-controller="attaCtrl">
+    <md-dialog-content>
+        <div layout="row" layout-xs="column" layout-sm="column" flex layout-padding>
+            <div flex-gt-sm="20">
+                <div layout="column">
+
+                    <md-button flex class="md-primary md-raised" type="file" ngf-multiple="true"
+                               ng-disabled="!user.validAesKey"
+                               ngf-select="do_upload($files)">
+                        <md-icon>file_upload</md-icon>
+                        {{::i18n("%btn.upload_files%")}}
+                    </md-button>
+
+                    <md-list>
+                        <md-list-item ng-click="open_dir('file_misc');"
+                                      ng-class="{selected_li: activeDir=='file_misc'}">
+                            <p>{{::i18n("%file.folder.file_misc%")}} [<b>{{files['file_misc'].length}}</b>]</p>
+                        </md-list-item>
+                        <md-list-item ng-click="open_dir('file_encrypted');" ng-if="files['file_encrypted'].length > 0"
+                                      ng-class="{selected_li: activeDir=='file_encrypted'}">
+                            <p>{{::i18n("%file.folder.file_encrypted%")}} [<b>{{files['file_encrypted'].length}}</b>]
+                            </p>
+                        </md-list-item>
+                    </md-list>
+
+                </div>
+
+            </div>
+            <div flex>
+
+                <md-toolbar>
+                    <h2 class="md-toolbar-tools">
+                        <span>{{i18n("%file.folder."+activeDir+"%")}}</span>
+                    </h2>
+                </md-toolbar>
+
+                <div ng-repeat="upload in uploads">
+                    <div ng-show="upload.is_uploading">
+                        <p>
+                            <i18n key="%file_upload.uploading%" args="upload.file.name, upload.file.size | bytes"/>
+                            <md-button class="md-accent md-raised" ng-click="upload.cancel()">
+                                {{::i18n("%btn.cancel%")}}
+                            </md-button>
+                        </p>
+
+                        <md-progress-linear md-mode="determinate"
+                                            value="{{upload.upload_progress}}"></md-progress-linear>
+                    </div>
+                </div>
+
+                <div ng-show="files[activeDir].length == 0">
+                    <center>
+                        <p class="md-body-2">
+                            {{::i18n("%no_files%")}}
+                        </p>
+                    </center>
+                </div>
+
+                <div class="row1">
+                    <div ng-repeat="file in files[activeDir] | orderBy:'-uploadTime'" class="panel1" layout="column"
+                         layout-wrap>
+                        <div ng-include="'fw/fileWidget.html'"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+        <md-button ng-click="closeDialog()">
+            {{::i18n("%btn.cancel%")}}
+        </md-button>
+
+        <md-button class="md-primary" ng-click="updateAttachements(files)">
+            {{::i18n("%btn.save%")}}
+        </md-button>
+    </md-dialog-actions>
+</md-dialog>

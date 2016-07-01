@@ -1,0 +1,71 @@
+plugins {
+    id 'org.springframework.boot' version '1.5.4.RELEASE'
+    id 'com.github.ksoichiro.build.info' version '0.2.0'
+    id 'com.github.ben-manes.versions' version '0.15.0'
+}
+
+ext {
+    versions = [
+            groovy: '2.4.12',
+            spock : '1.1-groovy-2.4',
+            aws   : '1.11.158'
+    ]
+}
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'idea'
+apply plugin: 'groovy'
+apply plugin: 'com.github.ben-manes.versions'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    compile.exclude module: 'spring-boot-starter-logging'
+}
+
+def timestamp = buildTime()
+
+jar.baseName = "postscriptum-backend-${timestamp}"
+
+dependencies {
+
+    compile "org.springframework.boot:spring-boot-starter"
+    compile "org.jsoup:jsoup:1.10.3"
+    compile "com.google.guava:guava:22.0"
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile "org.springframework.boot:spring-boot-starter-security"
+    compile "org.springframework.boot:spring-boot-starter-log4j2"
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    compile "org.picketbox:jboss-security-spi:5.0.2.Final"
+    compile "org.apache.commons:commons-lang3:3.6"
+    compile "com.github.spullara.mustache.java:compiler:0.9.5"
+    compile "commons-validator:commons-validator:1.6"
+    compile "com.google.code.gson:gson"
+    compile "com.google.zxing:core:3.3.0"
+    compile "org.bouncycastle:bcprov-jdk15on:1.57"
+    compile "net.sf.jsignature.io-tools:easystream:1.2.15"
+    compile "com.amazonaws:aws-java-sdk-ses:$versions.aws"
+    compile "com.amazonaws:aws-java-sdk-sqs:$versions.aws"
+    compile "com.amazonaws:aws-java-sdk-s3:$versions.aws"
+    compile "com.sun.mail:javax.mail:1.5.6"
+    compile "javax.mail:javax.mail-api:1.5.6"
+    compile "org.aspectj:aspectjrt"
+    compile "org.aspectj:aspectjweaver"
+    compile "org.projectlombok:lombok"
+
+    testCompile(
+            "org.springframework.boot:spring-boot-starter-test",
+            "org.codehaus.groovy:groovy-all:$versions.groovy",
+            "org.spockframework:spock-core:$versions.spock",
+            "org.spockframework:spock-spring:$versions.spock")
+
+}
+
+def buildTime() {
+    def df = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HHmm'Z'")
+    df.setTimeZone(TimeZone.getTimeZone("UTC"))
+    return df.format(new Date())
+}

@@ -1,0 +1,15 @@
+<center>
+    <h1 class="md-display-1">
+        {{::i18n("%menu.tos%")}}
+    </h1>
+</center>
+
+<hr/>
+
+<div layout="row">
+    <div flex-gt-xs="10"></div>
+    <div flex layout="column">
+        <div ng-include="::i18n_file('tos/_tos.html')"/>
+    </div>
+    <div flex-gt-xs="10"></div>
+</div>

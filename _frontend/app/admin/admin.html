@@ -1,0 +1,114 @@
+<div layout="row" layout-xs="column" layout-sm="column" flex>
+    <div flex-gt-sm="20">
+
+        <md-list>
+            <md-list-item ng-click="open_dir('to_resolve');">
+                <p>To resolve [<b>{{to_resolve.length}}</b>]</p>
+            </md-list-item>
+
+            <md-list-item ng-click="open_dir('resolved');">
+                <p>Resolved</p>
+            </md-list-item>
+
+            <md-list-item ng-click="open_dir('account');">
+                <p>{{::i18n("%menu.account%")}}</p>
+            </md-list-item>
+
+            <md-list-item ng-click="open_dir('login_history');">
+                <p>{{::i18n("%menu.login_history%")}}</p>
+            </md-list-item>
+
+            <md-list-item ng-click="open_dir('stats');">
+                <p>Statistics</p>
+            </md-list-item>
+        </md-list>
+
+    </div>
+    <div flex>
+
+        <div ng-if="activeDir=='account'">
+
+            <div ng-include="'/account/sec/changePasswd.html'"/>
+            <br/>
+            <div ng-include="'/account/sec/2fa.html'"/>
+
+        </div>
+
+        <div ng-if="activeDir=='login_history'">
+            <div ng-include="'/account/loginHistory.html'"/>
+        </div>
+
+        <div ng-show="activeDir=='stats'">
+
+            <md-toolbar>
+                <h2 class="md-toolbar-tools">
+                    <span>Statistics</span>
+                </h2>
+            </md-toolbar>
+            <br/>
+
+            <pre>{{stats | json}}</pre>
+            <br/>
+            <pre>{{metrics}}</pre>
+        </div>
+
+        <div ng-show="activeDir=='to_resolve'">
+
+            <md-toolbar>
+                <h2 class="md-toolbar-tools">
+                    <span>To resolve</span>
+                </h2>
+            </md-toolbar>
+            <br/>
+
+            <div ng-repeat="issue in to_resolve">
+                <div flex layout="row" layout-padding>
+                        <span class="md-body-1">
+                            {{::issue.createdTime | asDate}}
+                        </span>
+                    <span flex class="md-body-1">
+                            <b>Type</b>: {{issue.type}} <br/>
+                            <span ng-if="issue.userUsername != null">
+                                <b>User</b>: {{issue.userUsername}}
+                            </span>
+                        </span>
+                    <md-button class="md-primary" ng-click="handle_issue($event, issue)">
+                        Handle
+                    </md-button>
+                </div>
+                <md-divider ng-if="!$last"></md-divider>
+            </div>
+        </div>
+
+
+        <div ng-show="activeDir=='resolved'">
+
+            <md-toolbar>
+                <h2 class="md-toolbar-tools">
+                    <span>Resolved</span>
+                </h2>
+            </md-toolbar>
+            <br/>
+
+            <div ng-repeat="issue in resolved">
+                <div flex layout="row" layout-padding>
+                     <span class="md-body-1">
+                        {{::issue.createdTime | asDate}}
+                     </span>
+                    <span flex class="md-body-1">
+                        <b>Type</b>: {{issue.type}} <br/>
+                        <span ng-if="issue.userUsername != null">
+                            <b>User</b>: {{issue.userUsername}}
+                        </span>
+                    </span>
+                    <md-button class="md-primary" ng-click="show_issue($event, issue)">
+                        Details
+                    </md-button>
+                </div>
+                <md-divider ng-if="!$last"></md-divider>
+            </div>
+        </div>
+
+
+    </div>
+</div>

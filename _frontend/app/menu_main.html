@@ -1,0 +1,23 @@
+<div ng-if="!isPreview()">
+
+    <div ng-if="isMain() || user==null">
+        <div layout="row" layout-align="center" layout-wrap>
+            <md-button class="md-primary md-raised" flex-gt-sm="15" ng-click="open_how_it_works()">
+                {{::i18n("%menu.how_it_works%")}}
+            </md-button>
+            <md-button class="md-primary md-raised" flex-gt-sm="15" ng-click="open_pricing()">
+                {{::i18n("%menu.pricing%")}}
+            </md-button>
+            <md-button ng-class="current_page()=='/security' ? 'md-accent' : 'md-primary'" class="md-primary md-raised" flex-gt-sm="15" ng-click="open_security()">
+                {{::i18n("%menu.security%")}}
+            </md-button>
+            <md-button ng-class="current_page()=='/faq' ? 'md-accent' : 'md-primary'" class="md-primary md-raised" flex-gt-sm="15" ng-click="open_faq()">
+                {{::i18n("%menu.faq%")}}
+            </md-button>
+            <md-button ng-class="current_page()=='/contact' ? 'md-accent' : 'md-primary'" class="md-primary md-raised" flex-gt-sm="15" ng-click="open_contact()">
+                {{::i18n("%menu.contact%")}}
+            </md-button>
+        </div>
+    </div>
+
+</div>

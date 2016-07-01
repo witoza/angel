@@ -1,0 +1,17 @@
+server:
+  port: 7070
+  servlet-path: /api/
+  session:
+    timeout: 600
+tomcat.ajp.port: 7009
+
+logging.config: classpath:log4j2-cert.xml
+emailProcessor.logEmails: true
+my.secret_config_file: /home/ubuntu/apps/postscriptum/cert/ps_config-cert.properties
+my.host.url: https://cert.postscriptum.co
+test.data.dir: /home/ubuntu/apps/postscriptum/cert/postscriptum.co/test_users_files/
+accountDBPersisterJob.inactivityPeriodSec: 60
+accountRemoverJob.releaseItemAvailableForAfterOpeningMins: 30
+accountRemoverJob.createNewReminderAfterMins: 45
+accountRemoverJob.runLogicAfterTriggeringMins: 60
+admin.public_key_path: /home/ubuntu/apps/postscriptum/cert/public.pem

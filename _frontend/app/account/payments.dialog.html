@@ -1,0 +1,47 @@
+<md-dialog ng-controller="doPaymentsCtrl">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <h2>Your account has expired</h2>
+            <span flex></span>
+        </div>
+    </md-toolbar>
+
+    <md-dialog-content>
+        <div layout="column" layout-padding>
+
+            <p class="md-body-2">
+                Your account has expired.<br/>
+                To extend your account for another year, kindly send equivalent of 10$ USD to the following Bitcoin
+                address:
+            </p>
+
+            <center>
+                <code>{{bitcoin_address}}</code>
+            </center>
+
+            <center>
+                <div ng-if="has_address">
+                    <img src="/api/user/get_qr?data={{bitcoin_address}}"/>
+                </div>
+
+                <p class="md-body-1">
+                    Kindly <a href ng-click="open_contact()">contact us</a> should you want to pay by different form of
+                    payment or have issues with Bitcoin payment.
+                    <br/>
+                    You may display this information in <b>Account settings/Payments</b> section.
+                </p>
+
+            </center>
+
+        </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+        <md-button ng-click="open_contact()">
+            Contact us
+        </md-button>
+        <md-button ng-click="closeDialog()">
+            {{::i18n("%btn.ok%")}}
+        </md-button>
+    </md-dialog-actions>
+</md-dialog>

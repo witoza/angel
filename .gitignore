@@ -1,0 +1,13 @@
+!.gitkeep
+_backend/target/
+_backend/testdb
+
+_frontend/node_modules/
+_frontend/dist/
+_frontend/app/_bc/
+
+psdb/
+testdb/
+logs/
+.idea
+.cache

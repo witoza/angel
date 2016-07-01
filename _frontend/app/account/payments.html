@@ -1,0 +1,42 @@
+<div ng-controller="paymentsCtrl">
+
+    <md-toolbar>
+        <h2 class="md-toolbar-tools">
+            <span>{{::i18n("%menu.payments%")}}</span>
+        </h2>
+    </md-toolbar>
+    <br/>
+
+    <div layout="row">
+        <div flex>
+            <p class="md-body-2">{{::i18n("%payments.date%")}}</p>
+        </div>
+        <div flex>
+            <p class="md-body-2">{{::i18n("%payments.amount%")}}</p>
+        </div>
+        <div flex>
+            <p class="md-body-2">{{::i18n("%payments.details%")}}</p>
+        </div>
+    </div>
+
+    <div layout="row" ng-repeat="p in user.userPlan.payments | reverse">
+        <div flex>
+            {{::p.time | asDate}}
+        </div>
+        <div flex>
+            {{::p.amount}}
+        </div>
+        <div flex>
+            {{::p.details}}
+        </div>
+    </div>
+
+    <br/>
+
+    <div layout="row" layout-align="center">
+        <md-button flex-xs flex-gt-xs="33" class="md-primary md-raised" ng-click="displayPay(null, true)" ng-disabled="!user.needPayment">
+            Show payment information
+        </md-button>
+    </div>
+
+</div>

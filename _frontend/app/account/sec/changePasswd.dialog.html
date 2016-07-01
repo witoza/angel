@@ -1,0 +1,60 @@
+<md-dialog flex-gt-md="25">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <h2>{{::i18n("%account.change_passwd%")}}</h2>
+            <span flex></span>
+            <md-button class="md-icon-button" ng-click="closeDialog()">
+                <md-icon>clear</md-icon>
+            </md-button>
+        </div>
+    </md-toolbar>
+
+    <form ng-submit="changePasswd.invoke()">
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+
+                <center>
+                    <p class="md-body-2">
+                        Make login password really hard to guess as it is used to encrypt <i>Encryption Key</i>.
+                    </p>
+                </center>
+
+                <div layout="column" flex>
+
+                    <md-input-container>
+                        <input placeholder='{{::i18n("%password_change.current_passwd%")}}' type="password" required
+                               ng-model="changePasswd.data.passwd">
+                    </md-input-container>
+
+                    <md-input-container>
+                        <input placeholder='{{::i18n("%password_change.new_passwd%")}}' type="password" required
+                               ng-model="changePasswd.data.passwd_new1" zxcvbn="passwordStrength">
+                    </md-input-container>
+
+                    <md-input-container ng-show="changePasswd.data.passwd_new1.length > 0">
+                        <zx-password-meter value="{{ passwordStrength.score }}" max="4"></zx-password-meter>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <input placeholder='{{::i18n("%password_change.retype_new_passwd%")}}' type="password" required
+                               ng-model="changePasswd.data.passwd_new2">
+                    </md-input-container>
+                </div>
+
+            </div>
+
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button ng-click="closeDialog()">
+                {{::i18n("%btn.cancel%")}}
+            </md-button>
+
+            <md-button type="submit">
+                {{::i18n("%btn.confirm%")}}
+            </md-button>
+        </md-dialog-actions>
+
+    </form>
+</md-dialog>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html ng-app="sbApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <title>Postscriptum</title>
+
+    <link href="favicon.ico" rel="icon" type="image/x-icon"/>
+
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+    <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+
+    <link rel="stylesheet" type="text/css"
+          href="//cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.css"/>
+
+    <link rel="stylesheet" type="text/css"
+          href="//cdnjs.cloudflare.com/ajax/libs/video.js/5.19.2/alt/video-js-cdn.min.css"/>
+    <link rel="stylesheet" type="text/css" href="_bc/videojs-record/src/css/videojs.record.css"/>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-scroll/1.0.2/angular-scroll.min.js"></script>
+
+    <script src='//cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js'></script>
+    <script src='/_bc/angular-zxcvbn/dist/angular-zxcvbn.js?t=$$ts$$'></script>
+
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-aria.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.0/ckeditor.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/video.js/5.19.2/video.min.js"></script>
+    <script src="_bc/recordrtc/RecordRTC.min.js?t=$$ts$$"></script>
+    <script src="_bc/vjs-video/dist/vjs-video.min.js?t=$$ts$$"></script>
+    <script src="_bc/videojs-record/src/js/videojs.record.js?t=$$ts$$"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/moment-with-locales.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-moment/1.0.0/angular-moment.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-sanitize.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-cookies.min.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/danialfarid-angular-file-upload/12.2.13/ng-file-upload.min.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
+
+    <link rel="stylesheet" type="text/css"
+          href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"/>
+
+    <link rel="stylesheet" type="text/css" href="custom.css?t=$$ts$$"/>
+
+    <script src="_bc/angular-recaptcha/release/angular-recaptcha.min.js?t=$$ts$$"></script>
+
+    <script src="msgs/msgsCtrl.js?t=$$ts$$"></script>
+    <script src="admin/adminCtrl.js?t=$$ts$$"></script>
+    <script src="files/filesCtrl.js?t=$$ts$$"></script>
+    <script src="files/videoRecordingCtrl.js?t=$$ts$$"></script>
+    <script src="fw/fileWidgetCtrl.js?t=$$ts$$"></script>
+    <script src="contact/contactCtrl.js?t=$$ts$$"></script>
+    <script src="account/accountCtrl.js?t=$$ts$$"></script>
+    <script src="account/paymentsCtrl.js?t=$$ts$$"></script>
+    <script src="account/loginHistoryCtrl.js?t=$$ts$$"></script>
+    <script src="account/sec/2faCtrl.js?t=$$ts$$"></script>
+    <script src="account/sec/encKeyCtrl.js?t=$$ts$$"></script>
+    <script src="account/sec/changePasswdCtrl.js?t=$$ts$$"></script>
+    <script src="trigger/triggerCtrl.js?t=$$ts$$"></script>
+    <script src="login/loginCtrl.js?t=$$ts$$"></script>
+    <script src="login/signUpCtrl.js?t=$$ts$$"></script>
+    <script src="login/resetPasswdCtrl.js?t=$$ts$$"></script>
+    <script src="main/mainCtrl.js?t=$$ts$$"></script>
+    <script src="preview/previewCtrl.js?t=$$ts$$"></script>
+    <script src="notifs/notifsCtrl.js?t=$$ts$$"></script>
+    <script src="summary/summaryCtrl.js?t=$$ts$$"></script>
+    <script src="MyUtils.js?t=$$ts$$"></script>
+    <script src="i18n.js?t=$$ts$$"></script>
+    <script src="app.js?t=$$ts$$"></script>
+
+</head>
+
+<body ng-cloak>
+
+<span id="the_spinner_container" style="position:absolute !important; z-index: 1000">
+    <div id="the_spinner" ng-show="loading > 0">
+        <md-progress-circular md-diameter="20px"></md-progress-circular>
+    </div>
+</span>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-91480481-1', 'auto');
+    ga('send', 'pageview');
+
+</script>
+
+<script>
+
+    // Opera 8.0+
+    var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+    // Firefox 1.0+
+    var isFirefox = typeof InstallTrigger !== 'undefined';
+    // Safari <= 9 "[object HTMLElementConstructor]"
+    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+    // Internet Explorer 6-11
+    var isIE = /*@cc_on!@*/false || !!document.documentMode;
+    // Edge 20+
+    var isEdge = !isIE && !!window.StyleMedia;
+    // Chrome 1+
+    var isChrome = !!window.chrome && !!window.chrome.webstore;
+    // Blink engine detection
+    var isBlink = (isChrome || isOpera) && !!window.CSS;
+
+    if (isIE) {
+        window.location.href = "browser_not_supported.html";
+    }
+
+    const the_spinner_container = $("#the_spinner_container");
+    angular.element(document).mousemove(function (event) {
+        the_spinner_container.css({top: event.pageY + 10, left: event.pageX + 10});
+    });
+</script>
+
+<div layout="row" layout-align="center">
+    <div class="container">
+        <br/>
+        <div layout="row" layout-xs="column" layout-align="space-between center">
+            <div>
+                <center ng-controller="mainCtrl">
+                    <a href ng-click="open_main()">
+                        <img class="perfect-fit" src="logo.png">
+                    </a>
+                </center>
+            </div>
+
+            <div flex layout="column">
+                <div layout="row">
+                    <span flex></span>
+
+                    <div ng-if="!isPreview() && user != null">
+
+                        <md-button class="notifs-btn" ng-click="open_notifications();"
+                                   ng-controller="mainCtrl">
+                            <md-icon>notifications</md-icon>
+                            <span ng-if="user.unreadNotifs>0" class="notifs"><small>{{user.unreadNotifs}}</small></span>
+                        </md-button>
+
+                        <md-menu>
+
+                            <md-button class="btn_normal_text" ng-click="$mdOpenMenu($event)">
+                                <md-icon>account_circle</md-icon>
+                                {{user.screenName || user.username}}
+                                <md-icon>keyboard_arrow_down</md-icon>
+                            </md-button>
+                            <md-menu-content>
+
+                                <md-menu-item ng-if="isAdmin()">
+                                    <md-button ng-click="open_admin();" ng-controller="mainCtrl">
+                                        <md-icon>settings_applications</md-icon>
+                                        Configure
+                                    </md-button>
+                                </md-menu-item>
+
+                                <md-menu-item ng-if="!isAdmin()">
+                                    <md-button ng-click="open_account();" ng-controller="mainCtrl">
+                                        <md-icon>settings_applications</md-icon>
+                                        {{::i18n("%menu.account%")}}
+                                    </md-button>
+                                </md-menu-item>
+
+                                <md-menu-item>
+                                    <md-button ng-click="do_logout();" ng-controller="loginCtrl">
+                                        <md-icon>power_settings_new</md-icon>
+                                        {{::i18n("%menu.logout%")}}
+                                    </md-button>
+                                </md-menu-item>
+                            </md-menu-content>
+                        </md-menu>
+
+                    </div>
+                </div>
+
+                <div ng-controller="mainCtrl" ng-include="'menu_logged.html'"></div>
+            </div>
+
+            <div ng-if="!isPreview() && user == null" ng-controller="loginCtrl">
+
+                <div align="right" ng-controller="mainCtrl">
+                    <a href ng-click="set_lang('pl')"><img src="p-flag.png"></a>
+                    <a href ng-click="set_lang('en')"><img src="gb-flag.jpg"></a>
+                </div>
+
+                <center>
+
+                    <md-button class="md-raised" ng-click="showLoginDialog($event)">
+                        <md-icon>person</md-icon>
+                        {{::i18n("%menu.login%")}}
+                    </md-button>
+
+                    <md-button class="md-raised" ng-click="showRegisterUserDialog($event)">
+                        <md-icon>person_add</md-icon>
+                        {{::i18n("%menu.create_account%")}}
+                    </md-button>
+                </center>
+            </div>
+            <div ng-if="isPreview()" ng-controller="mainCtrl">
+                <md-button class="md-raised" ng-click="open_main()">
+                    <md-icon>home</md-icon>
+                    {{::i18n("%menu.home%")}}
+                </md-button>
+
+            </div>
+        </div>
+
+        <div ng-controller="mainCtrl" ng-include="'menu_main.html'"></div>
+
+        <div flex="noshrink" ng-view></div>
+
+        <br/>
+        <hr/>
+
+        <div layout-xs="column" layout="row" class="md-body-2" ng-controller="mainCtrl" layout-align="center">
+            <div layout="row" layout-padding layout-align="center">
+            <div>
+                    <small>
+                        &copy; 2017 <a href="https://postscriptum.co">postscriptum.co</a>
+                        <br/>
+                        build at: {{gitInfo.git.commit.time | asDate}} from commit id: <a href="https://github.com/witoza/postscriptum.co/commit/{{ gitInfo.git.commit.id }}">{{ gitInfo.git.commit.id }}</a>, env: {{gitInfo.env}}
+                    </small>
+            </div>
+            </div>
+            <span flex></span>
+            <div layout="row" layout-padding layout-align="center">
+                <div>
+                    <small>
+                        <a href ng-click="open_main()">{{::i18n("%menu.home%")}}</a>
+                        <br/>
+                        <a href ng-click="open_how_it_works()">{{::i18n("%menu.how_it_works%")}}</a>
+                    </small>
+                </div>
+                <div>
+                    <small>
+                        <a href ng-click="open_pricing()">{{::i18n("%menu.pricing%")}}</a>
+                        <br/>
+                        <a href ng-click="open_faq()">{{::i18n("%menu.faq%")}}</a>
+                    </small>
+                </div>
+                <div>
+                    <small>
+                        <a href ng-click="open_contact()">{{::i18n("%menu.contact%")}}</a>
+                        <br/>
+                        <a href ng-click="open_security()">{{::i18n("%menu.security%")}}</a>
+                    </small>
+                </div>
+                <div>
+                    <small>
+                        <a href="/tos/details.html" target="_blank">{{::i18n("%menu.tos%")}}</a>
+                        <br/>
+                        <a href="https://github.com/witoza/postscriptum.co" target="_blank">GitHub</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+
+</html>

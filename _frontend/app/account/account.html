@@ -1,0 +1,163 @@
+<span hide-xs>
+    <center>
+    <p class="md-headline">
+        {{::i18n("%menu.account_caption%")}}
+    </p>
+    </center>
+</span>
+
+<div layout="row" layout-xs="column" layout-sm="column" flex layout-padding>
+    <div flex-gt-sm="20">
+
+        <md-list>
+            <md-list-item ng-click="open_dir('account');" ng-class="{selected_li: activeDir=='account'}">
+                <p>{{::i18n("%account.general_settings%")}}</p>
+            </md-list-item>
+
+            <md-list-item ng-click="open_dir('security');" ng-class="{selected_li: activeDir=='security'}">
+                <p>{{::i18n("%menu.security%")}}</p>
+            </md-list-item>
+
+            <md-list-item ng-click="open_dir('payments');" ng-class="{selected_li: activeDir=='payments'}">
+                <p>{{::i18n("%menu.payments%")}}</p>
+            </md-list-item>
+
+            <md-list-item ng-click="open_dir('storage');" ng-class="{selected_li: activeDir=='storage'}">
+                <p>{{::i18n("%account.storage_space%")}}</p>
+            </md-list-item>
+
+            <md-list-item ng-click="open_dir('login_history');" ng-class="{selected_li: activeDir=='login_history'}">
+                <p>{{::i18n("%menu.login_history%")}}</p>
+            </md-list-item>
+
+        </md-list>
+
+    </div>
+    <div flex>
+
+        <div ng-if="activeDir=='account'">
+
+            <md-toolbar>
+                <h2 class="md-toolbar-tools">
+                    <span>{{::i18n("%account.general_settings%")}}</span>
+                </h2>
+            </md-toolbar>
+            <br/>
+
+            <div layout="row" layout-align="start center" layout-wrap>
+                <span flex="20" class="md-body-2">{{::i18n("%account.login%")}}</span>
+                    <span>{{user.username}}</span>
+                    <span flex></span>
+                <md-button class="md-warn md-raised" ng-click="removeAccountDialog($event)">
+                    {{::i18n("%account.remove_account%")}}
+                </md-button>
+            </div>
+
+            <div layout="row" layout-align="start center">
+                <span flex="20" class="md-body-2">{{::i18n("%account.creation_time%")}}</span>
+                <p flex>{{::user.creationTime | asDate}}</p>
+            </div>
+
+            <div layout="row" layout-align="start center">
+                <span flex="20" class="md-body-2">{{::i18n("%account.valid_until%")}}</span>
+                <span flex>
+                    {{::user.userPlan.paidUntil | asDate}}
+                        <md-button class="md-raised" ng-click="open_dir('payments');">
+                            {{::i18n("%menu.payments%")}}
+                        </md-button>
+
+                        <md-button class="md-icon-button help" ng-click="showHelp1()">
+                            <md-icon>help</md-icon>
+                        </md-button>
+                </span>
+            </div>
+
+            <div layout="row" layout-align="start center">
+                <span flex="20" class="md-body-2">{{::i18n("%account.screen_name%")}}</span>
+                <span flex>
+                        <md-input-container>
+                            <input ng-model="user_copy.screenName">
+                        </md-input-container>
+
+                        <md-button class="md-icon-button help" ng-click="showHelp2()">
+                            <md-icon>help</md-icon>
+                        </md-button>
+                </span>
+            </div>
+
+            <div layout="row" layout-align="start center">
+                <span flex="20" class="md-body-2">{{::i18n("%language%")}}</span>
+                <span flex>
+                   <md-input-container>
+                            <md-select ng-model="user_copy.lang">
+                                <md-option value="pl">Polski</md-option>
+                                <md-option value="en">English</md-option>
+                            </md-select>
+                        </md-input-container>
+                </span>
+            </div>
+
+            <div layout="row" layout-align="start center">
+                <span flex="20" class="md-body-2">{{::i18n("%menu.tos%")}}</span>
+                <span flex>
+                    <p></p>
+                        <md-checkbox ng-model="user_copy.tosAccepted" class="md-primary">
+                            {{::i18n("%i_accept%")}} {{::i18n("%menu.tos%")}}
+                        </md-checkbox>
+
+                        <a href="/tos/details.html" target="_blank">{{::i18n("%menu.tos%")}}</a>
+                </span>
+            </div>
+
+            <div layout="row" layout-wrap layout-align="center">
+                <md-button flex-xs flex-gt-xs="33" class="md-primary md-raised" ng-click="updateUser($event)">
+                    {{::i18n("%btn.save_settings%")}}
+                </md-button>
+            </div>
+        </div>
+
+        <div ng-if="activeDir=='security'">
+            <div ng-include="'/account/security.html'"/>
+        </div>
+
+        <div ng-if="activeDir=='payments'">
+            <div ng-include="'/account/payments.html'"/>
+        </div>
+
+        <div ng-if="activeDir=='storage'">
+
+            <md-toolbar>
+                <h2 class="md-toolbar-tools">
+                    <span>{{::i18n("%account.storage_space%")}}</span>
+                </h2>
+            </md-toolbar>
+            <br/>
+
+            <center>
+                <p class="md-body-1">
+                    <i18n key="%storage_request.info%" ,
+                          args="user.quotaBytes | bytes, user.usedSpaceBytes | bytes"/>
+                </p>
+            </center>
+
+            <center>
+                <form ng-submit="rfs.invoke()">
+                    <md-input-container>
+                        <label>{{::i18n("%storage_request.request_size_in_mb%")}}</label>
+                        <input type="number" min="1" required ng-model="rfs.data.number_of_mb">
+                    </md-input-container>
+
+                    <md-button class="md-primary md-raised" type="submit">
+                        {{::i18n("%storage_request.send%")}}
+                    </md-button>
+                </form>
+            </center>
+
+        </div>
+
+        <div ng-if="activeDir=='login_history'">
+            <div ng-include="'/account/loginHistory.html'"/>
+        </div>
+
+    </div>
+</div>

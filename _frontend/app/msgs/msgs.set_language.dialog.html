@@ -1,0 +1,42 @@
+<md-dialog flex-gt-md="25">
+    <div class="md-toolbar-tools">
+        <h2>{{::i18n("%msg.lang.title%")}}</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="closeDialog()">
+            <md-icon>clear</md-icon>
+        </md-button>
+    </div>
+
+    <md-dialog-content>
+        <div class="md-dialog-content">
+            <center>
+                <p class="md-body-1">
+                    {{::i18n("%msg.lang.info%")}}
+                </p>
+
+                <p>{{::i18n("%msg.lang.btn%")}}:
+                    <md-input-container>
+                        <md-select ng-model="curr_msg.lang">
+                            <md-option value="pl">Polski</md-option>
+                            <md-option value="en">English</md-option>
+                        </md-select>
+                    </md-input-container>
+                </p>
+            </center>
+        </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+        <md-button ng-click="closeDialog()">
+            {{::i18n("%btn.cancel%")}}
+        </md-button>
+
+        <md-button class="md-primary" ng-click="setDefault()">
+            {{::i18n("%msg.lang.set_default%")}}
+        </md-button>
+
+        <md-button class="md-primary" ng-click="saveMessage()">
+            {{::i18n("%btn.save%")}}
+        </md-button>
+    </md-dialog-actions>
+</md-dialog>

@@ -1,0 +1,39 @@
+<md-dialog>
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <h2>{{::i18n("%account.remove_account%")}}</h2>
+            <span flex></span>
+            <md-button class="md-icon-button" ng-click="closeDialog()">
+                <md-icon>clear</md-icon>
+            </md-button>
+        </div>
+    </md-toolbar>
+
+    <form ng-submit="deleteUser.invoke()">
+        <md-dialog-content>
+            <div class="md-dialog-content">
+
+                <center>
+                  <h2 class="md-body-2">{{::i18n("%password_is_required%")}}</h2>
+                </center>
+
+                <div layout="column" flex>
+                    <md-input-container>
+                        <input placeholder="{{::i18n('%password%')}}" type="password" required ng-model="deleteUser.data.passwd">
+                    </md-input-container>
+                </div>
+
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button ng-click="closeDialog()">
+                {{::i18n("%btn.cancel%")}}
+            </md-button>
+
+            <md-button type="submit">
+                {{::i18n("%btn.confirm%")}}
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

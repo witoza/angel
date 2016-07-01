@@ -1,0 +1,45 @@
+<md-dialog>
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <h2>{{::i18n('%login.forgot_password%')}}</h2>
+            <span flex></span>
+            <md-button class="md-icon-button" ng-click="closeDialog()">
+                <md-icon>clear</md-icon>
+            </md-button>
+        </div>
+    </md-toolbar>
+
+    <form ng-submit="forgotPasswd.invoke()">
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+
+                <center>
+                    <p class="md-body-1">
+                        <i18n key="%login.reset_passwd_reques_info%"/>
+                    </p>
+                </center>
+
+                <div layout="column" flex>
+                    <md-input-container>
+                        <input placeholder="{{::i18n('%email_addr%')}}" name="email" type="email" ng-model="forgotPasswd.username"
+                               required>
+                    </md-input-container>
+                </div>
+
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button ng-click="closeDialog()">
+                {{::i18n("%btn.cancel%")}}
+            </md-button>
+
+            <md-button type="submit">
+                {{::i18n('%login.btn_reset_password%')}}
+            </md-button>
+        </md-dialog-actions>
+
+    </form>
+
+</md-dialog>

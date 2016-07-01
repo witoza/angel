@@ -1,0 +1,78 @@
+<center>
+    <h1 class="md-display-1">
+        Często zadawane pytania
+    </h1>
+</center>
+
+<hr/>
+<p>
+    <span class="md-headline">Co to jest Wyzwalacz ?</span><br/>
+    <span class="md-body-1">
+        Jest to mechanizm który sprawdza, czy już czas wysłać zdefiniowane przez Ciebie
+        wiadomości. Wiadomości znajdujące się w folderze <b>{{::i18n("%msg.folder.outbox%")}}</b> zostaną
+        wysłane, gdy minie
+        odpowiedni czas od daty Twojej ostatniej aktywności w systemie. Każde zalogowanie do
+        serwisu uaktualnia datę ostatniej aktywności, jeżeli nie zalogujesz się do systemu przez pewien okres czasu,
+        otrzymasz wiadomość e-mail zawierającą link, po kliknięciu którego data ostatniej aktywności zostanie
+        zaktualizowana.
+        Jeżeli nie klikniesz na link i nie zalogujesz się w odpowiednim czasie, wiadomości zostaną oznaczone jako
+        gotowe do wysłania.
+    </span>
+</p>
+<hr/>
+<p>
+    <span class="md-headline">Kiedy moje wiadomości zostaną udostępnione ?</span><br/>
+    <span class="md-body-1">
+        Jeżeli nie zalogujesz się do systemu lub nie klikniesz na link sprawdzający czy
+        żyjesz (patrz <i>Co to jest Wyzwalacz ?</i>), w okresie czasu zdefiniowanym przez Ciebie.
+    </span>
+</p>
+<hr/>
+<p>
+    <span class="md-headline">W jaki sposób moje wiadomości zostaną udostępnione ?</span><br/>
+    <span class="md-body-1">
+       Do adresatów zostanie wysłana wiadomość e-mail z linkiem, pod którym mogą przeczytać wiadomość i ściągnąć załączniki.
+    </span>
+</p>
+<hr/>
+<p>
+    <span class="md-headline">Dlaczego treść i załączniki nie są wysyłane bezpośrednio na skrzynke pocztową adresatów ?</span><br/>
+    <span class="md-body-1">
+        Jest kilka powodów, między innymi:
+        <ul class="md-body-1">
+            <li>
+                potrzebujemy wiedzieć, czy wysłany do adresata e-mail dotarł i został przeczytany. Jeżeli wiadomość nie zostanie otworzona w przeciągu 14 dni od wysłania,
+                nasz konsultant podejmie manualną próbę kontaktu z adresatem
+            </li>
+            <li>
+                ze względów bezpieczeństwa nie wysyłamy danych użytkownika na żadne zewnętrzne systemy, z
+                których mogłyby być wykradzione lub pobrane przez adresata przez nieszyfrowany kanał dostępu
+            </li>
+            <li>
+                adresaci wiadomości mogą nie chceć otrzymać danych użytkownika w żadnej formie
+            </li>
+        </ul>
+    </span>
+</p>
+<hr/>
+<p>
+    <span class="md-headline">Moj klucz szyfrowania został skompromitowany, co zrobić ?</span><br/>
+    <span class="md-body-1">
+        Należy usunąć skompromitowane konto i założyć nowe.
+    </span>
+</p>
+<hr/>
+<p>
+    <span class="md-headline">Zapomniałem hasło do wiadomości, czy możecie pomóc przypomnieć hasło ?</span><br/>
+    <span class="md-body-1">
+        Nie ma takiej możliwości. Jeżeli zapomnisz hasło, jedyne co możemy zrobić to wykasować wiadomość z systemu, odszyfrowanie jej jest technicznie niewykonalne.
+    </span>
+</p>
+<hr/>
+<p>
+    <span class="md-headline">Jeżeli nie możecie przypomnieć hasła, to w jaki sposob rozszyfrujecie wiadomośc żeby ją wysłać adresatom ?</span><br/>
+    <span class="md-body-1">
+        Wiadomość nie zostanie rozszyfrowana, a odbiorcy zostaną poproszeni o podanie hasła podczas każdej próby otwarcia wiadomości. Hasło należy dostarczyć im innym kanałem dostępowym.
+    </span>
+</p>
+

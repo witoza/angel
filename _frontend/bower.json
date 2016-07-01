@@ -1,0 +1,40 @@
+{
+  "name": "postscriptum.co-frontend",
+  "description": "",
+  "main": "index.js",
+  "authors": [],
+  "license": "ISC",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "video.js": "^5.19.2",
+    "recordrtc": "^5.4.1",
+    "angular": "1.6.4",
+    "angular-route": "^1.6.4",
+    "vjs-video": "^0.1.10",
+    "videojs-record": "^1.6.2",
+    "angular-moment": "^1.0.1",
+    "components-font-awesome": "^4.7.0",
+    "ng-file-upload": "^12.2.13",
+    "angular-material": "^1.1.4",
+    "jquery": "^3.2.1",
+    "ckeditor": "^4.7.0",
+    "ngstorage": "^0.3.11",
+    "angular-sanitize": "^1.6.4",
+    "zxcvbn": "^4.4.2",
+    "angular-zxcvbn": "^3.2.2",
+    "angular-scroll": "^1.0.2",
+    "angular-cookies": "^1.6.4",
+    "angular-recaptcha": "^4.1.0"
+  },
+  "resolutions": {
+    "angular": "1.6.4",
+    "zxcvbn": "^4.4.2"
+  }
+}

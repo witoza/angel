@@ -1,0 +1,17 @@
+server:
+  port: 8080
+  servlet-path: /api/
+  session:
+    timeout: 600
+tomcat.ajp.port: 8009
+
+logging.config: classpath:log4j2-dev.xml
+emailProcessor.logEmails: true
+my.secret_config_file: c:/wito/app/key/ps_config.properties
+my.host.url: http://localhost
+test.data.dir: c:/wito/postscriptum.co/test_users_files/
+my.hdfs.db_path: c:/wito/postscriptum.co/psdb
+accountRemoverJob.runLogicAfterTriggeringMins: 30
+accountRemoverJob.createNewReminderAfterMins: 60
+accountRemoverJob.releaseItemAvailableForAfterOpeningMins: 30
+admin.public_key_path: c:/wito/app/key/public.pem

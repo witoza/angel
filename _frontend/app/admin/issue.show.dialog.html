@@ -1,0 +1,17 @@
+<md-dialog flex-gt-sm="50">
+    <md-dialog-content>
+        <div class="md-dialog-content">
+
+            <pre>{{notif | json}}</pre>
+
+        </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+
+        <md-button ng-click="closeDialog()">
+            {{::i18n("%btn.cancel%")}}
+        </md-button>
+
+    </md-dialog-actions>
+</md-dialog>

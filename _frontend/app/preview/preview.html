@@ -1,0 +1,138 @@
+<div ng-show="curr_msg != null">
+    <center ng-show="user != null && MyUtils.isEmpty(releaseKey)">
+
+        <md-toolbar >
+            <div class="md-toolbar-tools">
+                <h2>
+                    {{::i18n("%prev.internal_title%")}}
+
+                    <md-button class="md-accent md-raised" ng-click="close_preview()">
+                        {{::i18n("%btn.close%")}}
+                    </md-button>
+                </h2>
+            </div>
+        </md-toolbar>
+
+
+    </center>
+
+    <hr/>
+    <br/>
+
+    <p class="md-headline no_margins">{{::i18n("%msg.message%")}} {{curr_msg.from}}</p>
+
+    <div layout-gt-sm="row" layout="column">
+        <div flex-gt-sm="70">
+            <p class="md-body-1"><b>{{::i18n("%msg.to%")}}:</b> {{MyUtils.recipients(curr_msg.recipients)}}</p>
+            <p class="md-body-1"><b>{{::i18n("%msg.title%")}}:</b> {{MyUtils.title(curr_msg.title)}}</p>
+
+            <p class="md-body-1"><b>{{::i18n("%msg.creation_date%")}}:</b>
+                {{curr_msg.creationTime | asDate }}
+            </p>
+            <p class="md-body-1"><b>{{::i18n("%msg.modification_date%")}}:</b>
+                {{curr_msg.updateTime | asDate}}</p>
+        </div>
+        <div flex-gt-sm>
+            <p class="md-body-1">
+                <i18n key="%prev.msg_open_info%" ,
+                      args='curr_msg.releaseItem.firstTimeAccess | asDate, moment(curr_msg.releaseItem.firstTimeAccess).add(7, "days") | asDate'/>
+            </p>
+
+            <center>
+                <md-button class="notifs-btn" ng-click="print_dialog()">
+                    <md-icon>print</md-icon>
+                    <md-tooltip md-delay="100">Print message</md-tooltip>
+                </md-button>
+            </center>
+        </div>
+    </div>
+
+    <div ng-show="curr_msg.invalid_aes_key">
+
+        <center>
+            <h1 class="md-display-1">{{::i18n("%insert_aes_key%")}}</h1>
+
+            <p>{{::i18n("%prev.insert_aes_key_why%")}}</p>
+
+            <div layout="row">
+                <div flex="10" hide-xs hide-sm>
+                </div>
+                <div flex>
+
+                    <div layout="column" flex>
+                        <md-input-container md-no-float>
+                            <input placeholder="{{::i18n('%aes_key%')}}" required ng-model="aes_key">
+                        </md-input-container>
+                    </div>
+
+                    <md-button class="md-primary md-raised" ng-click="open_message()">
+                        {{::i18n("%btn.open%")}}
+                    </md-button>
+
+                </div>
+                <div flex="10" hide-xs hide-sm>
+                </div>
+            </div>
+
+        </center>
+    </div>
+
+    <div ng-show="!curr_msg.invalid_aes_key">
+
+        <div ng-show="curr_msg.passwordEncryption && !curr_msg.has_been_decrypted">
+            <center>
+                <h1 class="md-headline">{{::i18n("%msg.decrypt.caption%")}}</h1>
+                <p class="md-body-1">
+                    {{::i18n("%hint%")}}: <b>{{curr_msg.passwordEncryption.hint}}</b>
+                </p>
+
+                <form ng-submit="decrypt_message()">
+                    <md-input-container md-no-float>
+                        <input ng-model="curr_msg.encryption_passwd" placeholder="{{::i18n('%password%')}}"
+                               type="password"
+                               required>
+                    </md-input-container>
+
+                    <md-button class="md-primary md-raised" type="submit">
+                        <md-icon>lock_open</md-icon>
+                        {{::i18n("%btn.open%")}}
+                    </md-button>
+                </form>
+
+            </center>
+            <br/>
+        </div>
+
+        <div ng-show="!curr_msg.passwordEncryption || curr_msg.has_been_decrypted">
+
+            <div layout="row">
+                <div flex="10"  hide-xs hide-sm>
+                </div>
+                <div flex>
+                    <md-card>
+                        <md-card-content>
+                            <div ng-bind-html="curr_msg.content"></div>
+                        </md-card-content>
+                    </md-card>
+                </div>
+                <div flex="10"  hide-xs hide-sm>
+                </div>
+            </div>
+
+            <p class="md-body-1"><b>{{::i18n("%msg.attachments%")}}:</b>
+                <span ng-show="curr_msg.files.length == 0">
+                    {{::i18n("%no_attachments%")}}
+                </span>
+            </p>
+
+            <div ng-show="curr_msg.files.length > 0">
+                <div class="row1" flex>
+                    <div ng-repeat="file in curr_msg.files | orderBy:'-time'" class="panel25">
+                        <div ng-include="'fw/fileWidget.html'"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

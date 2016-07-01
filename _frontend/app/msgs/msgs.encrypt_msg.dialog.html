@@ -1,0 +1,60 @@
+<md-dialog flex-gt-md="30">
+    <div class="md-toolbar-tools">
+        <h2>{{::i18n("%msg.encryption.caption%")}}</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="closeDialog()">
+            <md-icon>clear</md-icon>
+        </md-button>
+    </div>
+
+    <form ng-submit="setpassword.set_password()">
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+
+                <center>
+                    <h2 class="md-body-2">
+                        {{::i18n("%msg.encryption.password_need_to_be_known_info%")}}
+                    </h2>
+                </center>
+
+                <div layout="column" flex>
+
+                    <md-input-container>
+                        <label>
+                            {{::i18n("%hint%")}}
+                        </label>
+                        <input required ng-model="setpassword.hint">
+                    </md-input-container>
+
+                    <md-input-container>
+                        <input placeholder="{{::i18n('%password%')}}" type="password" required
+                               ng-model="setpassword.passwd1">
+                    </md-input-container>
+
+                    <md-input-container>
+                        <input placeholder="{{::i18n('%password_retype%')}}" type="password" required
+                               ng-model="setpassword.passwd2">
+                    </md-input-container>
+
+                </div>
+
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button ng-click="closeDialog()">
+                {{::i18n("%btn.cancel%")}}
+            </md-button>
+
+            <md-button ng-show="setpassword.remove_password != null" ng-click="setpassword.remove_password()">
+                {{::i18n("%msg.encryption.btn.remove_password%")}}
+            </md-button>
+
+            <md-button class="md-primary" type="submit">
+                {{::i18n("%msg.encryption.btn.set_password%")}}
+            </md-button>
+        </md-dialog-actions>
+
+    </form>
+</md-dialog>

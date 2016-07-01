@@ -1,0 +1,13 @@
+spring:
+  autoconfigure:
+    exclude:
+      org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration
+
+management:
+  context-path: /manage
+  security.enabled: false
+spring.http.multipart:
+  enabled: true
+  max-file-size: 25Mb
+  max-request-size: 25Mb
+endpoints.shutdown.enabled: true

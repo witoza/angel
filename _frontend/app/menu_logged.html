@@ -1,0 +1,42 @@
+<div ng-if="!isPreview()">
+
+    <div ng-if="user && !isAdmin()">
+
+        <div layout="row" layout-align="end" layout-wrap>
+            <md-button ng-class="current_page()=='/msgs' ? 'md-accent' : 'md-primary'" class="md-raised md-hue-2"
+                       flex-gt-sm="15" ng-click="open_msgs()">
+                <md-icon>mail</md-icon>
+                <span>{{::i18n("%menu.messages%")}}</span>
+            </md-button>
+            <md-button ng-class="current_page()=='/files' ? 'md-accent' : 'md-primary'" class="md-raised md-hue-2"
+                       flex-gt-sm="15" ng-click="open_files()">
+                <md-icon>description</md-icon>
+                <span>{{::i18n("%menu.files%")}}</span>
+            </md-button>
+            <md-button ng-class="current_page()=='/trigger' ? 'md-accent' : 'md-primary'" class="md-raised md-hue-2"
+                       flex-gt-sm="15" ng-click="open_trigger()">
+                <md-icon>settings</md-icon>
+                <span>{{::i18n("%menu.trigger%")}}</span>
+            </md-button>
+            <md-button ng-class="current_page()=='/summary' ? 'md-accent' : 'md-primary'" class="md-raised md-hue-2"
+                       flex-gt-sm="15" ng-click="open_summary()">
+                <md-icon>subject</md-icon>
+                <span>{{::i18n("%menu.summary%")}}</span>
+            </md-button>
+        </div>
+
+        <div ng-if="!user.validAesKey">
+            <center>
+                <h2 class="md-subhead">
+                    {{::i18n("%aes_key_missing_title%")}}
+                    <md-button ng-controller="encKeyCtrl" class="md-primary md-raised" ng-click="modifyAesKeyDialog()">
+                        {{::i18n("%account.set_key%")}}
+                    </md-button>
+                </h2>
+            </center>
+            <hr/>
+        </div>
+
+    </div>
+
+</div>

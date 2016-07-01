@@ -1,0 +1,33 @@
+<md-dialog>
+    <div class="md-toolbar-tools">
+        <h2>{{::i18n("%fw.delete%")}}</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="closeDialog()">
+            <md-icon>clear</md-icon>
+        </md-button>
+    </div>
+
+    <md-dialog-content>
+        <div class="md-dialog-content">
+            <i18n key='%file_remove.are_you_sure%' args="file.name"/>
+            <span ng-show="file.messages.length > 0">
+                <p>{{::i18n("%file_remove.file_is_attached_to%")}}:</p>
+                <div ng-repeat="email in file.messages">
+                    <p class="no_margins md-body-1">
+                        &nbsp;<i class="fa fa-envelope-o"></i>&nbsp;<a ng-click="open_msg(email)" href>{{email.type}}/{{MyUtils.title(email.title)}}</a>
+                    </p>
+                </div>
+            </span>
+        </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+        <md-button ng-click="closeDialog()">
+            {{::i18n("%btn.cancel%")}}
+        </md-button>
+
+        <md-button class="md-primary" ng-click="do_remove()">
+            {{::i18n("%fw.delete%")}}
+        </md-button>
+    </md-dialog-actions>
+</md-dialog>

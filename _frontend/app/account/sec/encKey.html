@@ -1,0 +1,55 @@
+<div ng-controller="encKeyCtrl">
+    <md-toolbar>
+        <h2 class="md-toolbar-tools">
+            <span>{{::i18n("%aes_key%")}}</span>
+        </h2>
+    </md-toolbar>
+    <br/>
+
+    <p class="md-body-1">
+        Encryption Key is a
+        random 256-bit <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES</a>  Secret Key generated
+        and assigned to your account during sign-in process. It is used to encrypt all your data.
+        <br/>
+
+        <md-icon class="md-warn">priority_high</md-icon>
+        It is imperative to keep this key safe and secure.
+        Under certain circumstances you may want to remove this key from your account, please consult <a
+            href ng-click="open_page('/security')">{{::i18n("%menu.security%")}}</a> section to get the details about this process and consequences.
+    </p>
+
+    <div layout="row" layout-align="center">
+        <md-button ng-show="!show" class="md-primary md-raised"
+                   ng-click="get_aes_key(); show=true;">
+            {{::i18n("%account.show_key%")}}
+        </md-button>
+    </div>
+
+    <div ng-show="show">
+        <div ng-if="aes_key == null || aes_key.length == 0">
+            <pre>{{::i18n("%aes_key_missing_title%")}}</pre>
+        </div>
+        <div ng-if="aes_key.length > 0">
+            <pre>{{aes_key}}</pre>
+        </div>
+
+        <div layout="row" layout-align="center">
+            <md-button ng-show="show" class="md-primary md-raised" ng-click="show = false">
+                {{::i18n("%account.hide_key%")}}
+            </md-button>
+
+            <md-button ng-if="show && !user.validAesKey" class="md-warn md-raised"
+                       ng-click="modifyAesKeyDialog()">
+                {{::i18n("%account.set_key%")}}
+            </md-button>
+            <md-button ng-if="show && user.validAesKey" class="md-warn md-raised"
+                       ng-click="removeAesKeyDialog()">
+                {{::i18n("%account.remove_key%")}}
+            </md-button>
+        </div>
+    </div>
+
+</div>
+
+
+

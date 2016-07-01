@@ -1,0 +1,115 @@
+<form ng-submit="updateUser($event)">
+
+    <div layout="column">
+
+        <md-checkbox ng-model="trigger.enabled" class="md-primary">
+            <p class="no_margins md-subhead">
+                Aktywuj wyzwalacz<br/>
+                <small>
+                    Algorytm poniżej opisany jest włączony.
+                </small>
+            </p>
+        </md-checkbox>
+
+        <span class="md-body-1">
+            <p class="md-headline no_margins">Etap 1</p>
+            <div layout-xs="column" layout="row" layout-padding>
+                <div flex-gt-xs="70">
+                     Po upływie
+                    <md-input-container md-no-float class="smallint_filed">
+                        <input type="number" min="1" max="59" required ng-model="trigger.x">
+                    </md-input-container>
+                    <md-input-container>
+                        <md-select ng-model="trigger.timeUnit">
+                            <md-option value="WEEKS">{{::i18n("%time_unit.WEEKS%")}}</md-option>
+                            <md-option value="DAYS">{{::i18n("%time_unit.DAYS%")}}</md-option>
+                            <md-option value="HOURS">{{::i18n("%time_unit.HOURS%")}}</md-option>
+                            <md-option value="MINUTES">{{::i18n("%time_unit.MINUTES%")}}</md-option>
+                        </md-select>
+                    </md-input-container>
+                    od daty Twojej ostatniej aktywności w systemie, wyślemy na email
+                     <md-input-container md-no-float class="email_filed">
+                        <input ng-model="triggerInternal.xemails" placeholder="adresy email" required>
+                    </md-input-container>
+                    pierwszą wiadomość weryfikacyjną
+                </div>
+                <div flex>
+                    Każda wiadomość weryfikacyjna zawiera
+                    <a href ng-href="/api/alive?user_uuid={{user.uuid|encodeUri}}&key={{triggerInternal.resetKey}}"
+                       target="_blank">
+                        unikalny, niezmienny link</a>. Kliknięcie na ten link uaktualnia datę ostatniej aktywności.
+                    <md-button class="md-icon-button help" ng-click="showHelp1()">
+                            <md-icon>help</md-icon>
+                        </md-button>
+                    <br/>
+                    <br/>
+                    Kliknij <a href ng-click="send_x_notification($event)">tutaj</a> aby wysłać przykładowe powiadomienie etapu 1, zaznajomić się z jego treścią i upewnić się że nie wyląduje w Spamie.
+
+                </div>
+            </div>
+
+            <p class="md-headline no_margins">Etap 2</p>
+            <div layout-xs="column" layout="row" layout-padding>
+                <div flex-gt-xs="70">
+                    Jeżeli link nie zostanie kliknięty w przeciągu kojelnych
+                    <md-input-container md-no-float class="smallint_filed">
+                        <input type="number" min="1" max="59" required ng-model="trigger.y">
+                    </md-input-container>
+                    {{trigger_tu}}, wyślemy drugą wiadomość weryfikacyjną do adresatów etapu poprzedniego oraz na następujące adresy email:
+                     <md-input-container md-no-float class="email_filed">
+                        <input  ng-model="triggerInternal.yemails" placeholder="adresy email">
+                    </md-input-container>
+                </div>
+                <div flex>
+                    Zalecamy wpisać Twoje alternatywne adresy email. W przypadku wielu adresów email, należy je rozdzielić przecinkiem lub średnikiem.
+                    <br/>
+                    <br/>
+                    Kliknij <a href ng-click="send_y_notification($event)">tutaj</a> aby wysłać przykładowe powiadomienie etapu 2.
+                </div>
+            </div>
+
+            <p class="md-headline no_margins">Etap 3</p>
+            <div layout-xs="column" layout="row" layout-padding>
+                <div flex-gt-xs="70">
+                    Jeżeli link nie zostanie kliknięty w przeciągu kojelnych
+                     <md-input-container md-no-float class="smallint_filed">
+                        <input type="number" min="1" max="59" required ng-model="trigger.z">
+                    </md-input-container>
+                    {{trigger_tu}}, wyślemy ostatnią wiadomość weryfikacyjną do adresatów etapu poprzedniego, oraz na następujące adresy email:
+                      <md-input-container md-no-float class="email_filed">
+                        <input  ng-model="triggerInternal.zemails" placeholder="adresy email">
+                    </md-input-container>
+                </div>
+                <div flex>
+                    Zalecamy wpisać adres email przyjaciela lub kogoś z rodziny, osobie ktorej ufamy.
+                    <br/>
+                    <br/>
+                    Kliknij <a href ng-click="send_z_notification($event)">tutaj</a> aby wysłać przykładowe powiadomienie etapu 3.
+                </div>
+            </div>
+
+             <p class="md-headline no_margins">Etap 4</p>
+            <div layout-xs="column" layout="row" layout-padding>
+                <div flex-gt-xs="70">
+                    Jeżeli link nie zostanie kliknięty w przeciągu kojelnych
+                    <md-input-container md-no-float class="smallint_filed">
+                        <input type="number" min="1" max="59" required ng-model="trigger.w">
+                    </md-input-container>
+                    {{trigger_tu}}, wyślemy wszystkie wiadomości znajdujące się w katalogu <i>Do Wysłania</i>
+                </div>
+                <div flex>
+                    Upewnimy się że wysłane wiadomości zostały dostarczone - jeżeli adresat nie otworzy wiadomości w przeciągu 14 dni od wysłania, podejmiemy ręczną próbę kontaktu z nim.
+                </div>
+            </div>
+
+        </span>
+
+    </div>
+
+    <div layout="row" layout-align="center">
+        <md-button flex-xs flex-gt-xs="33" class="md-primary md-raised" type="submit">
+            {{::i18n("%btn.save%")}}
+        </md-button>
+    </div>
+
+</form>

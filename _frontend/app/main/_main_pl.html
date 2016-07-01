@@ -1,0 +1,113 @@
+<center>
+    <h1 class="md-display-2">
+        Dostarczymy Twoje wiadomości<br/>
+        <small>po Twojej śmierci</small>
+    </h1>
+</center>
+
+<center>
+    <img class="img-responsive" src="n-LIFE-AFTER-DEATH-628x314.jpg" style="border-radius: 4px;">
+</center>
+
+<center>
+    <p class="md-headline">Jeśli chciałbyś przekazać pewne informacje po swojej śmierci</p>
+    <p class="md-body-2">
+        przesłać pożegnalną wiadomość dla swoich specjalnych osób, wysłać im mape
+        skarbów, powiedzieć to, czego nie miałeś odwagi powiedzieć do tej pory, ten portal jest dla Ciebie.</p>
+</center>
+
+<hr/>
+
+<center>
+    <p class="md-headline">Wyślemy Twoje wiadomości i upewnimy się że zostały odebrane</p>
+    <p class="md-body-2">
+        Wiadomości mogą zawierać dowolne pliki, tekst, obrazy, nagrania wideo.
+    </p>
+</center>
+
+<hr/>
+
+<center>
+    <p class="md-headline">Jest to prosty sposób aby przygotować się na nieszczęśliwą okoliczność</p>
+    <p class="md-body-2">
+        Szczególnie osobom z grupy podwyższonego ryzyka, osobom starszym, przed zabiegiem medycznym, entuziastom sportów
+        ekstremalnych, motocyklistom, wykonującą prace obarczone wysokim ryzykiem, wybierającą się w
+        niebezpieczną podróż czy posiadającym sekret który powinien zostać ujawniony.
+    </p>
+</center>
+
+<hr/>
+
+<center>
+    <p class="md-headline">Twoje dane są u nas bezpieczne</p>
+    <p class="md-body-2">
+        Użyliśmy najlepszych rozwiązań zgodnych z aktualnym stanem wiedzy branżowej, tak
+        aby ustanowić odpowiedni poziom bezpieczeństwa danych użytkownika.
+        Do szyfrowania danych używany jest algorytm AES 256 oraz kryptosystem RSA z 2048 bitowym kluczem.
+    </p>
+</center>
+
+<hr/>
+
+<center>
+    <h1 id="how_it_works" class="md-display-2">W jaki sposób to działa ?</h1>
+</center>
+
+<p>
+
+    <span class="md-headline">Krok 1: przygotowanie wiadomości</span>
+<ul>
+    <li>użytkownik tworzy nowe konto w systemie</li>
+    <li>użytkownik po zalogowaniu przygotowuje zestaw elektronicznych wiadomości które mają zostać dostarczone w
+        przypadku jego śmierci
+    </li>
+    <li>użytkownik konfiguruje parametry procedury która sprawdza czy użytkownik żyje</li>
+    <li>użytkownik konfiguruje dodatkowe opcje jak szyfrowanie wiadomości hasłem czy wybiera wersje językową
+        notyfikacji
+    </li>
+</ul>
+
+<span class="md-headline">Krok 1: czuwanie</span>
+<ul>
+    <li>system co określony interwał wysyła na zdefiniowane przez użytkownika
+        adresy email wiadomości zawierające unikatowy link. Kliknięcie na ten link potwierdza to, że użytkownik żyje.
+        Jeżeli link nie zostanie kliknięty przez odpowiedni okres czasu, po kilku próbach kontaktu, system przechodzi do
+        realizacji wysyłki wiadomości
+    </li>
+</ul>
+
+<span class="md-headline">Krok 3: wysłanie wiadomości</span>
+<ul>
+    <li>system wysyła za pomocą poczty elektronicznej wcześniej zapisane wiadomości do adresatów</li>
+    <li>system prowadzi rejestr czy adresaci otworzyli przygotowaną dla nich wiadomość, jeżeli po 14 dniach wiadomość
+        nie zostanie otwarta, podejmujemy ręczną próbę kontakt z adresatem
+    </li>
+    <li>po 7 dniach od daty otwarcia ostatniej wiadomości, konto użytkownika oraz wszystkie jego dane są bezpowrotnie
+        usuwane
+    </li>
+</ul>
+</p>
+
+<hr/>
+
+<center>
+    <h1 id="pricing" class="md-display-2">Ile to kosztuje ?</h1>
+</center>
+<p>Pełna funkcjonalność serwisu dostępna jest za darmo przez pierwsze 30 dni od zarejestrowania użytkownika, następnie
+    użytkownik jest proszony o opłatę równą wysokości $10 USD.
+</p>
+
+<hr/>
+
+<center>
+    <h1 class="md-display-2">Jestem zainteresowany, co dalej ?</h1>
+</center>
+<span ng-controller="loginCtrl">
+    <p>
+        Odwiedź dział <a href ng-click="open_faq()">
+            {{::i18n("%menu.faq%")}}</a> lub <a href ng-click="open_security()">
+            {{::i18n("%menu.security%")}}</a> aby uzyskać więcej informacji lub
+
+        <a href ng-click="showRegisterUserDialog()">utwórz konto</a>.
+    </p>
+</span>

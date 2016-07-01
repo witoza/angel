@@ -1,0 +1,223 @@
+<form style="display:none" action="{{::file.url}}" method="post" name="d_{{::file.uuid}}">
+    <input type="hidden" name="user_uuid" value="{{::user_uuid || user.uuid}}">
+    <input type="hidden" name="file_uuid" value="{{::file.uuid}}">
+    <input type="hidden" name="msg_uuid" value="{{::curr_msg.uuid}}">
+    <input type="hidden" name="encryptionPassword" value="{{::curr_msg.encryption_passwd}}">
+    <input type="hidden" name="releaseKey" value="{{::releaseKey}}">
+    <input type="hidden" name="recipientKey" value="{{::recipientKey}}">
+    <input type="hidden" name="encryptionKey" value="{{::aes_key}}">
+    <input type="hidden" name="_csrf" value="{{csrfToken()}}">
+</form>
+
+<div ng-controller="fileWidgetCtrl">
+
+    <md-card flex>
+
+        <md-card-title>
+            <md-card-title-text>
+                <center>
+                    <span class="md-headline trunc_m">{{::file.name}}</span>
+                </center>
+                <span class="md-subhead trunc_m">
+                    <p class="no_margins"><b>{{::i18n("%fw.upload_time%")}}</b> {{::file.uploadTime | asDate}}</p>
+                    <p class="no_margins" ng-if="::file.duration_sec"><b>{{::i18n("%fw.recording_length%")}}</b> {{ ::file.duration_sec }} sec</p>
+                    <p class="no_margins"><b>{{::i18n("%fw.file_size%")}}</b> {{::file.size | bytes}}</p>
+                    <p class="no_margins" ng-if="::file_widget.preview"><b>SHA1</b> <code>{{::file.sha1}}</code></p>
+                </span>
+            </md-card-title-text>
+        </md-card-title>
+
+        <md-card-content ng-if="file_widget.show_thumb && (user.validAesKey || aes_key)">
+
+            <center>
+                <div flex ng-if="!file.passwordEncrypted">
+                    <div flex ng-include="'fw/t/video.html'" ng-if="::MyUtils.isVideo(file)"></div>
+                    <div flex ng-include="'fw/t/media.html'" ng-if="::MyUtils.isImage(file)"></div>
+                    <div flex ng-include="'fw/t/misc.html'"
+                         ng-if="::!(MyUtils.isVideo(file) || MyUtils.isImage(file))"></div>
+                </div>
+                <div flex ng-if="file.passwordEncrypted">
+                    <md-icon style="width: 96px;height: 96px;font-size:96px">lock</md-icon>
+                </div>
+            </center>
+
+        </md-card-content>
+
+        <md-card-actions ng-if="user.validAesKey || aes_key || (user == null && !curr_msg.invalid_aes_key)">
+
+            <div layout="row" layout-align="center center">
+
+                <!-- /files -->
+                <span ng-if="::curr_msg == null">
+                    <md-button class="notifs-btn" ng-click="download_file(file);" ng-if="!file.passwordEncrypted">
+                        <md-icon>file_download</md-icon>
+                        <md-tooltip md-delay="400">{{::i18n('%fw.download%')}}</md-tooltip>
+                    </md-button>
+                    <md-button class="notifs-btn" ng-click="remove_file($event, file);"
+                               ng-if="!file.passwordEncrypted">
+                        <md-icon>delete_forever</md-icon>
+                        <md-tooltip md-delay="400">{{::i18n('%fw.delete%')}}</md-tooltip>
+                    </md-button>
+                    <md-button class="notifs-btn" ng-click="create_message_from(file);"
+                               ng-if="!file.passwordEncrypted">
+                        <md-icon>drafts</md-icon>
+                        <md-tooltip md-delay="400">{{::i18n('%fw.create_new_message%')}}</md-tooltip>
+                    </md-button>
+
+                    <md-button class="notifs-btn" ng-click="file.show_info = !file.show_info"
+                               ng-if="!file.show_info">
+                        <md-icon>keyboard_arrow_down</md-icon>
+                        <md-tooltip md-delay="400">{{::i18n('%fw.details%')}}</md-tooltip>
+                    </md-button>
+                    <md-button class="notifs-btn" ng-click="file.show_info = !file.show_info"
+                               ng-if="file.show_info">
+                        <md-icon>keyboard_arrow_up</md-icon>
+                        <md-tooltip md-delay="400">{{::i18n('%fw.details%')}}</md-tooltip>
+                    </md-button>
+                </span>
+
+                <span ng-if="::curr_msg != null">
+
+                    <span ng-if="::file_widget.edit_msg">
+                       <md-button class="notifs-btn"
+                                  ng-show="file.passwordEncrypted && (curr_msg.has_been_decrypted && file_widget.allow_endecrypt)"
+                                  ng-disabled="decrypt_file.loading"
+                                  ng-click="decrypt_file(file)">
+                           <md-icon>lock_open</md-icon>
+                           <md-tooltip md-delay="400">{{::i18n("%btn.decrypt%")}}</md-tooltip>
+                        </md-button>
+
+                        <md-button class="notifs-btn"
+                                   ng-show="!file.passwordEncrypted && (curr_msg.has_been_decrypted && file_widget.allow_endecrypt)"
+                                   ng-disabled="encrypt_file.loading"
+                                   ng-click="encrypt_file(file);">
+                            <md-icon>lock</md-icon>
+                            <md-tooltip md-delay="400">{{::i18n("%btn.encrypt%")}}</md-tooltip>
+                        </md-button>
+
+                        <md-button class="notifs-btn" ng-click="download_file(file);">
+                            <md-icon>file_download</md-icon>
+                            <md-tooltip md-delay="400">{{::i18n('%fw.download%')}}</md-tooltip>
+                        </md-button>
+
+                        <md-button class="notifs-btn" ng-show="remove_file_from_attachments != null"
+                                   ng-click="remove_file_from_attachments($event, file);">
+                             <md-icon>clear</md-icon>
+                            <md-tooltip md-delay="400">{{::i18n('%fw.delete_attachment%')}}</md-tooltip>
+                        </md-button>
+
+                        <md-button class="notifs-btn" ng-click="file.show_info = !file.show_info"
+                                   ng-if="!file.show_info">
+                                <md-icon>keyboard_arrow_down</md-icon>
+                                <md-tooltip md-delay="400">{{::i18n('%fw.details%')}}</md-tooltip>
+                        </md-button>
+                        <md-button class="notifs-btn" ng-click="file.show_info = !file.show_info"
+                                   ng-if="file.show_info">
+                            <md-icon>keyboard_arrow_up</md-icon>
+                            <md-tooltip md-delay="400">{{::i18n('%fw.details%')}}</md-tooltip>
+                        </md-button>
+                    </span>
+
+                    <!-- preview -->
+                    <span ng-if="::file_widget.preview">
+                        <md-button ng-click="download_file(file);">
+                            <md-icon>file_download</md-icon>
+                            {{::i18n('%fw.download%')}}
+                        </md-button>
+                    </span>
+
+                    <!-- message -->
+                    <span ng-if="attaPanelScope != null">
+
+                        <md-checkbox class="md-primary" ng-model="file.attachmentSelected">
+                            {{::i18n('%fw.attach%')}}
+                        </md-checkbox>
+
+                        <md-button class="notifs-btn" ng-click="remove_file($event, file);">
+                            <md-icon>delete_forever</md-icon>
+                            <md-tooltip md-delay="400">{{::i18n('%fw.delete%')}}</md-tooltip>
+                        </md-button>
+
+                        <md-button class="notifs-btn" ng-click="download_file(file);">
+                            <md-icon>file_download</md-icon>
+                            <md-tooltip md-delay="400">{{::i18n('%fw.download%')}}</md-tooltip>
+                        </md-button>
+
+                        <md-button class="notifs-btn" ng-click="file.show_info = !file.show_info"
+                                   ng-if="!file.show_info">
+                                <md-icon>keyboard_arrow_down</md-icon>
+                                <md-tooltip md-delay="400">{{::i18n('%fw.details%')}}</md-tooltip>
+                        </md-button>
+                        <md-button class="notifs-btn" ng-click="file.show_info = !file.show_info"
+                                   ng-if="file.show_info">
+                            <md-icon>keyboard_arrow_up</md-icon>
+                            <md-tooltip md-delay="400">{{::i18n('%fw.details%')}}</md-tooltip>
+                        </md-button>
+
+                    </span>
+
+                </span>
+            </div>
+
+            <div ng-if="file.show_info" layout="column" class="trunc_m">
+                <!--
+                <p class="no_margins md-body-1"><b>MIME:</b><code>{{::file.mime}}</code></p>=
+                -->
+                <p class="no_margins md-body-1"><b>SHA1:</b><code>{{::file.sha1}}</code></p>
+                <span ng-if="file_widget.show_attachments">
+
+                    <span ng-if="!file.passwordEncrypted">
+                        <span ng-if="file.messages.length > 0">
+                            <p class="no_margins md-body-1"><b>{{::i18n('%fw.attachment_in%')}}:</b></p>
+                            <div ng-repeat="email in file.messages">
+                                <p class="no_margins md-body-1">
+                                    <i class="fa fa-envelope-o"></i>
+                                    <span ng-show="email.uuid == curr_msg.uuid">
+                                        {{::i18n('%fw.this_msg%')}}
+                                    </span>
+                                    <span ng-show="email.uuid != curr_msg.uuid">
+                                        <a ng-click="open_msg(email)"
+                                           href>{{email.type}}/{{MyUtils.title(email.title)}}</a>
+                                    </span>
+                                </p>
+                            </div>
+                        </span>
+                     </span>
+
+                    <span ng-if="file.passwordEncrypted">
+                        <span ng-show="file.belongsTo.uuid == curr_msg.uuid">
+                            <p class="no_margins md-body-1">
+                                <i18n key="%fw.enc_used_this%"/>
+                            </p>
+                        </span>
+
+                        <span ng-show="file.belongsTo.uuid != curr_msg.uuid">
+                            <p class="no_margins md-body-1">
+                                <i18n key="%fw.enc_used_in%"/>:
+                            </p>
+                            <p class="no_margins md-body-1">
+                                <i class="fa fa-envelope-o"></i>
+                                <a ng-click="open_msg(file.belongsTo)" href>{{file.belongsTo.type}}/{{MyUtils.title(file.belongsTo.title)}}</a>
+                            </p>
+                        </span>
+
+                        <span ng-if="file.messages.length > 0">
+                             <p class="no_margins md-body-1">
+                                 <i18n key="%fw.enc_attached%"/>
+                             </p>
+                        </span>
+                        <span ng-if="file.messages.length == 0">
+                             <p class="no_margins md-body-1">
+                                 <i18n key="%fw.enc_not_attached%"/>
+                             </p>
+                        </span>
+                    </span>
+
+                </span>
+            </div>
+
+        </md-card-actions>
+
+    </md-card>
+
+</div>

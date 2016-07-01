@@ -1,0 +1,32 @@
+<md-dialog>
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <h2>{{::i18n("%menu.tos%")}}</h2>
+            <span flex></span>
+        </div>
+    </md-toolbar>
+
+    <form ng-submit="deleteUser.invoke()">
+        <md-dialog-content>
+            <div class="md-dialog-content">
+
+                <div ng-include="::i18n_file('tos/_tos.html')"/>
+
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+
+            <div ng-controller="loginCtrl">
+
+                <md-button class="md-primary md-raised" ng-disabled="tos.loading" ng-click="acceptTermsOfServices();">
+                    {{::i18n("%user_accepts_tos%")}}
+                </md-button>
+                <md-button class="md-warn md-raised" ng-disabled="tos.loading" ng-click="declineTermsOfServices();">
+                    {{::i18n("%user_not_accepts_tos%")}}
+                </md-button>
+            </div>
+
+        </md-dialog-actions>
+    </form>
+</md-dialog>

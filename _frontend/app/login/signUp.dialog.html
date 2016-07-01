@@ -1,0 +1,82 @@
+<md-dialog flex-gt-md="25">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <h2>{{::i18n('%register_new_user.caption%')}}</h2>
+            <span flex></span>
+            <md-button class="md-icon-button" ng-click="closeDialog()">
+                <md-icon>clear</md-icon>
+            </md-button>
+        </div>
+    </md-toolbar>
+
+    <md-dialog-content>
+        <div class="md-dialog-content" ng-controller="signUpCtrl">
+
+            <center>
+                <p class="card card-container">
+                    <img class="profile-img-card"
+                         src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"/>
+                </p>
+            </center>
+
+            <form ng-submit="invokePreregister()" ng-show="stage==1">
+                <div layout="column" flex>
+
+                    <center>
+                        <p class="md-body-1">
+                            Please provide your email address.
+                        </p>
+                    </center>
+
+                    <md-input-container>
+                        <input type="email" placeholder="{{::i18n('%email_addr%')}}" required
+                               ng-model="data.username">
+                    </md-input-container>
+
+                    <md-button class="md-primary md-raised" type="submit">
+                        {{::i18n('%register_new_user.next%')}}
+                    </md-button>
+
+                </div>
+            </form>
+
+            <form ng-submit="invokeRegister()" ng-show="stage==2">
+
+                <div layout="column" flex>
+
+                    <center>
+                        <p class="md-body-1">
+                            To finish registration process as <b>{{data.username}}</b> type in activation code that
+                            was sent to your email address.
+                        </p>
+                    </center>
+
+                    <md-input-container>
+                        <input placeholder="{{::i18n('%register_new_user.key%')}}" required ng-model="data.shortTimeKey">
+                    </md-input-container>
+
+                    <md-input-container>
+                        <input placeholder="{{::i18n('%password%')}}" ng-model="data.passwd1"
+                               type="password" required
+                               zxcvbn="passwordStrength">
+                    </md-input-container>
+
+                    <md-input-container ng-show="data.passwd1.length > 0">
+                        <zx-password-meter value="{{ passwordStrength.score }}" max="4"></zx-password-meter>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <input placeholder="{{::i18n('%password_retype%')}}" ng-model="data.passwd2"
+                               type="password" required>
+                    </md-input-container>
+
+                    <md-button class="md-primary md-raised" type="submit">
+                        {{::i18n('%register_new_user.register%')}}
+                    </md-button>
+
+                </div>
+            </form>
+
+        </div>
+    </md-dialog-content>
+</md-dialog>

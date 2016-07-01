@@ -1,0 +1,12 @@
+<center>
+    <p class="md-headline">
+        {{::i18n("%menu.trigger_caption%")}}
+    </p>
+</center>
+<hr/>
+
+{{trigger = user_copy.trigger; ""}}
+{{triggerInternal = user_copy.triggerInternal; ""}}
+{{trigger_tu = i18n("%time_unit."+trigger.timeUnit+"%"); ""}}
+
+<div ng-include="::i18n_file('trigger/_trigger.html')"/>

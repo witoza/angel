@@ -1,0 +1,40 @@
+<div ng-controller="changePasswdCtrl">
+    <md-toolbar>
+        <h2 class="md-toolbar-tools">
+            <span>Login password</span>
+        </h2>
+    </md-toolbar>
+    <br/>
+
+    <div layout="row" layout-align="center">
+        <md-button class="md-primary md-raised" ng-click="changePasswdDialog($event)">
+            {{::i18n("%account.change_passwd%")}}
+        </md-button>
+    </div>
+
+    <br/>
+
+    <div layout="row" layout-align="start center">
+        <md-checkbox ng-model="user_copy.allowPasswordReset" class="md-primary">
+            Allow password reset<br/>
+            <small>
+                Allow to request password reset when you forget password. If you unchecked this, you won't be able to recover forgotten password.
+            </small>
+        </md-checkbox>
+    </div>
+
+    <div layout="row" layout-align="start center">
+        <md-checkbox ng-model="user_copy.verifyUnknownBrowsers" class="md-primary">
+            Verify unknown web browsers<br/>
+            <small>
+                Each time login is attempted from web browser which has not proper cookie set, you will be asked to provide code which is sent to your email.
+            </small>
+        </md-checkbox>
+    </div>
+
+    <div layout="row" layout-wrap layout-align="center">
+        <md-button class="md-primary md-raised" ng-click="updateUser($event)">
+            Save
+        </md-button>
+    </div>
+</div>

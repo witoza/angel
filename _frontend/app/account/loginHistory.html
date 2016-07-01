@@ -1,0 +1,37 @@
+<md-toolbar>
+    <h2 class="md-toolbar-tools">
+        <span>{{::i18n("%menu.login_history%")}}</span>
+    </h2>
+</md-toolbar>
+<br/>
+
+<div ng-controller="loginHistoryCtrl">
+    <div layout="row">
+        <div flex>
+            <p class="md-body-2">{{::i18n("%login_history.login_date%")}}</p>
+        </div>
+        <div flex>
+            <p class="md-body-2">{{::i18n("%login_history.ip_addr%")}}</p>
+        </div>
+        <div flex>
+            <p class="md-body-2">{{::i18n("%login_history.login_status%")}}</p>
+        </div>
+    </div>
+
+    <div layout="row" ng-repeat="hi in loginHistory | reverse">
+        <div flex>
+            {{::hi.time | asDate}}
+        </div>
+        <div flex>
+            <code>
+                {{::hi.ip}}
+            </code>
+        </div>
+        <div flex>
+            <span ng-show="hi.type == 'error'">
+                <md-icon>error</md-icon>
+            </span>
+            {{::hi.type}}
+        </div>
+    </div>
+</div>

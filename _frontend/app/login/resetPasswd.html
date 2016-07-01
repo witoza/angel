@@ -1,0 +1,51 @@
+<center>
+    <h1 class="md-display-1">
+        {{::i18n("%reset_password.caption%")}}
+    </h1>
+</center>
+
+<hr/>
+
+<form ng-submit="invoke()">
+
+    <div layout="row">
+        <div flex-gt-xs="10"></div>
+        <div flex layout="column">
+
+            <p class="md-display-1">
+                <i18n key="%reset_password.welcome%" args="data.username"/>
+            </p>
+            <p class="md-body-2">{{::i18n("%reset_password.info1%")}}:</p>
+
+            <div>
+                <md-input-container>
+                    <input required placeholder='{{::i18n("%reset_password.new_passwd%")}}'
+                           ng-model="data.passwd_new_1" type="password" zxcvbn="passwordStrength">
+                </md-input-container>
+
+                <md-input-container ng-show="data.passwd_new_1.length > 0">
+                    <zx-password-meter value="{{ passwordStrength.score }}" max="4"></zx-password-meter>
+                </md-input-container>
+
+                <br/>
+
+                <md-input-container>
+                    <input required placeholder='{{::i18n("%reset_password.retype_new_passwd%")}}'
+                           ng-model="data.passwd_new_2" type="password">
+                </md-input-container>
+            </div>
+
+            <br/>
+            <br/>
+
+            <div layout="row" layout-align="center">
+                <md-button flex-xs flex-gt-xs="33" class="md-primary md-raised" type="submit">
+                    {{::i18n("%reset_password.set_password%")}}
+                </md-button>
+            </div>
+
+        </div>
+        <div flex-gt-xs="10"></div>
+    </div>
+
+</form>

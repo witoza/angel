@@ -1,0 +1,50 @@
+<span hide-xs>
+    <center>
+    <p class="md-headline">
+        {{::i18n("%menu.notifs%")}}
+    </p>
+    </center>
+    <hr/>
+</span>
+
+<div layout="row">
+    <div flex="20">
+        <p class="md-body-2">{{::i18n("%date%")}}</p>
+    </div>
+    <div flex>
+        <p class="md-body-2">{{::i18n("%message%")}}</p>
+    </div>
+</div>
+
+<div ng-repeat="notif in notifs | reverse">
+
+    <md-divider></md-divider>
+
+    <br/>
+
+    <div layout="row" layout-xs="column" ng-if="!notif.read">
+        <div flex-gt-xs="20">
+            <span class="md-body-2">{{::notif.createdTime | asDate}}</span>
+        </div>
+        <div flex>
+            <span class="md-body-2" style="white-space: pre-wrap">{{notif.msg}}</span>
+            <br/>
+        </div>
+        <md-button class="md-primary" ng-click="mark_as_read(notif)">
+            {{::i18n("%btn.mark_as_read%")}}
+        </md-button>
+    </div>
+
+    <div layout="row" layout-xs="column" ng-if="notif.read">
+        <div flex-gt-xs="20">
+            <span class="md-body-1">{{::notif.createdTime | asDate}}</span>
+        </div>
+        <div flex>
+            <span class="md-body-1" style="white-space: pre-wrap">{{notif.msg}}</span>
+            <br/>
+        </div>
+    </div>
+
+    <br/>
+
+</div>

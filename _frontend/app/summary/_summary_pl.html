@@ -1,0 +1,132 @@
+<div ng-show="msgs['outbox'].length == 0">
+    <center>
+        <p class="md-body-2">
+            Nie masz przygotowanej jeszcze żadnej wiadomości którą moglibyśmy wysłać.
+        </p>
+
+        <div layout="row" layout-align="center">
+            <md-button flex-xs flex-gt-xs="33" class="md-primary md-raised" ng-click="createNewMessage()">
+                <md-icon>mail</md-icon>
+                Przygotuj nową wiadomość
+            </md-button>
+        </div>
+
+    </center>
+</div>
+
+<div ng-show="!user.trigger.enabled && msgs['outbox'].length>0">
+    <center>
+        <p class="md-body-2">
+            Napisałeś <b>{{msgs['outbox'].length}}</b> wiadomośc(i) przeznaczone do wysłania lecz nie zostaną wysłane
+            ponieważ Wyzwalacz jest nieaktywny.
+        </p>
+
+        <div layout="row" layout-align="center">
+            <md-button flex-xs flex-gt-xs="33" class="md-primary md-raised" ng-click="configureTrigger()">
+                <md-icon>settings</md-icon>
+                Konfiguruj wyzwalacz
+            </md-button>
+        </div>
+    </center>
+</div>
+
+<div class="md-body-1" ng-show="user.trigger.enabled && msgs['outbox'].length>0">
+
+    <div layout-xs="column" layout="row" layout-align="center center">
+        <div flex>
+            <p>Wiadomości weryfikacyjne zostaną wysłane do: </p>
+            <p class="no_margins" style="padding-left: 15px;padding-right: 15px">
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> po {{trigger.x}} {{trigger_tu}}
+                <br/>
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" + triggerInternal.yemails).join(", ")}}</b>
+                po
+                {{trigger.x + trigger.y}} {{trigger_tu}} <br/>
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" + triggerInternal.yemails +";"+
+                    triggerInternal.zemails).join(", ")}}</b> po {{trigger.z + trigger.y + trigger.z}} {{trigger_tu}}
+                <br/>
+            </p>
+            <p>
+                od daty ostatniej Twojej aktywności w systemie. Ostatecznie, <b>po upływie {{trigger.x + trigger.y +
+                trigger.z + trigger.w}} {{trigger_tu}}</b> (na chwilę obecną jest to <b>{{moment(trigger.last_access).add(trigger.x
+                +
+                trigger.y + trigger.z + trigger.w, trigger.timeUnit) | asDate}}</b>) wyślemy następujące wiadomości:
+            </p>
+        </div>
+        <md-button class="notifs-btn" ng-click="configureTrigger()">
+            <md-icon>settings</md-icon>
+            <md-tooltip md-delay="100">Modyfikuj wyzwalacz</md-tooltip>
+        </md-button>
+    </div>
+
+    <div layout-xs="column" layout="row" layout-align="center center">
+        <div flex>
+
+            <div ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'" style="padding-left: 15px;padding-right: 15px">
+                <p class="trunc_m md-body-1">
+                    <i class="fa fa-fw fa-envelope-o"></i>
+                    <i ng-show="msg.files.length > 0" class="fa fa-fw fa-paperclip"></i>
+                    <a href ng-click="do_preview(msg);">
+                        <b>{{MyUtils.title(msg.title)}}</b>
+                    </a>
+                    Do: {{::MyUtils.recipients(msg.recipients)}}
+
+                    <span ng-show="msg.recipients_isEmpty">
+                        <br/>
+                        <i class="fa fa-fw fa-exclamation"></i>
+                        Ta wiadomość nie zostanie wysłana poniewarz pole 'Do' nie zostało wypełnione.
+                    </span>
+
+                    <span ng-if="msg.lang == 'en'">
+                        <img src="gb-flag.jpg">
+                    </span>
+                    <span ng-if="msg.lang == 'pl'">
+                        <img src="p-flag.png">
+                    </span>
+
+                    <span ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
+                        <br/>
+                        <i class="fa fa-fw fa-exclamation"></i>
+                        W liście adresatów użyty jest nieprawidłowy adres email: <b>{{msg.recipients_isValidAddresses}}</b>
+                    </span>
+
+                    <span ng-show="msg.passwordEncryption">
+                        <br/>
+                        <i class="fa fa-fw fa-lock"></i>
+                        Ta wiadomość jest zaszyfrowana, upewnij się że adresaci znają hasło do podanej wskazówki: <b>{{msg.passwordEncryption.hint}}</b>
+                    </span>
+                </p>
+            </div>
+
+        </div>
+        <md-button class="notifs-btn" ng-click="createNewMessage()">
+            <md-icon>mail</md-icon>
+            <md-tooltip md-delay="100">Modyfikuj wiadomości</md-tooltip>
+        </md-button>
+    </div>
+
+    <div ng-show="!user.validAesKey">
+        <p class="md-body-1">
+            <i class="fa fa-fw fa-exclamation"></i>
+            Upewnij się, że adresaci znają Twój klucz szyfrowania, jako że aktualnie jest on usunięty z profilu
+            użytkownika
+        </p>
+    </div>
+
+    <p>
+        Jeżeli adresat nie otworzy wiadomości w przeciągu 14 dni od wysłania, podejmiemy ręczną próbę
+        kontaktu z nim. Po 7 dniach od daty otwarcia ostatniej wiadomości, Twoje konto wraz ze wszystkimi
+        danymi zostanie bezpowrotnie skasowane.
+    </p>
+
+    <div ng-show="msgs['drafts'].length > 0">
+        <hr/>
+        <p class="md-body-1">
+            <i class="fa fa-fw fa-info"></i>
+            Masz <b>{{msgs['drafts'].length}}</b> wiadomości w folderze
+            <i>Wiadomości/{{::i18n("%msg.folder.drafts%")}}</i>
+            które
+            <b>nie</b> zostaną wysłane, jeżeli chcesz żeby też zostały wysłane przenieś je do folderu <i>Wiadomości/{{::i18n("%msg.folder.outbox%")}}</i>.
+        </p>
+    </div>
+
+</div>
