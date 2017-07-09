@@ -4,7 +4,8 @@ _backend/testdb
 
 _frontend/node_modules/
 _frontend/dist/
-_frontend/app/_bc/
+_frontend/app/dist/
+_frontend/yarn.lock
 
 psdb/
 testdb/

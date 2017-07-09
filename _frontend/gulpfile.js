@@ -3,83 +3,61 @@
 var gulp = require('gulp');
 
 // plugins
-var stripDebug = require('gulp-strip-debug');
-var jshint = require('gulp-jshint');
-var uglify = require('gulp-uglify');
 var minifyCSS = require('gulp-minify-css');
 var clean = require('gulp-clean');
 var runSequence = require('run-sequence');
-var ngAnnotate = require('gulp-ng-annotate')
-var htmlreplace = require('gulp-html-replace');
 var replace = require('gulp-token-replace');
 
-gulp.task('lint', function () {
-    gulp.src(['./app/**/*.js', '!./app/_bc/**', '!./app/_pc/**'])
-        .pipe(jshint())
-});
 gulp.task('clean', function () {
     gulp.src('./dist')
         .pipe(clean({force: true}));
 });
+
 gulp.task('minify-css', function () {
     var opts = {comments: true, spare: true};
-    gulp.src(['./app/**/*.css', '!./app/_bc/**', '!./app/_pc/**'])
+    gulp.src(['./app/**/*.css', '!./app/_provided/**'])
         .pipe(minifyCSS(opts))
         .pipe(gulp.dest('./dist/'))
 });
-gulp.task('minify-js', function () {
-    gulp.src(['./app/**/*.js', '!./app/_bc/**', '!./app/_pc/**'])
-        .pipe(stripDebug())
-        .pipe(ngAnnotate())
-        //.pipe(uglify())
-        .pipe(gulp.dest('./dist/'))
-});
 
-gulp.task('token-replace', function(){
-   var config = {
-	   ts : Date.now()
-   };
-  return gulp.src(['./app/**/*.html'])
-    .pipe(replace({
-		prefix : "$$",
-		suffix : "$$",
-		preserveUnknownTokens : true,
-		global:config}))
-	.pipe(gulp.dest('dist/'));
-});
-
-gulp.task('copy-bower-components', function () {
-    gulp.src('./app/_bc/**')
-        .pipe(gulp.dest('dist/_bc'));
-});
-
-gulp.task('copy-provided-components', function () {
-    gulp.src('./app/_pc/**')
-        .pipe(gulp.dest('dist/_pc'));
-});
-
-gulp.task('copy-html-files', function () {
+gulp.task('copy-files', function () {
     gulp.src([
-	'!./app/**/*.html', 
-	'./app/**/*.png', 
-	'./app/**/*.ico', 
-	'./app/**/*.jpg', 
-	
-	'!./app/_bc/**', 
-	'!./app/_pc/**'])
+        '!./app/**/*.html',
+        './app/**/*.png',
+        './app/**/*.ico',
+        './app/**/*.jpg',
+        '!./app/dist/**',
+        '!./app/_provided/**'])
+        .pipe(gulp.dest('dist/'));
+
+    gulp.src([
+        './app/dist/**'])
+        .pipe(gulp.dest('dist/dist'));
+
+
+    gulp.src([
+        './app/_provided/**'])
+        .pipe(gulp.dest('dist/_provided'));
+});
+
+gulp.task('token-replace', function () {
+    var config = {
+        ts: Date.now()
+    };
+    return gulp.src(['./app/**/*.html'])
+        .pipe(replace({
+            prefix: "$$",
+            suffix: "$$",
+            preserveUnknownTokens: true,
+            global: config
+        }))
         .pipe(gulp.dest('dist/'));
 });
-
-// default task
-gulp.task('default',
-    ['lint']
-);
 
 gulp.task('build', function () {
     runSequence(
         ['clean'],
-		['lint'],
-        ['minify-css', 'minify-js', 'copy-html-files', 'copy-bower-components', 'copy-provided-components'],
-		['token-replace']
+        ['minify-css', 'copy-files'],
+        ['token-replace']
     );
 });
