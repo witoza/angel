@@ -2,14 +2,13 @@ package co.postscriptum.email;
 
 import co.postscriptum.internal.Utils;
 import co.postscriptum.metrics.ComponentMetrics;
+import co.postscriptum.web.AuthHelper;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -27,18 +26,6 @@ public class EmailDiscWriter {
     @Autowired
     private ComponentMetrics componentMetrics;
 
-    private Authentication getAuthentication() {
-        return SecurityContextHolder.getContext().getAuthentication();
-    }
-
-    private String username() {
-        Authentication authentication = getAuthentication();
-        if (authentication != null) {
-            return authentication.getPrincipal().toString();
-        }
-        return null;
-    }
-
     private void persist(Object data, Path path) {
         try {
             FileUtils.writeStringToFile(path.toFile(), Utils.toJson(data), StandardCharsets.UTF_8);
@@ -52,7 +39,8 @@ public class EmailDiscWriter {
         EnvelopeEnqueuedInfo data = EnvelopeEnqueuedInfo.builder()
                                                         .envelope(envelope)
                                                         .reqId(MDC.get("reqId"))
-                                                        .principal(username())
+                                                        .principal(AuthHelper.getLoggedUsername()
+                                                                             .orElse("not logged"))
                                                         .build();
 
         Path file = Paths.get(emailsDir + "/" + envelope.getEnvelopeId());

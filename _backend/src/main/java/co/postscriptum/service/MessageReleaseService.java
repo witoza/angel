@@ -2,7 +2,6 @@ package co.postscriptum.service;
 
 import co.postscriptum.email.Envelope;
 import co.postscriptum.email.EnvelopeType;
-import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.I18N;
 import co.postscriptum.internal.ReleasedMessagesDetails;
 import co.postscriptum.internal.Utils;
@@ -57,13 +56,6 @@ public class MessageReleaseService {
         return releaseItem;
     }
 
-    private List<Message> getOutboxMessages(UserData userData) {
-        return userData.getMessages()
-                       .stream()
-                       .filter(m -> m.getType() == Message.Type.outbox)
-                       .collect(Collectors.toList());
-    }
-
     public String toHumanReadable(Lang lang, ReleasedMessagesDetails releaseDetails) {
         if (releaseDetails.getDetails().isEmpty()) {
             return "Nothing to send in Outbox";
@@ -96,11 +88,10 @@ public class MessageReleaseService {
 
     private Map<String, String> releaseMessage(UserData userData, Message message, Optional<SecretKey> userEncryptionKey) {
 
-        log.info("processing release message uuid={} addressed to recipients={}",
-                 message.getUuid(), message.getRecipients());
+        log.info("processing release message uuid={} addressed to recipients={}", message.getUuid(), message.getRecipients());
 
         if (message.getType() != Message.Type.outbox) {
-            throw new InternalException("can't release not outbox type messages");
+            throw new IllegalArgumentException("can't release not outbox type messages");
         }
 
         Lang lang = ObjectUtils.firstNonNull(message.getLang(), userData.getInternal().getLang());
@@ -126,6 +117,7 @@ public class MessageReleaseService {
             if (userEncryptionKey.isPresent()) {
 
                 SecretKey recipientKey = AESKeyUtils.generateRandomKey();
+
                 release.setUserEncryptionKeyEncodedByRecipientKey(
                         AESGCMUtils.encrypt(recipientKey, userEncryptionKey.get().getEncoded()));
 
@@ -166,6 +158,13 @@ public class MessageReleaseService {
         }
 
         return details;
+    }
+
+    private List<Message> getOutboxMessages(UserData userData) {
+        return userData.getMessages()
+                       .stream()
+                       .filter(m -> m.getType() == Message.Type.outbox)
+                       .collect(Collectors.toList());
     }
 
     public void sendUserReleasedMessageSummary(UserData userData, ReleasedMessagesDetails details) {

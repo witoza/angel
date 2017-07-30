@@ -81,7 +81,7 @@ public class AdminHelperService {
 
         String loggedUsername = null;
         if (AuthHelper.isUserLogged()) {
-            loggedUsername = AuthHelper.getLoggedUsername();
+            loggedUsername = AuthHelper.requireLoggedUsername();
         }
 
         String content =

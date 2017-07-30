@@ -3,15 +3,15 @@ package co.postscriptum.controller;
 import co.postscriptum.controller.dto.PasswordDTO;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
-import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.Lang;
-import co.postscriptum.security.MyAuthenticationToken;
 import co.postscriptum.security.RequestMetadata;
 import co.postscriptum.security.VerifiedUsers;
+import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.service.CaptchaService;
 import co.postscriptum.service.LoginService;
+import co.postscriptum.web.AuthHelper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -60,10 +60,6 @@ public class LoginController {
         loginService.preregister(dto.username, dto.lang, new RequestMetadata(request));
     }
 
-    private void generateNewCSRFToken(HttpServletRequest request, HttpServletResponse response) {
-        cookieCsrfTokenRepository.saveToken(cookieCsrfTokenRepository.generateToken(request), request, response);
-    }
-
     @PostMapping("/register")
     public void register(@Valid @RequestBody RegisterDTO dto, HttpServletRequest request, HttpServletResponse response) {
 
@@ -85,9 +81,7 @@ public class LoginController {
         }
 
         verifiedUsers.updateCookie(response);
-
         generateNewCSRFToken(request, response);
-
     }
 
     @PostMapping("/login")
@@ -115,18 +109,13 @@ public class LoginController {
         }
 
         verifiedUsers.updateCookie(response);
-
         generateNewCSRFToken(request, response);
-    }
-
-    private boolean isUserLogged() {
-        return SecurityContextHolder.getContext().getAuthentication() instanceof MyAuthenticationToken;
     }
 
     @PostMapping("/send_message")
     public void sendMessage(@Valid @RequestBody SendMessageDTO dto, HttpServletRequest request) {
 
-        if (!isUserLogged()) {
+        if (!AuthHelper.isUserLogged()) {
             if (!captchaService.verify(dto.getMyRecaptchaResponse())) {
                 throw new BadRequestException("To send us a message you have to solve captcha");
             }
@@ -197,6 +186,10 @@ public class LoginController {
         }
     }
 
+    private void generateNewCSRFToken(HttpServletRequest request, HttpServletResponse response) {
+        cookieCsrfTokenRepository.saveToken(cookieCsrfTokenRepository.generateToken(request), request, response);
+    }
+
     @Getter
     @Setter
     public static class UsernameDTO {
@@ -217,7 +210,6 @@ public class LoginController {
         public String passwd;
 
     }
-
 
     @Getter
     @Setter

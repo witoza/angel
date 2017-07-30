@@ -1,7 +1,7 @@
 package co.postscriptum.test_data;
 
 import co.postscriptum.internal.MessageContentUtils;
-import co.postscriptum.internal.UploadsEncryptionService;
+import co.postscriptum.internal.FileEncryptionService;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.File;
@@ -41,7 +41,7 @@ import static java.util.Arrays.asList;
 public class TestDataCreator {
 
     @Autowired
-    private UploadsEncryptionService uploadsEncryptionService;
+    private FileEncryptionService fileEncryptionService;
 
     @Value("${test.data.dir}")
     private String testDataDir;
@@ -253,7 +253,7 @@ public class TestDataCreator {
                                               "Yo Barack, Take it all, dude - pro publico bono!"));
             setPassword(m2, encryptionKey, "knuth", "Surname of a Mr. Donald, from The Art of Computer Programming");
 
-            File encF1 = uploadsEncryptionService.encryptFileByPassword(f1, user, "knuth");
+            File encF1 = fileEncryptionService.encryptFileByPassword(f1, user, "knuth");
             encF1.setBelongsTo(m2.getUuid());
             m2.getAttachments().add(encF1.getUuid());
 
@@ -330,7 +330,7 @@ public class TestDataCreator {
         file.setUuid(Utils.randKey("F"));
         file.setExt(FilenameUtils.getExtension(fromFileUrl));
 
-        uploadsEncryptionService.saveStreamToFile(file, user, encryptionKey, new FileInputStream(fromFileUrl));
+        fileEncryptionService.saveStreamToFile(file, user, encryptionKey, new FileInputStream(fromFileUrl));
 
     }
 

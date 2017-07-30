@@ -3,7 +3,7 @@ package co.postscriptum.service;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.InternalException;
 import co.postscriptum.fs.FS;
-import co.postscriptum.internal.UploadsEncryptionService;
+import co.postscriptum.internal.FileEncryptionService;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.BO2DTOConverter;
 import co.postscriptum.model.bo.DataFactory;
@@ -35,7 +35,7 @@ public class FileService {
 
     private final FS fs;
 
-    private final UploadsEncryptionService uploadsEncryptionService;
+    private final FileEncryptionService fileEncryptionService;
 
     public ResponseEntity<InputStreamResource> openFile(UserData userData, SecretKey userEncryptionKey, String fileUuid) throws IOException {
 
@@ -51,7 +51,7 @@ public class FileService {
                 .ok()
                 .header(HttpHeaders.CONTENT_TYPE, file.getMime())
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getName() + "\"")
-                .body(new InputStreamResource(decryptedFileStream(userData.getUser(), userEncryptionKey, file, null)));
+                .body(new InputStreamResource(decryptedFileStream(file, userData.getUser(), userEncryptionKey, null)));
     }
 
     public File upload(UserData userData, SecretKey userEncryptionKey, MultipartFile uploadingFile, String title) throws IOException {
@@ -90,10 +90,10 @@ public class FileService {
 
         file.setMime(uploadingFile.getContentType());
 
-        uploadsEncryptionService.saveStreamToFile(file,
-                                                  userData.getUser(),
-                                                  userEncryptionKey,
-                                                  uploadingFile.getInputStream());
+        fileEncryptionService.saveStreamToFile(file,
+                                               userData.getUser(),
+                                               userEncryptionKey,
+                                               uploadingFile.getInputStream());
 
         try {
             new UserDataHelper(userData).verifyQuotaNotExceeded(file.getSize());
@@ -169,9 +169,9 @@ public class FileService {
             originalFile = DataFactory.cloneBasicData(encryptedFile);
             originalFile.setUuid(encryptedFile.getOriginalFileUuid());
 
-            try (InputStream fileInput = decryptedFileStream(userData.getUser(),
+            try (InputStream fileInput = decryptedFileStream(encryptedFile,
+                                                             userData.getUser(),
                                                              userEncryptionKey,
-                                                             encryptedFile,
                                                              password)) {
                 fs.save(filePath(userData, originalFile), fileInput);
             }
@@ -210,7 +210,7 @@ public class FileService {
         }
         log.info("msg attachment index={}", attachmentIndex);
 
-        File encryptedFile = uploadsEncryptionService.encryptFileByPassword(file, userData.getUser(), password);
+        File encryptedFile = fileEncryptionService.encryptFileByPassword(file, userData.getUser(), password);
         // this file is *only* attached to this message, it belongs to that message
         encryptedFile.setBelongsTo(message.getUuid());
 
@@ -220,11 +220,8 @@ public class FileService {
 
     }
 
-    private InputStream decryptedFileStream(User user, SecretKey userEncryptionKey, File file, String encryptionPassword) throws IOException {
-        return uploadsEncryptionService.getDecryptedFileStream(file,
-                                                               user,
-                                                               userEncryptionKey,
-                                                               encryptionPassword);
+    private InputStream decryptedFileStream(File file, User user, SecretKey userEncryptionKey, String encryptionPassword) throws IOException {
+        return fileEncryptionService.getDecryptedFileStream(file, user, userEncryptionKey, encryptionPassword);
     }
 
 }

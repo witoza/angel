@@ -172,30 +172,6 @@ public class Utils {
         }
     }
 
-    public static void toSafeString(StringBuilder sb, Map<String, Object> params) {
-        sb.append("{");
-        String comma = "";
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            String key = entry.getKey();
-            String keyLc = key.toLowerCase();
-            Object value = entry.getValue();
-
-            sb.append(comma).append(key).append("=");
-            if (keyLc.contains("key") || keyLc.contains("token") || keyLc.contains("passwd") || keyLc.contains("password")
-                    || keyLc.equals("content")) {
-                value = "[secret]";
-            }
-            if (value instanceof Map) {
-                toSafeString(sb, (Map<String, Object>) value);
-            } else {
-                sb.append(value);
-            }
-            comma = ", ";
-        }
-        sb.append("}");
-
-    }
-
     public static String exceptionInfo(Throwable e) {
         StringBuilder sb = new StringBuilder();
         while (e != null) {

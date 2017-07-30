@@ -25,12 +25,20 @@ public class AuthHelper {
         return getAuthentication() instanceof MyAuthenticationToken;
     }
 
-    public String getLoggedUsername() {
-        return getAuthentication().getName();
+    public Optional<String> getLoggedUsername() {
+        if (getAuthentication() == null) {
+            return Optional.empty();
+        }
+        return Optional.of(getMyAuthenticationToken().getName());
+    }
+
+    public String requireLoggedUsername() {
+        return getLoggedUsername()
+                .orElseThrow(() -> new IllegalStateException("user is not logged in"));
     }
 
     public boolean isUserLogged(String username) {
-        return isUserLogged() && username.equals(AuthHelper.getLoggedUsername());
+        return isUserLogged() && username.equals(AuthHelper.requireLoggedUsername());
     }
 
     public Optional<SecretKey> getUserEncryptionKey() {

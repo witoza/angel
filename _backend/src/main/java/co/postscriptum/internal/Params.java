@@ -1,6 +1,7 @@
 package co.postscriptum.internal;
 
 import co.postscriptum.exception.BadRequestException;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -11,12 +12,7 @@ public class Params {
     private final Map<String, Object> params;
 
     private Params(Map<String, Object> params) {
-        this.params = params;
-
-        StringBuilder sb = new StringBuilder();
-        Utils.toSafeString(sb, params);
-
-        log.info("params={}", sb.toString());
+        this.params = ImmutableMap.copyOf(params);
     }
 
     public static Params of(Map<String, Object> params) {

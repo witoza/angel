@@ -8,6 +8,7 @@ import co.postscriptum.model.bo.PasswordEncryption;
 import co.postscriptum.model.bo.User;
 import co.postscriptum.security.AESGCMUtils;
 import co.postscriptum.security.AESKeyUtils;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,22 +20,20 @@ import java.io.OutputStream;
 
 @Slf4j
 @Component
-public class UploadsEncryptionService {
+public class FileEncryptionService {
 
     @Autowired
     private FS fs;
 
-    private String getFilePath(File file, User owner) {
-        return owner.getUuid() + "/" + file.getUuid();
-    }
+    public File encryptFileByPassword(@NonNull File file,
+                                      @NonNull User owner,
+                                      @NonNull String encryptionPassword) throws IOException {
 
-    public File encryptFileByPassword(File file, User owner, String encryptionPassword) throws IOException {
+        log.info("encrypting file uuid={} by password", file.getUuid());
 
         File encryptedFile = DataFactory.cloneBasicData(file);
         encryptedFile.setUuid(Utils.randKey("EF"));
         encryptedFile.setOriginalFileUuid(file.getUuid());
-
-        log.info("encrypting file uuid={} by password", file.getUuid());
 
         OutputStream saveTo = fs.saveTo(getFilePath(encryptedFile, owner));
 
@@ -58,7 +57,10 @@ public class UploadsEncryptionService {
         return encryptedFile;
     }
 
-    public void saveStreamToFile(File file, User owner, SecretKey encryptionKey, InputStream input) throws IOException {
+    public void saveStreamToFile(@NonNull File file,
+                                 @NonNull User owner,
+                                 @NonNull SecretKey encryptionKey,
+                                 @NonNull InputStream input) throws IOException {
 
         OutputStream saveTo = fs.saveTo(getFilePath(file, owner));
 
@@ -73,12 +75,10 @@ public class UploadsEncryptionService {
         }
     }
 
-    public InputStream getDecryptedFileStream(
-            File file, User owner, SecretKey encryptionKey, String encryptionPassword) throws IOException {
-
-        if (encryptionKey == null) {
-            throw new BadRequestException("encryptionKey is required to decrypt file");
-        }
+    public InputStream getDecryptedFileStream(@NonNull File file,
+                                              @NonNull User owner,
+                                              @NonNull SecretKey encryptionKey,
+                                              String encryptionPassword) throws IOException {
 
         InputStream fis = fs.load(getFilePath(file, owner), true);
 
@@ -104,6 +104,10 @@ public class UploadsEncryptionService {
             return AESGCMUtils.decryptedStream(fis, encryptionKey, file.getIv(), new String[]{file.getUuid()});
         }
 
+    }
+
+    private String getFilePath(File file, User owner) {
+        return owner.getUuid() + "/" + file.getUuid();
     }
 
 }

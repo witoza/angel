@@ -6,7 +6,7 @@ import co.postscriptum.db.DB;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.internal.MessageContentUtils;
-import co.postscriptum.internal.UploadsEncryptionService;
+import co.postscriptum.internal.FileEncryptionService;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.BO2DTOConverter;
 import co.postscriptum.model.bo.File;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class PreviewService {
 
-    private final UploadsEncryptionService uploadsEncryptionService;
+    private final FileEncryptionService fileEncryptionService;
 
     private final DB db;
 
@@ -96,10 +96,10 @@ public class PreviewService {
 
             }
 
-            InputStream cfin = uploadsEncryptionService.getDecryptedFileStream(file,
-                                                                               userData.getUser(),
-                                                                               encryptionKey,
-                                                                               form.getEncryptionPassword());
+            InputStream cfin = fileEncryptionService.getDecryptedFileStream(file,
+                                                                            userData.getUser(),
+                                                                            encryptionKey,
+                                                                            form.getEncryptionPassword());
 
 
             String fileName = file.getName();

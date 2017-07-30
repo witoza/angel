@@ -2,8 +2,6 @@ package co.postscriptum.fs;
 
 import co.postscriptum.RuntimeEnvironment;
 import co.postscriptum.internal.AwsConfig;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -60,10 +58,7 @@ public class S3FS implements FS {
         log.info("connecting to AWS S3 ...");
 
         s3client = AmazonS3Client.builder()
-                                 .withCredentials(
-                                         new AWSStaticCredentialsProvider(
-                                                 new BasicAWSCredentials(awsConfig.getAccessKeyId(),
-                                                                         awsConfig.getSecretAccessKey())))
+                                 .withCredentials(awsConfig.awsCredentialsProvider())
                                  .build();
 
         log.info("connected to AWS S3");

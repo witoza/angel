@@ -287,18 +287,18 @@ public class LoginService {
 
     }
 
-    public Authentication login(String username,
-                                String password,
-                                String totpToken,
-                                String verifyToken,
-                                RequestMetadata metadata,
-                                VerifiedUsers verifiedUsers) {
+    public MyAuthenticationToken login(String username,
+                                       String password,
+                                       String totpToken,
+                                       String verifyToken,
+                                       RequestMetadata metadata,
+                                       VerifiedUsers verifiedUsers) {
 
         return db.withLoadedAccountByUsername(username, account -> {
 
             try {
 
-                Authentication authentication =
+                MyAuthenticationToken authentication =
                         authenticate(metadata, account.getUserData(), password, totpToken, verifyToken, verifiedUsers);
 
                 addLoginAttempt(account, metadata, "success");

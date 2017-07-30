@@ -2,7 +2,7 @@ package co.postscriptum.test_data
 
 import co.postscriptum.fs.FS
 import co.postscriptum.fs.HDFS
-import co.postscriptum.internal.UploadsEncryptionService
+import co.postscriptum.internal.FileEncryptionService
 import co.postscriptum.internal.Utils
 import co.postscriptum.model.bo.User
 import co.postscriptum.security.RSAOAEPUtils
@@ -47,8 +47,8 @@ class TestDataCreatorTest extends Specification {
     static class TestConfiguration {
 
         @Bean
-        UploadsEncryptionService uploadsEncryptionService() {
-            return new UploadsEncryptionService()
+        FileEncryptionService uploadsEncryptionService() {
+            return new FileEncryptionService()
         }
 
         @Bean
