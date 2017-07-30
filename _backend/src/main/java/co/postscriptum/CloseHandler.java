@@ -2,7 +2,7 @@ package co.postscriptum;
 
 import co.postscriptum.db.DB;
 import co.postscriptum.job.EmailProcessor;
-import co.postscriptum.web.PreRestFilter;
+import co.postscriptum.web.IncomingRequestFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,7 +22,7 @@ public class CloseHandler implements ApplicationListener<ContextClosedEvent> {
     private ScheduledExecutorService scheduledExecutorService;
 
     @Autowired
-    private PreRestFilter preRestFilter;
+    private IncomingRequestFilter incomingRequestFilter;
 
     @Autowired
     private DB db;
@@ -36,7 +36,7 @@ public class CloseHandler implements ApplicationListener<ContextClosedEvent> {
 
         log.info("shutdown in-flight requests");
         try {
-            preRestFilter.shutdownAndAwaitTermination();
+            incomingRequestFilter.shutdownAndAwaitTermination();
         } catch (InterruptedException e) {
             log.error("interrupted while waiting for web requests to finish");
         }

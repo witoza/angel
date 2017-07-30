@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class PreRestFilter extends GenericFilterBean {
+public class IncomingRequestFilter extends GenericFilterBean {
 
     public static final int MAX_CONCURRENT_REQUESTS = 10;
 

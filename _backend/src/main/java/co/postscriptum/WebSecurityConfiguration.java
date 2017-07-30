@@ -1,7 +1,7 @@
 package co.postscriptum;
 
 import co.postscriptum.security.MyAuthenticationEntryPoint;
-import co.postscriptum.web.PreRestFilter;
+import co.postscriptum.web.IncomingRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +20,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private MyAuthenticationEntryPoint myAuthenticationEntryPoint;
 
     @Autowired
-    private PreRestFilter preRestFilter;
+    private IncomingRequestFilter incomingRequestFilter;
 
     @Bean(name = "tokenRepository")
     public CookieCsrfTokenRepository tokenRepository() {
@@ -30,7 +30,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public FilterRegistrationBean registration(PreRestFilter filter) {
+    public FilterRegistrationBean registration(IncomingRequestFilter filter) {
         FilterRegistrationBean registration = new FilterRegistrationBean(filter);
         registration.setEnabled(false);
         return registration;
@@ -56,7 +56,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .exceptionHandling().authenticationEntryPoint(myAuthenticationEntryPoint)
             .and()
-            .addFilterAfter(preRestFilter, FilterSecurityInterceptor.class);
+            .addFilterAfter(incomingRequestFilter, FilterSecurityInterceptor.class);
 
     }
 
