@@ -1,4 +1,4 @@
-package co.postscriptum.web;
+package co.postscriptum.controller;
 
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.internal.MyConfiguration;
@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/payment")
 @Slf4j
 @AllArgsConstructor
-public class PaymentRest {
+public class PaymentController {
 
     private final BitcoinService bitcoinService;
+
     private final MyConfiguration configuration;
 
     @GetMapping("/paid")

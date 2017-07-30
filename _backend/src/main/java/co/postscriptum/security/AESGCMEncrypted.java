@@ -8,6 +8,7 @@ import lombok.Data;
 public class AESGCMEncrypted {
 
     private final byte[] ct;
+
     private final byte[] iv;
 
 }

@@ -11,12 +11,19 @@ import java.util.UUID;
 public class Envelope {
 
     private final EnvelopeType type;
+
     private final String envelopeId;
+
     private final String recipient;
+
     private final String title;
+
     private final String msgHeader;
+
     private final String msgContent;
+
     private final String msgFooter;
+
     private final Map<String, String> headers;
 
     @Builder

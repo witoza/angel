@@ -10,6 +10,7 @@ import java.util.Optional;
 public class MyAuthenticationToken extends UsernamePasswordAuthenticationToken {
 
     private final User.Role role;
+
     private byte[] key;
 
     public MyAuthenticationToken(String username, User.Role role, byte[] key, GrantedAuthority authority) {
@@ -29,4 +30,5 @@ public class MyAuthenticationToken extends UsernamePasswordAuthenticationToken {
     public User.Role getRole() {
         return role;
     }
+
 }

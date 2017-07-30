@@ -1,4 +1,4 @@
-package co.postscriptum.web.dto;
+package co.postscriptum.controller.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +8,7 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
-public class WithUuidDTO {
+public class UuidDTO {
 
     @NotEmpty
     @Size(min = 30, max = 50)

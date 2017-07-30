@@ -9,12 +9,14 @@ import java.util.Arrays;
 @Getter
 public class RequestMetadata {
 
-    private final long time;
+    private final long timestamp;
+
     private final String userAgent;
+
     private final String remoteIp;
 
     public RequestMetadata(HttpServletRequest request) {
-        this.time = System.currentTimeMillis();
+        this.timestamp = System.currentTimeMillis();
         this.userAgent = request.getHeader("user-agent");
         this.remoteIp = Utils.getRemoteIp(request);
     }
@@ -22,9 +24,10 @@ public class RequestMetadata {
     public String getRequestDetails() {
         return String.join("\n",
                            Arrays.asList(
-                                   "time: " + Utils.format(Utils.fromTimestamp(time)),
+                                   "timestamp: " + Utils.format(Utils.fromTimestamp(timestamp)),
                                    "ip address: " + remoteIp,
                                    "user-agent: " + userAgent));
 
     }
+
 }

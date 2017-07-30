@@ -2,7 +2,7 @@ package co.postscriptum.email;
 
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.internal.Utils;
-import co.postscriptum.jobs.EmailProcessor;
+import co.postscriptum.job.EmailProcessor;
 import co.postscriptum.model.bo.Lang;
 import co.postscriptum.model.bo.TriggerInternal;
 import co.postscriptum.model.bo.User;
@@ -29,7 +29,9 @@ import java.util.Map;
 public class UserEmailService {
 
     private final EnvelopeCreatorService envelopeCreatorService;
+
     private final TOTPHelperService totpHelperService;
+
     private final EmailProcessor emailProcessor;
 
     private String sendEmailToUser(EnvelopeType envelopeType, UserData userData, String templateKey) {

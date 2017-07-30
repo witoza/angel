@@ -1,5 +1,6 @@
-package co.postscriptum.web;
+package co.postscriptum.controller;
 
+import co.postscriptum.controller.dto.UuidDTO;
 import co.postscriptum.db.DB;
 import co.postscriptum.metrics.ComponentMetrics;
 import co.postscriptum.metrics.EmailDeliveryMetrics;
@@ -7,8 +8,8 @@ import co.postscriptum.metrics.RestMetrics;
 import co.postscriptum.model.bo.RequiredAction;
 import co.postscriptum.model.bo.RequiredAction.Resolution;
 import co.postscriptum.model.bo.RequiredAction.Status;
+import co.postscriptum.model.bo.UserData;
 import co.postscriptum.service.AdminService;
-import co.postscriptum.web.dto.WithUuidDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,37 +32,41 @@ import java.util.Map;
 @RestController
 @RequestMapping("/admin")
 @AllArgsConstructor
-public class AdminRest {
+public class AdminController {
 
     private final DB db;
+
     private final EmailDeliveryMetrics emailDeliveryMetrics;
+
     private final RestMetrics restMetrics;
+
     private final ComponentMetrics componentMetrics;
+
     private final AdminService adminService;
 
     @PostMapping("/with_status")
-    public List<RequiredAction> withStatus(@Valid @RequestBody WithStatusDTO dto) {
-        return adminService.getRequiredAction(dto.status);
+    public List<RequiredAction> withStatus(UserData userData, @Valid @RequestBody StatusDTO dto) {
+        return adminService.getRequiredAction(userData, dto.status);
     }
 
     @PostMapping("/get_user_encrypted_encryption_key")
-    public Map<String, String> getUserEncryptedEncryptionKey(@Valid @RequestBody WithUuidDTO dto) {
+    public Map<String, String> getUserEncryptedEncryptionKey(@Valid @RequestBody UuidDTO dto) {
         return Collections.singletonMap("data", adminService.getUserEncryptedEncryptionKey(dto.uuid));
     }
 
     @PostMapping("/issue_reject")
-    public Resolution rejectIssue(@Valid @RequestBody RejectIssueDTO dto) {
-        return adminService.rejectIssue(dto.uuid, dto.input);
+    public Resolution rejectIssue(UserData userData, @Valid @RequestBody RejectIssueDTO dto) {
+        return adminService.rejectIssue(userData, dto.uuid, dto.input);
     }
 
     @PostMapping("/issue_remove")
-    public void removeIssue(@Valid @RequestBody WithUuidDTO dto) {
-        adminService.removeIssue(dto.uuid);
+    public void removeIssue(UserData userData, @Valid @RequestBody UuidDTO dto) {
+        adminService.removeIssue(userData, dto.uuid);
     }
 
     @PostMapping("/issue_resolve")
-    public Resolution resolveIssue(@Valid @RequestBody ResolveIssueDTO params) {
-        return adminService.resolveIssue(params.uuid, params.input, params.userEncryptionKeyBase64);
+    public Resolution resolveIssue(UserData userData, @Valid @RequestBody ResolveIssueDTO dto) {
+        return adminService.resolveIssue(userData, dto.uuid, dto.input, dto.userEncryptionKeyBase64);
     }
 
     @GetMapping(value = "/metrics", produces = "text/plain")
@@ -94,7 +99,7 @@ public class AdminRest {
 
     @Getter
     @Setter
-    public static class WithStatusDTO {
+    public static class StatusDTO {
 
         @NotNull
         Status status;
@@ -103,7 +108,7 @@ public class AdminRest {
 
     @Getter
     @Setter
-    public static class RejectIssueDTO extends WithUuidDTO {
+    public static class RejectIssueDTO extends UuidDTO {
 
         @Size(max = 100)
         String input;

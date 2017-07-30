@@ -1,7 +1,7 @@
 package co.postscriptum;
 
 import co.postscriptum.db.DB;
-import co.postscriptum.jobs.EmailProcessor;
+import co.postscriptum.job.EmailProcessor;
 import co.postscriptum.web.PreRestFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

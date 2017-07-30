@@ -40,10 +40,7 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
         log.info("connecting to AWS SQS ...");
 
         sqsClient = AmazonSQSAsyncClientBuilder.standard()
-                                               .withCredentials(
-                                                       new AWSStaticCredentialsProvider(
-                                                               new BasicAWSCredentials(awsConfig.getAccessKeyId(),
-                                                                                       awsConfig.getSecretAccessKey())))
+                                               .withCredentials(awsConfig.awsCredentialsProvider())
                                                .withRegion(awsConfig.getSqsRegion())
                                                .build();
 
@@ -130,4 +127,5 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
         }
         return null;
     }
+
 }

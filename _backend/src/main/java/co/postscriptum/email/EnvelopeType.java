@@ -40,4 +40,5 @@ public enum EnvelopeType {
         String[] parts = envelopeId.split("#");
         return EnvelopeType.valueOf(parts[0]);
     }
+
 }

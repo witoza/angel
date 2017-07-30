@@ -1,24 +1,29 @@
-package co.postscriptum.jobs;
+package co.postscriptum.job;
 
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.Trigger;
 import co.postscriptum.model.bo.Trigger.Stage;
 import com.google.common.collect.ImmutableMap;
-import lombok.Getter;
+import lombok.Value;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
-@Getter
+@Value
 public class TimeStages {
 
-    private final ZonedDateTime lastAccess;
-    private final ZonedDateTime Xdt;
-    private final ZonedDateTime Ydt;
-    private final ZonedDateTime Zdt;
-    private final ZonedDateTime Wdt;
-    private final ZonedDateTime now;
+    private ZonedDateTime lastAccess;
+
+    private ZonedDateTime Xdt;
+
+    private ZonedDateTime Ydt;
+
+    private ZonedDateTime Zdt;
+
+    private ZonedDateTime Wdt;
+
+    private ZonedDateTime now;
 
     public TimeStages(Trigger trigger, long userLastAccess) {
         ChronoUnit timeUnit = trigger.getTimeUnit();

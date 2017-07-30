@@ -1,5 +1,6 @@
-package co.postscriptum.web;
+package co.postscriptum.controller;
 
+import co.postscriptum.controller.dto.PasswordDTO;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.internal.QRGenerator;
 import co.postscriptum.internal.Utils;
@@ -7,9 +8,10 @@ import co.postscriptum.model.bo.Lang;
 import co.postscriptum.model.bo.LoginAttempt;
 import co.postscriptum.model.bo.Trigger;
 import co.postscriptum.model.bo.TriggerInternal;
+import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.UserDTO;
 import co.postscriptum.service.UserService;
-import co.postscriptum.web.dto.WithPasswordDTO;
+import co.postscriptum.web.AuthHelper;
 import com.google.zxing.WriterException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +20,6 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,55 +42,55 @@ import java.util.Map;
 @RestController
 @RequestMapping("/user")
 @AllArgsConstructor
-public class UserRest {
+public class UserController {
 
     private final UserService userService;
 
     @GetMapping("/current")
-    public UserDTO current() {
-        return userService.getUserDTO();
+    public UserDTO current(UserData userData) {
+        return userService.getUserDTO(userData, AuthHelper.getUserEncryptionKey());
     }
 
     @PostMapping("/logout")
-    public void logout(HttpServletRequest request) {
+    public void logout(UserData userData, HttpServletRequest request) {
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (AuthHelper.getAuthentication() == null) {
             throw new BadRequestException("user already logged out");
         }
 
-        userService.unloadUser();
+        userService.unloadUser(userData);
 
         new SecurityContextLogoutHandler().logout(request, null, null);
     }
 
     @PostMapping("/send_x_notification")
-    public List<String> sendTriggerAfterX(@Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendTriggerAfterX(dto.getSendEmailOnlyToUser());
+    public List<String> sendTriggerAfterX(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
+        return userService.sendTriggerAfterX(userData, dto.getSendEmailOnlyToUser());
     }
 
     @PostMapping("/send_y_notification")
-    public List<String> sendTriggerAfterY(@Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendTriggerAfterY(dto.getSendEmailOnlyToUser());
+    public List<String> sendTriggerAfterY(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
+        return userService.sendTriggerAfterY(userData, dto.getSendEmailOnlyToUser());
     }
 
     @PostMapping("/send_z_notification")
-    public List<String> sendTriggerAfterZ(@Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendTriggerAfterZ(dto.getSendEmailOnlyToUser());
+    public List<String> sendTriggerAfterZ(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
+        return userService.sendTriggerAfterZ(userData, dto.getSendEmailOnlyToUser());
     }
 
     @PostMapping("/generate_totp_secret")
-    public void generateTotpSecret() {
-        userService.generateTotpSecret();
+    public void generateTotpSecret(UserData userData) {
+        userService.generateTotpSecret(userData);
     }
 
     @GetMapping("/totpQR")
-    public ResponseEntity<InputStreamResource> totpQr() {
-        return userService.getTotpUriQr();
+    public ResponseEntity<InputStreamResource> totpQr(UserData userData) {
+        return userService.getTotpUriQr(userData);
     }
 
     @PostMapping("/get_login_history")
-    public List<LoginAttempt> getLoginHistory() {
-        return userService.getLoginHistory();
+    public List<LoginAttempt> getLoginHistory(UserData userData) {
+        return userData.getInternal().getLoginHistory();
     }
 
     @GetMapping("/get_qr")
@@ -99,66 +100,75 @@ public class UserRest {
     }
 
     @PostMapping("/get_bitcoin_address")
-    public Map<String, String> getBitcoinAddress() {
-        return Collections.singletonMap("address", userService.getPaymentBitcoinAddress());
+    public Map<String, String> getBitcoinAddress(UserData userData) {
+        return Collections.singletonMap("address", userService.getPaymentBitcoinAddress(userData));
     }
 
     @PostMapping("/get_aes_key")
     public Map<String, String> getAesKey() {
 
-        String aesKey = userService.getUserEncryptionKey()
-                                   .map(key -> Utils.base32encode(key.getEncoded()))
-                                   .orElse(null);
+        String aesKey = AuthHelper.getUserEncryptionKey()
+                                  .map(key -> Utils.base32encode(key.getEncoded()))
+                                  .orElse(null);
 
         return Collections.singletonMap("aes_key", aesKey);
     }
 
     @PostMapping("/set_aes_key")
-    public void setAesKey(@Valid @RequestBody SetAesKeyDTO dto) {
-        userService.setEncryptionKey(dto.passwd, dto.aes_key);
+    public void setAesKey(UserData userData, @Valid @RequestBody SetAesKeyDTO dto) {
+
+        byte[] secretKey = userService.setEncryptionKey(userData,
+                                                        AuthHelper.getUserEncryptionKey(),
+                                                        dto.passwd,
+                                                        dto.aes_key);
+
+        AuthHelper.setUserEncryptionKey(secretKey);
+
     }
 
     @PostMapping("/enable_2fa")
-    public void enable2FA(@Valid @RequestBody VerifyTotpTokenDTO dto) {
-        userService.enable2FA(dto.totpToken);
+    public void enable2FA(UserData userData, @Valid @RequestBody VerifyTotpTokenDTO dto) {
+        userService.enable2FA(userData, dto.totpToken);
     }
 
     @PostMapping("/disable_2fa")
-    public void disable2fa() {
-        userService.disable2FA();
+    public void disable2fa(UserData userData) {
+        userService.disable2FA(userData);
     }
 
     @PostMapping("/update_user")
-    public UserDTO updateUser(@Valid @RequestBody UpdateUserDTO dto) {
+    public UserDTO updateUser(UserData userData, @Valid @RequestBody UpdateUserDTO dto) {
 
-        userService.updateUser(dto);
+        userService.updateUser(userData, dto);
 
-        return userService.getUserDTO();
+        return userService.getUserDTO(userData, AuthHelper.getUserEncryptionKey());
     }
 
     @PostMapping("/change_passwd")
-    public void changeLoginPassword(@Valid @RequestBody ChangePasswordDTO dto) {
+    public void changeLoginPassword(UserData userData, @Valid @RequestBody ChangePasswordDTO dto) {
 
-        userService.changeLoginPassword(dto.passwd, dto.passwd_new);
+        userService.changeLoginPassword(userData,
+                                        AuthHelper.getUserEncryptionKey(),
+                                        dto.passwd,
+                                        dto.passwd_new);
 
     }
 
     @PostMapping("/request_for_storage")
-    public void requestForStorage(@Valid @RequestBody RequestForStorageDTO dto) {
+    public void requestForStorage(UserData userData, @Valid @RequestBody RequestForStorageDTO dto) {
 
-        userService.requestForStorage(dto.number_of_mb);
+        userService.requestForStorage(userData, dto.number_of_mb);
 
     }
 
     @PostMapping("/delete_user")
-    public void deleteUser(@Valid @RequestBody WithPasswordDTO dto, HttpServletRequest request) {
+    public void deleteUser(UserData userData, @Valid @RequestBody PasswordDTO dto, HttpServletRequest request) {
 
-        userService.deleteUser(dto.passwd);
+        userService.deleteUser(userData, dto.passwd);
 
         new SecurityContextLogoutHandler().logout(request, null, null);
 
     }
-
 
     @Setter
     @Getter
@@ -171,7 +181,7 @@ public class UserRest {
 
     @Setter
     @Getter
-    public static class SetAesKeyDTO extends WithPasswordDTO {
+    public static class SetAesKeyDTO extends PasswordDTO {
 
         @Size(max = 80)
         String aes_key;
@@ -211,7 +221,7 @@ public class UserRest {
 
     @Setter
     @Getter
-    public static class ChangePasswordDTO extends WithPasswordDTO {
+    public static class ChangePasswordDTO extends PasswordDTO {
 
         @NotEmpty
         @Size(min = 3, max = 20)

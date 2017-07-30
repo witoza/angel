@@ -1,4 +1,4 @@
-package co.postscriptum.web;
+package co.postscriptum.controller;
 
 import co.postscriptum.db.DB;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/test")
 @AllArgsConstructor
-public class IntegrationTestRest {
+public class IntegrationTestController {
 
     private final DB db;
 

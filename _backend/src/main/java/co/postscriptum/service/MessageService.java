@@ -1,5 +1,7 @@
 package co.postscriptum.service;
 
+import co.postscriptum.controller.MessageController.AddMsgDTO;
+import co.postscriptum.controller.MessageController.UpdateMsgDTO;
 import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.MessageContentUtils;
@@ -13,14 +15,11 @@ import co.postscriptum.security.AESGCMEncrypted;
 import co.postscriptum.security.AESGCMEncryptedByPassword;
 import co.postscriptum.security.AESGCMUtils;
 import co.postscriptum.security.AESKeyUtils;
-import co.postscriptum.web.MessageRest.AddMsgDTO;
-import co.postscriptum.web.MessageRest.UpdateMsgDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,29 +27,12 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class MessageService {
 
-    private final LoggedUserService loggedUserService;
+    public Message addMessage(UserData userData, SecretKey userEncryptionKey, AddMsgDTO params) {
 
-    public Message requireMessageByUuid(String msgUuid) {
-        return loggedUserService.requireMessageByUuid(msgUuid);
-    }
-
-    public String getMessageContent(Message message, String encryptionPassword) {
-        return MessageContentUtils.getMessageContent(message, loggedUserService.requireUserEncryptionKey(), encryptionPassword);
-    }
-
-    private AESGCMEncrypted buildMessageContent(Message message, AESGCMEncrypted content) {
-        return MessageContentUtils.buildMessageContent(message, loggedUserService.requireUserEncryptionKey(), content.getCt());
-    }
-
-    private AESGCMEncrypted buildMessageContent(Message message, String content) {
-        return MessageContentUtils.buildMessageContent(message, loggedUserService.requireUserEncryptionKey(), content);
-    }
-
-    public Message addMessage(AddMsgDTO params) {
-        loggedUserService.verifyQuotaNotExceeded(params.getContent().length());
+        new UserDataHelper(userData).verifyQuotaNotExceeded(params.getContent().length());
 
         //set some sane limit
-        if (loggedUserService.requireUserData().getMessages().size() > 100) {
+        if (userData.getMessages().size() > 100) {
             throw new InternalException("too many messages");
         }
 
@@ -60,58 +42,26 @@ public class MessageService {
         message.setTitle(params.getTitle());
         message.setAttachments(params.getAttachments());
         message.setRecipients(params.getRecipients());
-        message.setContent(buildMessageContent(message, params.getContent()));
+        message.setContent(buildMessageContent(message, userEncryptionKey, params.getContent()));
 
-        loggedUserService.requireUserData().getMessages().add(message);
+        userData.getMessages().add(message);
 
         log.info("msg has been added");
 
         return message;
     }
 
-    public Message removePassword(String uuid, String encryptionPassword) {
+    public void deleteMessage(UserData userData, String msgUuid) {
+        Message message = requireMessageByUuid(userData, msgUuid);
 
-        Message message = requireMessageByUuid(uuid);
+        verifyMessageHasNoEncryptedFiles(userData, message);
 
-        verifyMessageHasNoEncryptedFiles(message);
-
-        message.setContent(buildMessageContent(message, getMessageContent(message, encryptionPassword)));
-        message.setEncryption(null);
-
-        return message;
+        userData.getMessages().remove(message);
     }
 
-    public Message setPassword(String uuid, String encryptionPassword, String newEncryptionPassword, String hint) {
+    public Message updateMessage(UserData userData, SecretKey userEncryptionKey, UpdateMsgDTO params) {
 
-        Message message = requireMessageByUuid(uuid);
-
-        verifyMessageHasNoEncryptedFiles(message);
-
-        String plaintextContent = getMessageContent(message, encryptionPassword);
-
-        AESGCMEncryptedByPassword passwordEncrypted =
-                AESGCMUtils.encryptByPassword(newEncryptionPassword, plaintextContent.getBytes());
-
-        message.setContent(buildMessageContent(message, passwordEncrypted.getEncrypted()));
-        message.setEncryption(PasswordEncryption.builder()
-                                                .hint(hint)
-                                                .salt(passwordEncrypted.getPasswordSalt())
-                                                .iv(passwordEncrypted.getEncrypted().getIv())
-                                                .build());
-        return message;
-    }
-
-    public void deleteMessage(String uuid) {
-        Message message = requireMessageByUuid(uuid);
-
-        verifyMessageHasNoEncryptedFiles(message);
-
-        loggedUserService.requireUserData().getMessages().remove(message);
-    }
-
-    public Message updateMessage(UpdateMsgDTO params) {
-
-        Message message = requireMessageByUuid(params.getUuid());
+        Message message = requireMessageByUuid(userData, params.getUuid());
 
         message.setUpdateTime(System.currentTimeMillis());
 
@@ -133,11 +83,11 @@ public class MessageService {
 
             String content = params.getContent();
 
-            loggedUserService.verifyQuotaNotExceeded(content.length() - message.getContent().getCt().length);
+            new UserDataHelper(userData).verifyQuotaNotExceeded(content.length() - message.getContent().getCt().length);
 
             if (message.getEncryption() == null) {
 
-                message.setContent(buildMessageContent(message, content));
+                message.setContent(buildMessageContent(message, userEncryptionKey, content));
 
             } else {
 
@@ -145,7 +95,7 @@ public class MessageService {
 
                 AESGCMEncrypted passwordEncrypted = AESGCMUtils.encrypt(key, content.getBytes());
 
-                message.setContent(buildMessageContent(message, passwordEncrypted));
+                message.setContent(buildMessageContent(message, userEncryptionKey, passwordEncrypted));
 
                 message.getEncryption().setIv(passwordEncrypted.getIv());
             }
@@ -157,13 +107,46 @@ public class MessageService {
         return message;
     }
 
-    private void verifyMessageHasNoEncryptedFiles(Message message) {
+    public Message removePassword(UserData userData, SecretKey userEncryptionKey, String msgUuid, String msgPassword) {
 
-        long total = loggedUserService.requireUserData()
-                                      .getFiles()
-                                      .stream()
-                                      .filter(f -> message.getUuid().equals(f.getBelongsTo()))
-                                      .count();
+        Message message = requireMessageByUuid(userData, msgUuid);
+
+        verifyMessageHasNoEncryptedFiles(userData, message);
+
+        message.setContent(
+                buildMessageContent(message, userEncryptionKey,
+                                    getMessageContent(message, userEncryptionKey, msgPassword)));
+        message.setEncryption(null);
+
+        return message;
+    }
+
+    public Message setPassword(UserData userData, SecretKey userEncryptionKey, String msgUuid, String oldMsgPassword, String newMsgPassword, String newMsgPasswordHint) {
+
+        Message message = requireMessageByUuid(userData, msgUuid);
+
+        verifyMessageHasNoEncryptedFiles(userData, message);
+
+        String plaintextContent = getMessageContent(message, userEncryptionKey, oldMsgPassword);
+
+        AESGCMEncryptedByPassword passwordEncrypted =
+                AESGCMUtils.encryptByPassword(newMsgPassword, plaintextContent.getBytes());
+
+        message.setContent(buildMessageContent(message, userEncryptionKey, passwordEncrypted.getEncrypted()));
+        message.setEncryption(PasswordEncryption.builder()
+                                                .hint(newMsgPasswordHint)
+                                                .salt(passwordEncrypted.getPasswordSalt())
+                                                .iv(passwordEncrypted.getEncrypted().getIv())
+                                                .build());
+        return message;
+    }
+
+    private void verifyMessageHasNoEncryptedFiles(UserData userData, Message message) {
+
+        long total = userData.getFiles()
+                             .stream()
+                             .filter(f -> message.getUuid().equals(f.getBelongsTo()))
+                             .count();
 
         if (total > 0) {
             throw new ForbiddenException("Can't proceed because there is/are " + total
@@ -173,28 +156,20 @@ public class MessageService {
 
     }
 
-    public List<Message> getMessages() {
-        return loggedUserService.requireUserData().getMessages();
-    }
-
-    public MessageDTO convertToDtoSimplified(Message message) {
-
-        UserData userData = loggedUserService.requireUserData();
+    private MessageDTO convertToDtoSimplified(UserData userData, Message message) {
 
         MessageDTO mdto = BO2DTOConverter.toMessageDTO(message);
         mdto.setFiles(message.getAttachments()
                              .stream()
-                             .map(loggedUserService::requireFileByUuid)
+                             .map(attachment -> new UserDataHelper(userData).requireFileByUuid(attachment))
                              .map(f -> BO2DTOConverter.toFileDTO(userData, f))
                              .collect(Collectors.toList()));
         return mdto;
     }
 
-    public MessageDTO convertToDto(Message message) {
+    public MessageDTO convertToDto(UserData userData, Message message) {
 
-        UserData userData = loggedUserService.requireUserData();
-
-        MessageDTO mdto = convertToDtoSimplified(message);
+        MessageDTO mdto = convertToDtoSimplified(userData, message);
         mdto.getFiles().forEach(fileDTO -> {
             fileDTO.setMessages(userData
                                         .getMessages()
@@ -205,6 +180,22 @@ public class MessageService {
         });
 
         return mdto;
+    }
+
+    public Message requireMessageByUuid(UserData userData, String msgUuid) {
+        return new UserDataHelper(userData).requireMessageByUuid(msgUuid);
+    }
+
+    public String getMessageContent(Message message, SecretKey userEncryptionKey, String encryptionPassword) {
+        return MessageContentUtils.getMessageContent(message, userEncryptionKey, encryptionPassword);
+    }
+
+    private AESGCMEncrypted buildMessageContent(Message message, SecretKey userEncryptionKey, AESGCMEncrypted content) {
+        return MessageContentUtils.buildMessageContent(message, userEncryptionKey, content.getCt());
+    }
+
+    private AESGCMEncrypted buildMessageContent(Message message, SecretKey userEncryptionKey, String content) {
+        return MessageContentUtils.buildMessageContent(message, userEncryptionKey, content);
     }
 
 }

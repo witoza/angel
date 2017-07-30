@@ -2,8 +2,6 @@ package co.postscriptum;
 
 import co.postscriptum.internal.AwsConfig;
 import co.postscriptum.internal.MyConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

@@ -29,6 +29,23 @@ public class I18N {
 
     private final MessageSource messageSource;
 
+    public String translate(Lang lang, String key) {
+        return this.translate(lang, key, new java.util.HashMap<>());
+    }
+
+    public String translate(Lang lang, String key, Map<String, Object> context) {
+
+        String expanded = expand(new Locale(lang.toString()), key);
+
+        Mustache mustache = mf.compile(new StringReader(expanded), "tmp");
+
+        StringWriter sw = new StringWriter();
+        mustache.execute(sw, context);
+        sw.flush();
+
+        return sw.toString();
+    }
+
     private String expand(Locale locale, String text) {
         Matcher m = I18N_KEY_REGEX_PATTERN.matcher(text);
         while (m.find()) {
@@ -51,23 +68,6 @@ public class I18N {
             text = text.replaceAll(key, expandedValue);
         }
         return text;
-    }
-
-    public String translate(Lang lang, String key) {
-        return this.translate(lang, key, new java.util.HashMap<>());
-    }
-
-    public String translate(Lang lang, String key, Map<String, Object> context) {
-
-        String expanded = expand(new Locale(lang.toString()), key);
-
-        Mustache mustache = mf.compile(new StringReader(expanded), "tmp");
-
-        StringWriter sw = new StringWriter();
-        mustache.execute(sw, context);
-        sw.flush();
-
-        return sw.toString();
     }
 
 }

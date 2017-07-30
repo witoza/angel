@@ -4,6 +4,7 @@ import co.postscriptum.email.DeliveryType;
 import co.postscriptum.email.EnvelopeType;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.Synchronized;
 import lombok.Value;
 import org.springframework.stereotype.Component;
@@ -16,11 +17,8 @@ import java.util.Map;
 @Component
 public class EmailDeliveryMetrics {
 
+    @Getter
     private EmailDeliveryMetricsData stats = new EmailDeliveryMetricsData();
-
-    public EmailDeliveryMetricsData getStats() {
-        return stats;
-    }
 
     @Synchronized
     public void process(String messageId, String envelopeId, DeliveryType deliveryType, Map<String, Object> bounceCause) {

@@ -6,6 +6,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import lombok.experimental.UtilityClass;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,10 @@ import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 
+@UtilityClass
 public class QRGenerator {
 
-    public static ResponseEntity<InputStreamResource> getQR(String data) throws WriterException, IOException {
+    public byte[] createQr(String data) throws WriterException, IOException {
 
         final int size = 200;
 
@@ -53,10 +55,14 @@ public class QRGenerator {
         }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", baos);
+        return baos.toByteArray();
+    }
+
+    public ResponseEntity<InputStreamResource> getQR(String data) throws WriterException, IOException {
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.CONTENT_TYPE, "image/png")
-                .body(new InputStreamResource(new ByteArrayInputStream(baos.toByteArray())));
+                .body(new InputStreamResource(new ByteArrayInputStream(createQr(data))));
     }
 
 }

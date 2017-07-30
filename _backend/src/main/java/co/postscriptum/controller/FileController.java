@@ -1,8 +1,11 @@
-package co.postscriptum.web;
+package co.postscriptum.controller;
 
+import co.postscriptum.controller.dto.UuidDTO;
+import co.postscriptum.model.bo.File;
+import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.FileDTO;
 import co.postscriptum.service.FileService;
-import co.postscriptum.web.dto.WithUuidDTO;
+import co.postscriptum.web.AuthHelper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,18 +32,21 @@ import java.util.stream.Collectors;
 @RequestMapping("/file")
 @Slf4j
 @AllArgsConstructor
-public class FileRest {
+public class FileController {
 
     private final FileService fileService;
 
     @GetMapping("/open")
-    public ResponseEntity<InputStreamResource> open(@RequestParam(value = "file_uuid") String fileUuid)
+    public ResponseEntity<InputStreamResource> open(UserData userData, @RequestParam(value = "file_uuid") String fileUuid)
             throws IOException {
-        return fileService.openFile(FilenameUtils.removeExtension(fileUuid));
+        return fileService.openFile(userData,
+                                    AuthHelper.requireUserEncryptionKey(),
+                                    FilenameUtils.removeExtension(fileUuid));
     }
 
     @PostMapping("/upload")
-    public FileDTO upload(@RequestParam("file") MultipartFile multipartFile,
+    public FileDTO upload(UserData userData,
+                          @RequestParam("file") MultipartFile multipartFile,
                           @RequestParam(name = "file_info[title]", required = false) String title) throws IOException {
 
         log.info("uploading file, originalFilename={}, contentType={}, size={}, title={}",
@@ -49,36 +55,42 @@ public class FileRest {
                  multipartFile.getSize(),
                  title);
 
-        return fileService.convertToDto(fileService.upload(multipartFile, title));
+        File file = fileService.upload(userData,
+                                       AuthHelper.requireUserEncryptionKey(),
+                                       multipartFile, title);
+
+        return fileService.convertToDto(userData, file);
     }
 
     @PostMapping("/get_files")
-    public List<FileDTO> getFiles() {
+    public List<FileDTO> getFiles(UserData userData) {
 
-        return fileService.getFiles()
-                          .stream()
-                          .map(fileService::convertToDto)
-                          .collect(Collectors.toList());
+        return userData.getFiles()
+                       .stream()
+                       .map(file -> fileService.convertToDto(userData, file))
+                       .collect(Collectors.toList());
     }
 
     @PostMapping("/delete_file")
-    public void deleteFile(@Valid @RequestBody WithUuidDTO dto) throws IOException {
+    public void deleteFile(UserData userData, @Valid @RequestBody UuidDTO dto) throws IOException {
 
-        fileService.deleteFile(dto.uuid);
+        fileService.deleteFile(userData, dto.uuid);
 
     }
 
     @PostMapping("/decrypt")
-    public void decrypt(@Valid @RequestBody DeEncryptDTO dto) throws IOException {
+    public void decrypt(UserData userData, @Valid @RequestBody DeEncryptDTO dto) throws IOException {
 
-        fileService.decrypt(dto.msg_uuid, dto.file_uuid, dto.encryption_passwd);
+        fileService.decrypt(userData,
+                            AuthHelper.requireUserEncryptionKey(),
+                            dto.msg_uuid, dto.file_uuid, dto.encryption_passwd);
 
     }
 
     @PostMapping("/encrypt")
-    public void encrypt(@Valid @RequestBody DeEncryptDTO dto) throws IOException {
+    public void encrypt(UserData userData, @Valid @RequestBody DeEncryptDTO dto) throws IOException {
 
-        fileService.encrypt(dto.msg_uuid, dto.file_uuid, dto.encryption_passwd);
+        fileService.encrypt(userData, dto.msg_uuid, dto.file_uuid, dto.encryption_passwd);
 
     }
 

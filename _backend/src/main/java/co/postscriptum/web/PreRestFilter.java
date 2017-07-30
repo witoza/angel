@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -30,27 +29,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PreRestFilter extends GenericFilterBean {
 
     public static final int MAX_CONCURRENT_REQUESTS = 10;
+
     private final AtomicInteger requestId = new AtomicInteger(0);
+
     private final AtomicBoolean shouldAcceptNewRequests = new AtomicBoolean(true);
+
     private final AtomicInteger numberOfInFlightTransactions = new AtomicInteger(0);
 
     private final RestMetrics restMetrics;
+
     private final DB db;
-
-    public static String getFullURL(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        String queryString = request.getQueryString();
-
-        if (queryString == null) {
-            return requestURI;
-        } else {
-            return requestURI + "?" + queryString;
-        }
-    }
-
-    private Authentication getAuthentication() {
-        return SecurityContextHolder.getContext().getAuthentication();
-    }
 
     public void shutdownAndAwaitTermination() throws InterruptedException {
         log.info("do not accept any more requests");
@@ -88,7 +76,7 @@ public class PreRestFilter extends GenericFilterBean {
             try {
                 restMetrics.requestStart(request);
 
-                Authentication auth = getAuthentication();
+                Authentication auth = AuthHelper.getAuthentication();
                 if (auth instanceof MyAuthenticationToken) {
 
                     MyAuthenticationToken myAuthenticationToken = (MyAuthenticationToken) auth;
@@ -131,4 +119,16 @@ public class PreRestFilter extends GenericFilterBean {
         }
 
     }
+
+    private static String getFullURL(HttpServletRequest request) {
+        String requestURI = request.getRequestURI();
+        String queryString = request.getQueryString();
+
+        if (queryString == null) {
+            return requestURI;
+        } else {
+            return requestURI + "?" + queryString;
+        }
+    }
+
 }

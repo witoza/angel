@@ -1,13 +1,12 @@
 package co.postscriptum.service;
 
+import co.postscriptum.controller.UserController.UpdateUserDTO;
 import co.postscriptum.db.DB;
 import co.postscriptum.email.UserEmailService;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
-import co.postscriptum.internal.AdminHelperService;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.DataFactory;
-import co.postscriptum.model.bo.LoginAttempt;
 import co.postscriptum.model.bo.RequiredAction;
 import co.postscriptum.model.bo.RequiredAction.Type;
 import co.postscriptum.model.bo.Trigger;
@@ -24,7 +23,6 @@ import co.postscriptum.security.AESKeyUtils;
 import co.postscriptum.security.PasswordUtils;
 import co.postscriptum.security.RSAOAEPUtils;
 import co.postscriptum.security.TOTPHelperService;
-import co.postscriptum.web.UserRest.UpdateUserDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -43,10 +41,13 @@ import java.util.Optional;
 public class UserService {
 
     private final AdminHelperService adminHelperService;
+
     private final TOTPHelperService totpHelperService;
+
     private final UserEmailService userEmailService;
-    private final LoggedUserService loggedUserService;
+
     private final BitcoinService bitcoinService;
+
     private final DB db;
 
     public static String guessScreenName(String email) {
@@ -69,17 +70,8 @@ public class UserService {
 
     }
 
-    public Optional<SecretKey> getUserEncryptionKey() {
-        return loggedUserService.getUserEncryptionKey();
-    }
+    public UserDTO getUserDTO(UserData userData, Optional<SecretKey> userEncryptionKey) {
 
-    private UserData requireUserData() {
-        return loggedUserService.requireUserData();
-    }
-
-    public UserDTO getUserDTO() {
-
-        UserData userData = requireUserData();
         User user = userData.getUser();
 
         UserDTO dto = new UserDTO();
@@ -100,9 +92,9 @@ public class UserService {
 
         if (userData.getUser().getRole() == Role.user) {
 
-            dto.setUsedSpaceBytes(loggedUserService.getUserUsedSpaceBytes());
-            dto.setValidAesKey(getUserEncryptionKey().isPresent());
-            dto.setNeedPayment(needPayment());
+            dto.setUsedSpaceBytes(new UserDataHelper(userData).getUserUsedSpaceBytes());
+            dto.setValidAesKey(userEncryptionKey.isPresent());
+            dto.setNeedPayment(needPayment(userData));
 
         }
 
@@ -120,25 +112,22 @@ public class UserService {
         return dto;
     }
 
-    public void deleteUser(String loginPassword) {
+    public void deleteUser(UserData userData, String loginPassword) {
 
-        loggedUserService.verifyLoginPasswordIsCorrect(loginPassword);
+        new UserDataHelper(userData).verifyLoginPasswordIsCorrect(loginPassword);
 
-        db.removeUserByUuid(requireUserData().getUser().getUuid());
+        db.removeUserByUuid(userData.getUser().getUuid());
 
     }
 
-    private boolean needPayment() {
-        UserData userData = requireUserData();
+    private boolean needPayment(UserData userData) {
 
         UserPlan userPlan = userData.getInternal().getUserPlan();
 
         return userPlan.getPaidUntil() < System.currentTimeMillis();
     }
 
-    public void requestForStorage(int numberOfMb) {
-
-        UserData userData = requireUserData();
+    public void requestForStorage(UserData userData, int numberOfMb) {
 
         new UserDataHelper(userData).addNotification("User issued request for storage increase of " + numberOfMb + " MB");
 
@@ -149,15 +138,14 @@ public class UserService {
 
     }
 
-    public void changeLoginPassword(String loginPassword, String newLoginPassword) {
+    public void changeLoginPassword(UserData userData, Optional<SecretKey> userEncryptionKey, String loginPassword, String newLoginPassword) {
 
-        loggedUserService.verifyLoginPasswordIsCorrect(loginPassword);
+        new UserDataHelper(userData).verifyLoginPasswordIsCorrect(loginPassword);
 
-        UserInternal userInternal = requireUserData().getInternal();
+        UserInternal userInternal = userData.getInternal();
 
-        if (!loggedUserService.isUserAdmin()) {
-
-            getUserEncryptionKey()
+        if (!new UserDataHelper(userData).isUserAdmin()) {
+            userEncryptionKey
                     .ifPresent(encryptionKey -> {
                         log.info("user encryption key is there, encrypting it by a new password");
 
@@ -174,9 +162,8 @@ public class UserService {
         return String.join("; ", Utils.extractValidEmails(emails));
     }
 
-    public void updateUser(UpdateUserDTO params) {
+    public void updateUser(UserData userData, UpdateUserDTO params) {
 
-        UserData userData = requireUserData();
         User user = userData.getUser();
 
         if (params.getAllowPasswordReset() != null) {
@@ -246,63 +233,59 @@ public class UserService {
 
     }
 
-    public void setEncryptionKey(String loginPassword, String encryptionKey) {
+    public byte[] setEncryptionKey(UserData userData, Optional<SecretKey> userEncryptionKey, String loginPassword, String encryptionKey) {
 
-        loggedUserService.verifyLoginPasswordIsCorrect(loginPassword);
+        new UserDataHelper(userData).verifyLoginPasswordIsCorrect(loginPassword);
 
-        UserInternal internal = requireUserData().getInternal();
+        UserInternal internal = userData.getInternal();
 
         if (StringUtils.isEmpty(encryptionKey)) {
 
             log.info("empty key => removing key");
 
-            loggedUserService.setUserEncryptionKey(null);
-
             internal.setEncryptionKey(null);
             internal.setEncryptionKeyEncryptedByAdminPublicKey(null);
 
+            return null;
         } else {
 
             log.info("key present => installing it");
 
             byte[] secretKey = Utils.base32decode(encryptionKey);
 
-            loggedUserService.setUserEncryptionKey(secretKey);
-
             internal.setEncryptionKey(AESGCMUtils.encryptByPassword(loginPassword, secretKey));
             internal.setEncryptionKeyEncryptedByAdminPublicKey(RSAOAEPUtils.encrypt(secretKey,
                                                                                     adminHelperService.getAdminPublicKey()));
 
+            return secretKey;
         }
 
     }
 
-    public List<String> sendTriggerAfterX(boolean sendEmailOnlyToUser) {
-        return userEmailService.sendTriggerAfterX(requireUserData(), sendEmailOnlyToUser);
+    public List<String> sendTriggerAfterX(UserData userData, boolean sendEmailOnlyToUser) {
+        return userEmailService.sendTriggerAfterX(userData, sendEmailOnlyToUser);
     }
 
-    public List<String> sendTriggerAfterY(boolean sendEmailOnlyToUser) {
-        return userEmailService.sendTriggerAfterY(requireUserData(), sendEmailOnlyToUser);
+    public List<String> sendTriggerAfterY(UserData userData, boolean sendEmailOnlyToUser) {
+        return userEmailService.sendTriggerAfterY(userData, sendEmailOnlyToUser);
     }
 
-    public List<String> sendTriggerAfterZ(boolean sendEmailOnlyToUser) {
-        return userEmailService.sendTriggerAfterZ(requireUserData(), sendEmailOnlyToUser);
+    public List<String> sendTriggerAfterZ(UserData userData, boolean sendEmailOnlyToUser) {
+        return userEmailService.sendTriggerAfterZ(userData, sendEmailOnlyToUser);
     }
 
-    public void unloadUser() {
+    public void unloadUser(UserData userData) {
 
         try {
-            db.unloadUserByUuid(requireUserData().getUser().getUuid());
+            db.unloadUserByUuid(userData.getUser().getUuid());
         } catch (IOException e) {
             log.error("problem with user unloading", e);
         }
 
     }
 
-    public void enable2FA(String totpToken) {
+    public void enable2FA(UserData userData, String totpToken) {
         log.info("enabling 2FA");
-
-        UserData userData = requireUserData();
 
         if (totpHelperService.isTokenValid(userData, totpToken)) {
             log.info("provided token is correct, enabling 2FA");
@@ -314,30 +297,26 @@ public class UserService {
 
     }
 
-    public void disable2FA() {
+    public void disable2FA(UserData userData) {
         log.info("disabling 2FA");
-        requireUserData().getInternal().setEnableTotp(false);
+        userData.getInternal().setEnableTotp(false);
     }
 
-    public void generateTotpSecret() {
+    public void generateTotpSecret(UserData userData) {
         log.info("generate TotpSecret");
-        requireUserData().getInternal().setTotpSecret(AESKeyUtils.randomByteArray(8));
-        disable2FA();
+        userData.getInternal().setTotpSecret(AESKeyUtils.randomByteArray(8));
+        disable2FA(userData);
     }
 
-    public List<LoginAttempt> getLoginHistory() {
-        return requireUserData().getInternal().getLoginHistory();
+    public ResponseEntity<InputStreamResource> getTotpUriQr(UserData userData) {
+        return totpHelperService.getTotpUriQr(userData);
     }
 
-    public ResponseEntity<InputStreamResource> getTotpUriQr() {
-        return totpHelperService.getTotpUriQr(requireUserData());
-    }
-
-    public String getPaymentBitcoinAddress() {
-        if (!needPayment()) {
+    public String getPaymentBitcoinAddress(UserData userData) {
+        if (!needPayment(userData)) {
             throw new ForbiddenException("can't obtain payment address when account is paid off");
         }
-        return bitcoinService.getPaymentForUser(requireUserData()).getBtcAddress();
+        return bitcoinService.getPaymentForUser(userData).getBtcAddress();
     }
 
 }

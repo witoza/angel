@@ -9,10 +9,13 @@ import lombok.Data;
 public class ShortTimeKey {
 
     private final String username;
+
     private final String key;
+
     private final Type type;
 
     private long validUntil;
+
     private AESGCMEncrypted extraData;
 
     public enum Type {

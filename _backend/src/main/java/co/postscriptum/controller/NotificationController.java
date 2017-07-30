@@ -1,8 +1,9 @@
-package co.postscriptum.web;
+package co.postscriptum.controller;
 
+import co.postscriptum.controller.dto.UuidDTO;
 import co.postscriptum.model.bo.Notification;
+import co.postscriptum.model.bo.UserData;
 import co.postscriptum.service.NotificationService;
-import co.postscriptum.web.dto.WithUuidDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,20 +17,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/notif")
 @AllArgsConstructor
-public class NotificationRest {
+public class NotificationController {
 
     private final NotificationService notificationService;
 
     @GetMapping("/all")
-    public List<Notification> all() {
-        return notificationService.getNotifications();
+    public List<Notification> all(UserData userData) {
+        return userData.getNotifications();
     }
 
     @PostMapping("/mark_as_read")
-    public void markAsRead(@Valid @RequestBody WithUuidDTO dto) {
-
-        notificationService.markAsRead(dto.uuid);
-
+    public void markAsRead(UserData userData, @Valid @RequestBody UuidDTO dto) {
+        notificationService.markAsRead(userData, dto.uuid);
     }
 
 }

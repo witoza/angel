@@ -6,7 +6,7 @@ import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.I18N;
 import co.postscriptum.internal.ReleasedMessagesDetails;
 import co.postscriptum.internal.Utils;
-import co.postscriptum.jobs.EmailProcessor;
+import co.postscriptum.job.EmailProcessor;
 import co.postscriptum.model.bo.Lang;
 import co.postscriptum.model.bo.Message;
 import co.postscriptum.model.bo.Release;
@@ -58,11 +58,10 @@ public class MessageReleaseService {
     }
 
     private List<Message> getOutboxMessages(UserData userData) {
-        return userData
-                .getMessages()
-                .stream()
-                .filter(m -> m.getType() == Message.Type.outbox)
-                .collect(Collectors.toList());
+        return userData.getMessages()
+                       .stream()
+                       .filter(m -> m.getType() == Message.Type.outbox)
+                       .collect(Collectors.toList());
     }
 
     public String toHumanReadable(Lang lang, ReleasedMessagesDetails releaseDetails) {
@@ -95,9 +94,7 @@ public class MessageReleaseService {
         return sb.toString();
     }
 
-    private Map<String, String> releaseMessage(UserData userData,
-                                               Message message,
-                                               Optional<SecretKey> userEncryptionKey) {
+    private Map<String, String> releaseMessage(UserData userData, Message message, Optional<SecretKey> userEncryptionKey) {
 
         log.info("processing release message uuid={} addressed to recipients={}",
                  message.getUuid(), message.getRecipients());

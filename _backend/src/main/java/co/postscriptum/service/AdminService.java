@@ -9,8 +9,8 @@ import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.Params;
 import co.postscriptum.internal.ReleasedMessagesDetails;
 import co.postscriptum.internal.Utils;
-import co.postscriptum.jobs.AccountMessageReleaserJob;
-import co.postscriptum.jobs.AccountRemoverJob;
+import co.postscriptum.job.AccountMessageReleaserJob;
+import co.postscriptum.job.AccountRemoverJob;
 import co.postscriptum.model.bo.Message;
 import co.postscriptum.model.bo.ReleaseItem;
 import co.postscriptum.model.bo.ReleaseItem.Reminder;
@@ -46,27 +46,14 @@ public class AdminService {
 
     private final MessageReleaseService messageReleaseService;
 
-    private final LoggedUserService loggedUserService;
-
     private final ShortTimeKeyService shortTimeKeyService;
 
-    private RequiredAction requireRequiredActionByUuid(String uuid) {
+    public List<RequiredAction> getRequiredAction(UserData userData, Status status) {
 
-        return loggedUserService.requireUserData()
-                                .getRequiredActions()
-                                .stream()
-                                .filter(ra -> ra.getUuid().equals(uuid))
-                                .findFirst()
-                                .orElseThrow(ExceptionBuilder.missingClass(RequiredAction.class, "uuid=" + uuid));
-    }
-
-    public List<RequiredAction> getRequiredAction(Status status) {
-
-        return loggedUserService.requireUserData()
-                                .getRequiredActions()
-                                .stream()
-                                .filter(ra -> ra.getStatus() == status)
-                                .collect(Collectors.toList());
+        return userData.getRequiredActions()
+                       .stream()
+                       .filter(ra -> ra.getStatus() == status)
+                       .collect(Collectors.toList());
 
     }
 
@@ -224,15 +211,14 @@ public class AdminService {
         }
     }
 
-    public void removeIssue(String issueUuid) {
+    public void removeIssue(UserData userData, String issueUuid) {
 
         log.info("removing issue: {}", issueUuid);
 
-        requireRequiredActionByUuid(issueUuid);
+        requireRequiredActionByUuid(userData, issueUuid);
 
-        loggedUserService.requireUserData()
-                         .getRequiredActions()
-                         .removeIf(ar -> ar.getUuid().equals(issueUuid));
+        userData.getRequiredActions()
+                .removeIf(ar -> ar.getUuid().equals(issueUuid));
 
     }
 
@@ -242,7 +228,6 @@ public class AdminService {
         RSAOAEPEncrypted encrypted = db.withLoadedAccountByUuid(userUuid, account -> {
             return account.getUserData().getInternal().getEncryptionKeyEncryptedByAdminPublicKey();
         });
-
 
         if (encrypted == null) {
             return "";
@@ -262,9 +247,9 @@ public class AdminService {
         }
     }
 
-    public Resolution rejectIssue(String issueUuid, String input) {
+    public Resolution rejectIssue(UserData userData, String issueUuid, String input) {
 
-        RequiredAction requiredAction = requireRequiredActionByUuid(issueUuid);
+        RequiredAction requiredAction = requireRequiredActionByUuid(userData, issueUuid);
 
         verifyNotResolved(requiredAction);
 
@@ -278,10 +263,9 @@ public class AdminService {
         return resolution;
     }
 
+    public Resolution resolveIssue(UserData userData, String issueUuid, String input, String userEncryptionKeyBase64) {
 
-    public Resolution resolveIssue(String issueUuid, String input, String userEncryptionKeyBase64) {
-
-        RequiredAction requiredAction = requireRequiredActionByUuid(issueUuid);
+        RequiredAction requiredAction = requireRequiredActionByUuid(userData, issueUuid);
 
         verifyNotResolved(requiredAction);
 
@@ -293,6 +277,15 @@ public class AdminService {
         requiredAction.getResolutions().add(resolution);
         requiredAction.setStatus(Status.resolved);
         return resolution;
+    }
+
+    private RequiredAction requireRequiredActionByUuid(UserData userData, String actionUuid) {
+
+        return userData.getRequiredActions()
+                       .stream()
+                       .filter(ra -> ra.getUuid().equals(actionUuid))
+                       .findFirst()
+                       .orElseThrow(ExceptionBuilder.missingClass(RequiredAction.class, "uuid=" + actionUuid));
     }
 
 }

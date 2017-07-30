@@ -1,5 +1,6 @@
 package co.postscriptum.internal;
 
+import lombok.Getter;
 import org.apache.commons.codec.binary.Hex;
 
 import java.io.FilterInputStream;
@@ -11,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class InfoInputStream extends FilterInputStream {
 
+    @Getter
     private long size = 0;
 
     public InfoInputStream(InputStream is) {
@@ -46,10 +48,6 @@ public class InfoInputStream extends FilterInputStream {
             size += result;
         }
         return result;
-    }
-
-    public long getSize() {
-        return size;
     }
 
     public String getSha1() {

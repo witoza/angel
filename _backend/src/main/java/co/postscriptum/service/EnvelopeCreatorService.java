@@ -31,7 +31,6 @@ public class EnvelopeCreatorService {
     @Value("${server.servlet-path}")
     private String dispatcherPrefix;
 
-
     public Map<String, Object> createContext(UserData userData) {
 
         Map<String, Object> context = new HashMap<>();
@@ -85,6 +84,5 @@ public class EnvelopeCreatorService {
                        .msgFooter(msgFooter)
                        .build();
     }
-
 
 }

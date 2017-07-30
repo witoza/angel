@@ -1,4 +1,4 @@
-package co.postscriptum.jobs;
+package co.postscriptum.job;
 
 import co.postscriptum.db.Account;
 import co.postscriptum.db.DB;

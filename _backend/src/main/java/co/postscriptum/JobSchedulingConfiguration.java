@@ -12,7 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 @Configuration
 @EnableScheduling
-public class SchedulingConfig implements SchedulingConfigurer {
+public class JobSchedulingConfiguration implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {

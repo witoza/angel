@@ -60,6 +60,17 @@ public class BitcoinService {
         return true;
     }
 
+    public PaymentAddress getPaymentForUser(UserData userData) {
+        log.info("get payment address for user {}", userData.getUser().getUuid());
+
+        PaymentAddress paymentAddress = getPaymentForUserImpl(userData.getUser());
+        paymentAddress.setAssignedTime(System.currentTimeMillis());
+
+        userData.getUser().setPaymentAddress(paymentAddress);
+
+        return paymentAddress;
+    }
+
     private PaymentAddress getPaymentForUserImpl(User user) {
 
         // try to use address which was previously assigned for that user
@@ -78,17 +89,6 @@ public class BitcoinService {
         //get fresh one
         log.info("generating new one");
         return bitcoinAddressGenerator.generateNewAddress();
-    }
-
-    public PaymentAddress getPaymentForUser(UserData userData) {
-        log.info("get payment address for user {}", userData.getUser().getUuid());
-
-        PaymentAddress paymentAddress = getPaymentForUserImpl(userData.getUser());
-        paymentAddress.setAssignedTime(System.currentTimeMillis());
-
-        userData.getUser().setPaymentAddress(paymentAddress);
-
-        return paymentAddress;
     }
 
 }

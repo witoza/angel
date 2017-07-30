@@ -1,8 +1,9 @@
-package co.postscriptum.web;
+package co.postscriptum.controller;
 
+import co.postscriptum.controller.dto.PasswordDTO;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
-import co.postscriptum.internal.AdminHelperService;
+import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.Lang;
@@ -11,7 +12,6 @@ import co.postscriptum.security.RequestMetadata;
 import co.postscriptum.security.VerifiedUsers;
 import co.postscriptum.service.CaptchaService;
 import co.postscriptum.service.LoginService;
-import co.postscriptum.web.dto.WithPasswordDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,12 +43,16 @@ import java.util.Map;
 @RestController
 @RequestMapping("/")
 @AllArgsConstructor
-public class LoginRest {
+public class LoginController {
 
     private final MyConfiguration myConfiguration;
+
     private final CookieCsrfTokenRepository cookieCsrfTokenRepository;
+
     private final LoginService loginService;
+
     private final CaptchaService captchaService;
+
     private final AdminHelperService adminHelperService;
 
     @PostMapping("/preregister")
@@ -61,9 +65,7 @@ public class LoginRest {
     }
 
     @PostMapping("/register")
-    public void register(@Valid @RequestBody RegisterDTO dto,
-                         HttpServletRequest request,
-                         HttpServletResponse response) {
+    public void register(@Valid @RequestBody RegisterDTO dto, HttpServletRequest request, HttpServletResponse response) {
 
         VerifiedUsers verifiedUsers = new VerifiedUsers(request, myConfiguration.getVerifiedUsersSalt());
 
@@ -135,7 +137,6 @@ public class LoginRest {
                                                   dto.getContent(),
                                                   new RequestMetadata(request));
 
-
     }
 
     @PostMapping("/recall_totp_secret")
@@ -145,7 +146,6 @@ public class LoginRest {
         } catch (Exception e) {
             throw new ForbiddenException("Invalid parameters", e);
         }
-
     }
 
     @GetMapping("/recall_totp_details_qr")
@@ -177,8 +177,7 @@ public class LoginRest {
     }
 
     @PostMapping("/reset_passwd")
-    public void resetPassword(@Valid @RequestBody WithUsernameDTO dto) {
-
+    public void resetPassword(@Valid @RequestBody UsernameDTO dto) {
         try {
             loginService.resetPassword(dto.username);
         } catch (IllegalArgumentException | ForbiddenException e) {
@@ -186,7 +185,6 @@ public class LoginRest {
         } catch (Exception e) {
             log.error("error while resetting password", e);
         }
-
     }
 
     @GetMapping(value = "/alive", produces = "text/html; charset=utf-8")
@@ -199,10 +197,9 @@ public class LoginRest {
         }
     }
 
-
     @Getter
     @Setter
-    public static class WithUsernameDTO {
+    public static class UsernameDTO {
 
         @Email
         @NotEmpty
@@ -213,7 +210,7 @@ public class LoginRest {
 
     @Getter
     @Setter
-    public static class UsernamePasswordDTO extends WithUsernameDTO {
+    public static class UsernamePasswordDTO extends UsernameDTO {
 
         @NotEmpty
         @Size(min = 3, max = 20)
@@ -224,7 +221,7 @@ public class LoginRest {
 
     @Getter
     @Setter
-    public static class PreregisterDTO extends WithUsernameDTO {
+    public static class PreregisterDTO extends UsernameDTO {
 
         @NotNull
         Lang lang;
@@ -233,7 +230,7 @@ public class LoginRest {
 
     @Getter
     @Setter
-    public static class RegisterDTO extends WithPasswordDTO {
+    public static class RegisterDTO extends PasswordDTO {
 
         @NotEmpty
         @Size(min = 32, max = 32)

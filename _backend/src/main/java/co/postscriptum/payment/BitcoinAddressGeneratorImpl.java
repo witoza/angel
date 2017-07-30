@@ -30,11 +30,6 @@ public class BitcoinAddressGeneratorImpl implements BitcoinAddressGenerator {
     @Autowired
     private MyConfiguration configuration;
 
-    private String createCallbackUrl(String paymentAddressUuid) {
-        return hostUrl + "/api/payment/paid?uuid=" + paymentAddressUuid + "&secret=" +
-                configuration.getBitcoinPaymentSecret();
-    }
-
     public PaymentAddress generateNewAddress() {
 
         log.info("generate new bitcoin address");
@@ -44,7 +39,6 @@ public class BitcoinAddressGeneratorImpl implements BitcoinAddressGenerator {
 
         String url = configuration.getBitcoinPaymentAdr();
         url = url.replace("$callback_url", Utils.urlEncode(createCallbackUrl(paymentAddress.getUuid())));
-
 
         try {
             URL obj = new URL(url);
@@ -64,4 +58,10 @@ public class BitcoinAddressGeneratorImpl implements BitcoinAddressGenerator {
             throw new InternalException("exception occurred while connecting to Bitcoin payment service", e);
         }
     }
+
+    private String createCallbackUrl(String paymentAddressUuid) {
+        return hostUrl + "/api/payment/paid?uuid=" + paymentAddressUuid + "&secret=" +
+                configuration.getBitcoinPaymentSecret();
+    }
+
 }

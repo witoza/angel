@@ -7,7 +7,6 @@ import co.postscriptum.email.UserEmailService;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.exception.InternalException;
-import co.postscriptum.internal.AdminHelperService;
 import co.postscriptum.internal.I18N;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.DataFactory;
@@ -51,12 +50,19 @@ import java.util.Optional;
 public class LoginService {
 
     private final EmailTemplateService emailTemplateService;
+
     private final EnvelopeCreatorService envelopeCreatorService;
+
     private final TOTPHelperService totpHelperService;
+
     private final AdminHelperService adminHelperService;
+
     private final UserEmailService userEmailService;
+
     private final ShortTimeKeyService shortTimeKeyService;
+
     private final I18N i18n;
+
     private final DB db;
 
     private void addNotification(UserData userData, String message) {

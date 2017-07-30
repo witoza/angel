@@ -9,10 +9,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+// we don't persist as they are not very important and user can always regenerate them
 @Component
 public class ShortTimeKeyService {
-
-    // we don't persist as they are not very important and user can always regenerate them
 
     private final List<ShortTimeKey> shortTimeKeys = new CopyOnWriteArrayList<>();
 
@@ -67,4 +66,5 @@ public class ShortTimeKeyService {
 
         return shortTimeKey;
     }
+
 }

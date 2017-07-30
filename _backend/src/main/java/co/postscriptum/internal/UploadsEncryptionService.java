@@ -91,8 +91,7 @@ public class UploadsEncryptionService {
 
             SecretKey passwordKey = AESKeyUtils.deriveKey(encryptionPassword, file.getEncryption().getSalt());
 
-            InputStream dataStream =
-                    AESGCMUtils.decryptedStream(fis, passwordKey, file.getEncryption().getIv(), new String[]{});
+            InputStream dataStream = AESGCMUtils.decryptedStream(fis, passwordKey, file.getEncryption().getIv(), new String[]{});
 
             return AESGCMUtils.decryptedStream(dataStream,
                                                encryptionKey,
@@ -105,6 +104,6 @@ public class UploadsEncryptionService {
             return AESGCMUtils.decryptedStream(fis, encryptionKey, file.getIv(), new String[]{file.getUuid()});
         }
 
-
     }
+
 }

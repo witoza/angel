@@ -51,10 +51,7 @@ public class EmailSenderAWSSESImpl implements EmailSender {
         log.info("connecting to AWS SES ...");
 
         service = AmazonSimpleEmailServiceClientBuilder.standard()
-                                                       .withCredentials(
-                                                               new AWSStaticCredentialsProvider(
-                                                                       new BasicAWSCredentials(awsConfig.getAccessKeyId(),
-                                                                                               awsConfig.getSecretAccessKey())))
+                                                       .withCredentials(awsConfig.awsCredentialsProvider())
                                                        .withRegion(awsConfig.getSesRegion())
                                                        .build();
 

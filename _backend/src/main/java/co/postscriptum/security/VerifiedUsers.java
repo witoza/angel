@@ -18,6 +18,7 @@ public class VerifiedUsers {
     private static final String VERIFIED_USERS_COOKIE_NAME = "VERIFIED_USERS";
 
     private final String salt;
+
     private final List<String> verified;
 
     public VerifiedUsers(HttpServletRequest request, String salt) {

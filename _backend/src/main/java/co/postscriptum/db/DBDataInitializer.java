@@ -2,9 +2,9 @@ package co.postscriptum.db;
 
 import co.postscriptum.RuntimeEnvironment;
 import co.postscriptum.exception.InternalException;
-import co.postscriptum.internal.AdminHelperService;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.model.bo.User;
+import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.test_data.TestDataCreator;
 import co.postscriptum.test_data.TestUser;
 import lombok.AllArgsConstructor;
@@ -20,9 +20,13 @@ import java.io.IOException;
 public class DBDataInitializer {
 
     private final TestDataCreator testDataCreator;
+
     private final MyConfiguration configuration;
+
     private final AdminHelperService adminHelperService;
+
     private final DB db;
+
     private final RuntimeEnvironment env;
 
     @PostConstruct
@@ -70,6 +74,5 @@ public class DBDataInitializer {
             }
         }
     }
-
 
 }

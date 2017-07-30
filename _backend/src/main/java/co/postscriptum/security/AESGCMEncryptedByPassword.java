@@ -8,6 +8,7 @@ import lombok.Data;
 public class AESGCMEncryptedByPassword {
 
     private final byte[] passwordSalt;
+
     private final AESGCMEncrypted encrypted;
 
 }

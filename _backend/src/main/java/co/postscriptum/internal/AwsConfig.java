@@ -1,23 +1,31 @@
 package co.postscriptum.internal;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Value;
 
 @Builder
 @AllArgsConstructor
-@Getter
+@Value
 public class AwsConfig {
 
-    private final String accessKeyId;
+    private String accessKeyId;
 
-    private final String secretAccessKey;
+    private String secretAccessKey;
 
-    private final String sesRegion;
+    private String sesRegion;
 
-    private final String s3Bucket;
+    private String s3Bucket;
 
-    private final String sqsRegion;
+    private String sqsRegion;
 
-    private final String sqsQueueName;
+    private String sqsQueueName;
+
+    public AWSCredentialsProvider awsCredentialsProvider() {
+        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(getAccessKeyId(), getSecretAccessKey()));
+    }
+
 }

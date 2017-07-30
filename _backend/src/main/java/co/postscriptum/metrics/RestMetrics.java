@@ -19,17 +19,12 @@ import java.util.stream.Collectors;
 public class RestMetrics {
 
     private final RequestsByTimeMetrics requestsByTimeMetrics = new RequestsByTimeMetrics();
-    private final Map<Integer, AtomicInteger> httpCodes = new TreeMap<>();
-    private final Map<String, MethodUsageInfo> restUsage = new TreeMap<>();
-    private final List<RequestInfo> currentRequests = new ArrayList<>();
 
-    private RequestInfo requireRequestInfo(HttpServletRequest request) {
-        RequestInfo requestInfo = (RequestInfo) request.getAttribute("RequestInfo");
-        if (requestInfo == null) {
-            throw new IllegalStateException("current thread does not have RequestInfo object");
-        }
-        return requestInfo;
-    }
+    private final Map<Integer, AtomicInteger> httpCodes = new TreeMap<>();
+
+    private final Map<String, MethodUsageInfo> restUsage = new TreeMap<>();
+
+    private final List<RequestInfo> currentRequests = new ArrayList<>();
 
     @Synchronized
     public void requestStart(HttpServletRequest request) {
@@ -74,6 +69,14 @@ public class RestMetrics {
         httpCodes.putIfAbsent(requestInfo.httpStatusCode, new AtomicInteger(0));
         httpCodes.get(requestInfo.httpStatusCode).incrementAndGet();
 
+    }
+
+    private RequestInfo requireRequestInfo(HttpServletRequest request) {
+        RequestInfo requestInfo = (RequestInfo) request.getAttribute("RequestInfo");
+        if (requestInfo == null) {
+            throw new IllegalStateException("current thread does not have RequestInfo object");
+        }
+        return requestInfo;
     }
 
     @Synchronized

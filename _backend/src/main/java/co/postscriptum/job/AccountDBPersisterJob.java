@@ -1,4 +1,4 @@
-package co.postscriptum.jobs;
+package co.postscriptum.job;
 
 import co.postscriptum.db.Account;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,17 @@ public class AccountDBPersisterJob extends AbstractAccountJob {
 
     @Value("${accountDBPersisterJob.inactivityPeriodSec:60}")
     private Integer inactivityPeriodSec;
+
+    @Override
+    public Stream<Account> getAccountsToTest() {
+        return db.getLoadedAccounts();
+    }
+
+    @Override
+    @Scheduled(fixedDelay = 60000)
+    protected void process() {
+        super.process();
+    }
 
     @Override
     public String processAccount(Account account) throws IOException {
@@ -35,18 +46,6 @@ public class AccountDBPersisterJob extends AbstractAccountJob {
     @Override
     protected void after() throws IOException {
         db.saveStub();
-    }
-
-    @Override
-    public Stream<Account> getAccountsToTest() {
-        return db.getLoadedAccounts();
-    }
-
-
-    @Override
-    @Scheduled(fixedDelay = 60000)
-    protected void process() {
-        super.process();
     }
 
 }

@@ -1,4 +1,4 @@
-package co.postscriptum.jobs;
+package co.postscriptum.job;
 
 import co.postscriptum.db.DB;
 import co.postscriptum.email.DeliveryType;
@@ -78,28 +78,51 @@ public class EmailProcessor extends AbstractJob {
             durableSent.removeIf(envelope -> envelope.getEnvelopeId().equals(envelopeId));
         }
 
+        private void reportMessageDelivery(Map<String, String> headers, DeliveryType deliveryType) {
+
+            String userUuid = headers.get("userUuid");
+            String recipient = headers.get("recipient");
+            String title = headers.get("title");
+
+            db.withLoadedAccountByUuid(userUuid, account -> {
+
+                new UserDataHelper(account.getUserData()).addNotification(
+                        createDeliveryNotification(deliveryType, recipient, title));
+
+            });
+
+        }
+
+        private String createDeliveryNotification(DeliveryType deliveryType, String recipient, String title) {
+            if (deliveryType == DeliveryType.Delivery) {
+                return "Message '" + title + "' has been delivered to " + recipient + " mailbox";
+            } else {
+                return "Could not deliver message '" + title + "' to " + recipient + " mailbox";
+            }
+        }
+
     };
 
-    private String createDeliveryNotification(DeliveryType deliveryType, String recipient, String title) {
-        if (deliveryType == DeliveryType.Delivery) {
-            return "Message '" + title + "' has been delivered to " + recipient + " mailbox";
-        } else {
-            return "Could not deliver message '" + title + "' to " + recipient + " mailbox";
-        }
+    @Scheduled(fixedDelay = 2500)
+    public void process() {
+        super.process();
     }
 
-    private void reportMessageDelivery(Map<String, String> headers, DeliveryType deliveryType) {
+    @Override
+    public void processImpl() {
+        try {
+            sendEmails();
+        } catch (Exception e) {
+            log.error("problem while sending emails", e);
+            reportError("sendEmails", e);
+        }
 
-        String userUuid = headers.get("userUuid");
-        String recipient = headers.get("recipient");
-        String title = headers.get("title");
-
-        db.withLoadedAccountByUuid(userUuid, account -> {
-
-            new UserDataHelper(account.getUserData()).addNotification(
-                    createDeliveryNotification(deliveryType, recipient, title));
-
-        });
+        try {
+            checkDeliveredEmails();
+        } catch (Exception e) {
+            log.error("problem while checking email deliveries", e);
+            reportError("checkDeliveredEmails", e);
+        }
 
     }
 
@@ -124,14 +147,6 @@ public class EmailProcessor extends AbstractJob {
         }
     }
 
-    private void checkDeliveredEmails() {
-        if (durableSent.isEmpty()) {
-            return;
-        }
-        log.info("checking delivery queue for {} emails", durableSent.size());
-        emailDelivery.process(handler);
-    }
-
     public void enqueue(Envelope envelope) {
         log.info("enqueueing envelope: {}", envelope.getEnvelopeId());
 
@@ -146,27 +161,12 @@ public class EmailProcessor extends AbstractJob {
         queued.add(envelope);
     }
 
-    @Override
-    public void processImpl() {
-        try {
-            sendEmails();
-        } catch (Exception e) {
-            log.error("problem while sending emails", e);
-            reportError("sendEmails", e);
+    private void checkDeliveredEmails() {
+        if (durableSent.isEmpty()) {
+            return;
         }
-
-        try {
-            checkDeliveredEmails();
-        } catch (Exception e) {
-            log.error("problem while checking email deliveries", e);
-            reportError("checkDeliveredEmails", e);
-        }
-
-    }
-
-    @Scheduled(fixedDelay = 2500)
-    public void process() {
-        super.process();
+        log.info("checking delivery queue for {} emails", durableSent.size());
+        emailDelivery.process(handler);
     }
 
 }

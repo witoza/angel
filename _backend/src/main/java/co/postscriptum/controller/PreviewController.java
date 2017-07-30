@@ -1,4 +1,4 @@
-package co.postscriptum.web;
+package co.postscriptum.controller;
 
 import co.postscriptum.model.dto.MessageDTO;
 import co.postscriptum.service.PreviewService;
@@ -22,25 +22,22 @@ import java.util.Map;
 @RestController
 @RequestMapping("/preview")
 @AllArgsConstructor
-public class PreviewRest {
+public class PreviewController {
 
     private final PreviewService previewService;
 
     @PostMapping("/download")
     public ResponseEntity<InputStreamResource> download(@Valid @ModelAttribute DownloadFileDTO dto) throws IOException {
-
         return previewService.download(dto);
     }
 
     @PostMapping("/decrypt")
     public MessageDTO decrypt(@Valid @RequestBody PreviewBaseDTO dto) {
-
         return previewService.decrypt(dto);
     }
 
     @PostMapping("/get_by_uuid")
     public Map<String, Object> getByUuid(@Valid @RequestBody PreviewBaseDTO dto) {
-
         return previewService.requireMessage(dto);
     }
 
@@ -69,7 +66,6 @@ public class PreviewRest {
 
     }
 
-
     @Setter
     @Getter
     public static class DownloadFileDTO extends PreviewBaseDTO {
@@ -78,6 +74,5 @@ public class PreviewRest {
         @Size(min = 34, max = 35)
         String file_uuid;
     }
-
 
 }

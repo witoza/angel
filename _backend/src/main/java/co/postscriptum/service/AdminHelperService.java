@@ -1,9 +1,11 @@
-package co.postscriptum.internal;
+package co.postscriptum.service;
 
 import co.postscriptum.db.DB;
 import co.postscriptum.email.Envelope;
 import co.postscriptum.email.EnvelopeType;
-import co.postscriptum.jobs.EmailProcessor;
+import co.postscriptum.internal.MyConfiguration;
+import co.postscriptum.internal.Utils;
+import co.postscriptum.job.EmailProcessor;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.Lang;
 import co.postscriptum.model.bo.RequiredAction;
@@ -11,8 +13,9 @@ import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.security.RSAOAEPUtils;
 import co.postscriptum.security.RequestMetadata;
-import co.postscriptum.service.LoggedUserService;
 import co.postscriptum.service.UserDataHelper;
+import co.postscriptum.web.AuthHelper;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,16 +33,10 @@ import java.util.ArrayList;
 public class AdminHelperService {
 
     @Autowired
-    private LoggedUserService loggedUserService;
-
-    @Autowired
     private MyConfiguration configuration;
 
     @Autowired
     private EmailProcessor emailProcessor;
-
-    @Autowired
-    private I18N i18n;
 
     @Autowired
     private DB db;
@@ -47,13 +44,12 @@ public class AdminHelperService {
     @Value("${admin.public_key_path}")
     private String adminPublicKeyPath;
 
+    @Getter
     private PublicKey adminPublicKey;
 
     @PostConstruct
     public void init() throws IOException {
-        adminPublicKey =
-                RSAOAEPUtils.toPublicKey(RSAOAEPUtils.fromPem(FileUtils.readFileToString(new File(adminPublicKeyPath))));
-
+        adminPublicKey = RSAOAEPUtils.toPublicKey(RSAOAEPUtils.fromPem(FileUtils.readFileToString(new File(adminPublicKeyPath))));
     }
 
     public UserData createAdmin(String loginPassword) {
@@ -84,8 +80,8 @@ public class AdminHelperService {
     public void sendToAdminContactForm(String from, String title, String userInquiry, RequestMetadata metadata) {
 
         String loggedUsername = null;
-        if (loggedUserService.isUserLogged()) {
-            loggedUsername = loggedUserService.getLoggedUsername();
+        if (AuthHelper.isUserLogged()) {
+            loggedUsername = AuthHelper.getLoggedUsername();
         }
 
         String content =
@@ -140,10 +136,6 @@ public class AdminHelperService {
             new UserDataHelper(account.getUserData()).addNotification(message);
         });
 
-    }
-
-    public PublicKey getAdminPublicKey() {
-        return adminPublicKey;
     }
 
 }

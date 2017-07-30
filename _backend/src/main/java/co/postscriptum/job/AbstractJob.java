@@ -1,4 +1,4 @@
-package co.postscriptum.jobs;
+package co.postscriptum.job;
 
 import co.postscriptum.metrics.ComponentMetrics;
 import lombok.extern.slf4j.Slf4j;
@@ -43,4 +43,5 @@ public abstract class AbstractJob {
         }
 
     }
+
 }

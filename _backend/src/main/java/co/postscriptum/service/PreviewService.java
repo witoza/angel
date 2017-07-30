@@ -1,5 +1,6 @@
 package co.postscriptum.service;
 
+import co.postscriptum.controller.PreviewController;
 import co.postscriptum.db.Account;
 import co.postscriptum.db.DB;
 import co.postscriptum.exception.BadRequestException;
@@ -15,7 +16,7 @@ import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.MessageDTO;
 import co.postscriptum.security.AESGCMUtils;
 import co.postscriptum.security.AESKeyUtils;
-import co.postscriptum.web.PreviewRest;
+import co.postscriptum.web.AuthHelper;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +41,11 @@ import java.util.stream.Collectors;
 public class PreviewService {
 
     private final UploadsEncryptionService uploadsEncryptionService;
-    private final LoggedUserService loggedUserService;
+
     private final DB db;
 
     //can be invoked from normal mode and from preview
-    public ResponseEntity<InputStreamResource> download(PreviewRest.DownloadFileDTO form) throws IOException {
+    public ResponseEntity<InputStreamResource> download(PreviewController.DownloadFileDTO form) throws IOException {
 
         Account fileAccount = db.requireAccountByUuid(form.getUser_uuid());
         try {
@@ -87,11 +88,11 @@ public class PreviewService {
 
                 log.info("edit mode download");
 
-                if (!isLoggedAccountSameAs(fileAccount)) {
+                if (!AuthHelper.isUserLogged(fileAccount.getUserData().getUser().getUsername())) {
                     throw new ForbiddenException("file does not belong to the logged account");
                 }
 
-                encryptionKey = loggedUserService.requireUserEncryptionKey();
+                encryptionKey = AuthHelper.requireUserEncryptionKey();
 
             }
 
@@ -123,14 +124,6 @@ public class PreviewService {
         }
     }
 
-
-    private boolean isLoggedAccountSameAs(Account current) {
-        if (!loggedUserService.isUserLogged()) {
-            return false;
-        }
-        return current.getUserData().getUser().getUsername().equals(loggedUserService.getLoggedUsername());
-    }
-
     private SecretKey getEncryptionKey(String aesKey) {
         if (StringUtils.isEmpty(aesKey)) {
             return null;
@@ -152,7 +145,7 @@ public class PreviewService {
 
         UserDataHelper userDataHelper = new UserDataHelper(messageAccount.getUserData());
 
-        if (isLoggedAccountSameAs(messageAccount)) {
+        if (AuthHelper.isUserLogged(messageAccount.getUserData().getUser().getUsername())) {
 
             log.info("logged account is the owner of the message");
 
@@ -160,8 +153,8 @@ public class PreviewService {
             releaseItem.setFirstTimeAccess(System.currentTimeMillis());
             releaseItem.setRecipient(StringUtils.join(message.getRecipients(), ", "));
 
-            SecretKey secretKey = loggedUserService.getUserEncryptionKey()
-                                                   .orElseGet(() -> getEncryptionKey(userEncryptionKey));
+            SecretKey secretKey = AuthHelper.getUserEncryptionKey()
+                                            .orElseGet(() -> getEncryptionKey(userEncryptionKey));
 
             return new ReleaseItemWithKey(releaseItem, secretKey);
 
@@ -201,7 +194,7 @@ public class PreviewService {
 
     }
 
-    public MessageDTO decrypt(PreviewRest.PreviewBaseDTO params) {
+    public MessageDTO decrypt(PreviewController.PreviewBaseDTO params) {
 
         return db.withLoadedAccountByUuid(params.getUser_uuid(), account -> {
 
@@ -243,7 +236,7 @@ public class PreviewService {
         return AESGCMUtils.decrypt(encryptionKey, message.getContent(), MessageContentUtils.aads(message));
     }
 
-    public Map<String, Object> requireMessage(PreviewRest.PreviewBaseDTO params) {
+    public Map<String, Object> requireMessage(PreviewController.PreviewBaseDTO params) {
 
         return db.withLoadedAccountByUuid(params.getUser_uuid(), account -> {
             UserData userData = account.getUserData();

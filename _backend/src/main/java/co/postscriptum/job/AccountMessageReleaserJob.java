@@ -1,9 +1,9 @@
-package co.postscriptum.jobs;
+package co.postscriptum.job;
 
 import co.postscriptum.db.Account;
 import co.postscriptum.email.UserEmailService;
 import co.postscriptum.exception.InternalException;
-import co.postscriptum.internal.AdminHelperService;
+import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.internal.ReleasedMessagesDetails;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.RequiredAction;
@@ -36,6 +36,17 @@ public class AccountMessageReleaserJob extends AbstractAccountJob {
 
     @Autowired
     private UserEmailService userEmailService;
+
+    @Override
+    public Stream<Account> getAccountsToTest() {
+        return db.getUserUnloadedAccounts();
+    }
+
+    @Scheduled(fixedDelay = 60000)
+    @Override
+    public void process() {
+        super.process();
+    }
 
     @Override
     public String processAccount(Account account) {
@@ -167,14 +178,4 @@ public class AccountMessageReleaserJob extends AbstractAccountJob {
 
     }
 
-    @Override
-    public Stream<Account> getAccountsToTest() {
-        return db.getUserUnloadedAccounts();
-    }
-
-    @Scheduled(fixedDelay = 60000)
-    @Override
-    public void process() {
-        super.process();
-    }
 }

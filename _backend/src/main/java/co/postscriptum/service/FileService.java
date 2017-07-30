@@ -22,9 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,19 +37,9 @@ public class FileService {
 
     private final UploadsEncryptionService uploadsEncryptionService;
 
-    private final LoggedUserService loggedUserService;
+    public ResponseEntity<InputStreamResource> openFile(UserData userData, SecretKey userEncryptionKey, String fileUuid) throws IOException {
 
-    private InputStream decryptedFileStream(File file, String encryptionPassword) throws IOException {
-        return uploadsEncryptionService.getDecryptedFileStream(
-                file,
-                loggedUserService.requireUserData().getUser(),
-                loggedUserService.requireUserEncryptionKey(),
-                encryptionPassword);
-    }
-
-    public ResponseEntity<InputStreamResource> openFile(String uuid) throws IOException {
-
-        File file = loggedUserService.requireFileByUuid(uuid);
+        File file = new UserDataHelper(userData).requireFileByUuid(fileUuid);
 
         if (file.getEncryption() != null) {
             throw new BadRequestException("preview not available for password encrypted file");
@@ -61,17 +51,13 @@ public class FileService {
                 .ok()
                 .header(HttpHeaders.CONTENT_TYPE, file.getMime())
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getName() + "\"")
-                .body(new InputStreamResource(decryptedFileStream(file, null)));
+                .body(new InputStreamResource(decryptedFileStream(userData.getUser(), userEncryptionKey, file, null)));
     }
 
-    public List<File> getFiles() {
-        return loggedUserService.requireUserData().getFiles();
-    }
-
-    public File upload(MultipartFile uploadingFile, String title) throws IOException {
+    public File upload(UserData userData, SecretKey userEncryptionKey, MultipartFile uploadingFile, String title) throws IOException {
 
         //set some sane limit
-        if (getFiles().size() > 100) {
+        if (userData.getFiles().size() > 100) {
             throw new InternalException("too many files");
         }
 
@@ -81,7 +67,7 @@ public class FileService {
         }
 
         if (uploadingFile.getSize() > 0) {
-            loggedUserService.verifyQuotaNotExceeded(uploadingFile.getSize());
+            new UserDataHelper(userData).verifyQuotaNotExceeded(uploadingFile.getSize());
         }
 
         File file = File.builder()
@@ -104,20 +90,19 @@ public class FileService {
 
         file.setMime(uploadingFile.getContentType());
 
-        uploadsEncryptionService.saveStreamToFile(
-                file,
-                loggedUserService.requireUserData().getUser(),
-                loggedUserService.requireUserEncryptionKey(),
-                uploadingFile.getInputStream());
+        uploadsEncryptionService.saveStreamToFile(file,
+                                                  userData.getUser(),
+                                                  userEncryptionKey,
+                                                  uploadingFile.getInputStream());
 
         try {
-            loggedUserService.verifyQuotaNotExceeded(file.getSize());
+            new UserDataHelper(userData).verifyQuotaNotExceeded(file.getSize());
         } catch (Exception e) {
-            fs.remove(filePath(file));
+            fs.remove(filePath(userData, file));
             throw e;
         }
 
-        getFiles().add(file);
+        userData.getFiles().add(file);
 
         log.info("file has been uploaded name={}, uuid={}", file.getName(), file.getUuid());
 
@@ -128,32 +113,29 @@ public class FileService {
         return owner.getUuid() + "/" + file.getUuid();
     }
 
-    private String filePath(File file) {
-        return filePath(file, loggedUserService.requireUserData().getUser());
+    private String filePath(UserData userData, File file) {
+        return filePath(file, userData.getUser());
     }
 
-    public void deleteFile(String uuid) throws IOException {
-        deleteFile(loggedUserService.requireFileByUuid(uuid));
+    public void deleteFile(UserData userData, String fileUuid) throws IOException {
+        deleteFile(userData, new UserDataHelper(userData).requireFileByUuid(fileUuid));
     }
 
-    private void deleteFile(File file) throws IOException {
+    private void deleteFile(UserData userData, File file) throws IOException {
 
         log.info("deleting file name={}, uuid={}", file.getName(), file.getUuid());
 
-        UserData userData = loggedUserService.requireUserData();
-
-        fs.remove(filePath(file));
+        fs.remove(filePath(userData, file));
 
         userData.getMessages().forEach(m -> m.getAttachments().removeIf(att -> att.equals(file.getUuid())));
         userData.getFiles().removeIf(f -> f.getUuid().equals(file.getUuid()));
 
     }
 
-    public FileDTO convertToDto(File file) {
-
-        UserData userData = loggedUserService.requireUserData();
+    public FileDTO convertToDto(UserData userData, File file) {
 
         FileDTO fdto = BO2DTOConverter.toFileDTO(userData, file);
+
         fdto.setMessages(userData.getMessages()
                                  .stream()
                                  .filter(m -> m.getAttachments().contains(file.getUuid()))
@@ -163,11 +145,11 @@ public class FileService {
         return fdto;
     }
 
-    public void decrypt(String msgUuid, String fileUuid, String encryptionPassword) throws IOException {
+    public void decrypt(UserData userData, SecretKey userEncryptionKey, String msgUuid, String fileUuid, String password) throws IOException {
 
-        Message message = loggedUserService.requireMessageByUuid(msgUuid);
+        Message message = new UserDataHelper(userData).requireMessageByUuid(msgUuid);
 
-        File encryptedFile = loggedUserService.requireFileByUuid(fileUuid);
+        File encryptedFile = new UserDataHelper(userData).requireFileByUuid(fileUuid);
         if (encryptedFile.getEncryption() == null) {
             throw new BadRequestException("can't decrypt not encrypted file");
         }
@@ -177,7 +159,7 @@ public class FileService {
             throw new BadRequestException("file is not connected to that message");
         }
 
-        Optional<File> originalFileOpt = loggedUserService.getFileByUuid(encryptedFile.getOriginalFileUuid());
+        Optional<File> originalFileOpt = new UserDataHelper(userData).getFileByUuid(encryptedFile.getOriginalFileUuid());
 
         File originalFile;
         if (!originalFileOpt.isPresent()) {
@@ -187,11 +169,14 @@ public class FileService {
             originalFile = DataFactory.cloneBasicData(encryptedFile);
             originalFile.setUuid(encryptedFile.getOriginalFileUuid());
 
-            try (InputStream fileInput = decryptedFileStream(encryptedFile, encryptionPassword)) {
-                fs.save(filePath(originalFile), fileInput);
+            try (InputStream fileInput = decryptedFileStream(userData.getUser(),
+                                                             userEncryptionKey,
+                                                             encryptedFile,
+                                                             password)) {
+                fs.save(filePath(userData, originalFile), fileInput);
             }
 
-            getFiles().add(originalFile);
+            userData.getFiles().add(originalFile);
 
         } else {
 
@@ -205,19 +190,19 @@ public class FileService {
 
         message.setAttachments(Utils.unique(message.getAttachments()));
 
-        deleteFile(encryptedFile);
+        deleteFile(userData, encryptedFile);
 
     }
 
-    public void encrypt(String msgUuid, String fileUuid, String encryptionPassword) throws IOException {
+    public void encrypt(UserData userData, String msgUuid, String fileUuid, String password) throws IOException {
 
-        Message message = loggedUserService.requireMessageByUuid(msgUuid);
+        Message message = new UserDataHelper(userData).requireMessageByUuid(msgUuid);
 
-        File file = loggedUserService.requireFileByUuid(fileUuid);
+        File file = new UserDataHelper(userData).requireFileByUuid(fileUuid);
         if (file.getEncryption() != null) {
             throw new BadRequestException("file is already encrypted");
         }
-        loggedUserService.verifyQuotaNotExceeded(file.getSize());
+        new UserDataHelper(userData).verifyQuotaNotExceeded(file.getSize());
 
         int attachmentIndex = message.getAttachments().indexOf(file.getUuid());
         if (attachmentIndex == -1) {
@@ -225,17 +210,21 @@ public class FileService {
         }
         log.info("msg attachment index={}", attachmentIndex);
 
-        File encryptedFile =
-                uploadsEncryptionService.encryptFileByPassword(file,
-                                                               loggedUserService.requireUserData().getUser(),
-                                                               encryptionPassword);
+        File encryptedFile = uploadsEncryptionService.encryptFileByPassword(file, userData.getUser(), password);
         // this file is *only* attached to this message, it belongs to that message
         encryptedFile.setBelongsTo(message.getUuid());
 
-        getFiles().add(encryptedFile);
+        userData.getFiles().add(encryptedFile);
 
         message.getAttachments().set(attachmentIndex, encryptedFile.getUuid());
 
+    }
+
+    private InputStream decryptedFileStream(User user, SecretKey userEncryptionKey, File file, String encryptionPassword) throws IOException {
+        return uploadsEncryptionService.getDecryptedFileStream(file,
+                                                               user,
+                                                               userEncryptionKey,
+                                                               encryptionPassword);
     }
 
 }

@@ -10,9 +10,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Account {
 
     private final UserData userData;
+
     private final ReentrantLock lock = new ReentrantLock();
+
     private long lastAccessTime;
+
     private boolean loaded;
+
     private boolean toBeRemoved;
 
     public Account(UserData userData) {

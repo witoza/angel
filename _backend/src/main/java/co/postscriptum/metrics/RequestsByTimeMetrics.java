@@ -10,8 +10,17 @@ import java.util.LinkedList;
 public class RequestsByTimeMetrics {
 
     private LinkedList<DataHolder> last60Minute = new LinkedList<>();
+
     private LinkedList<DataHolder> last24Hours = new LinkedList<>();
+
     private LinkedList<DataHolder> last30Days = new LinkedList<>();
+
+    @Synchronized
+    public void newRequest() {
+        newRequest(last60Minute, Calendar.MINUTE, 60);
+        newRequest(last24Hours, Calendar.HOUR_OF_DAY, 24);
+        newRequest(last30Days, Calendar.DAY_OF_MONTH, 30);
+    }
 
     private void newRequest(LinkedList<DataHolder> lastList, int timeType, int maxElements) {
         if (lastList.isEmpty()) {
@@ -33,13 +42,6 @@ public class RequestsByTimeMetrics {
         if (lastList.size() > maxElements) {
             lastList.removeFirst();
         }
-    }
-
-    @Synchronized
-    public void newRequest() {
-        newRequest(last60Minute, Calendar.MINUTE, 60);
-        newRequest(last24Hours, Calendar.HOUR_OF_DAY, 24);
-        newRequest(last30Days, Calendar.DAY_OF_MONTH, 30);
     }
 
     @Synchronized

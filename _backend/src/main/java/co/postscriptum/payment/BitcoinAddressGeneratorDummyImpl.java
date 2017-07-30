@@ -23,4 +23,5 @@ public class BitcoinAddressGeneratorDummyImpl implements BitcoinAddressGenerator
 
         return paymentAddress;
     }
+
 }

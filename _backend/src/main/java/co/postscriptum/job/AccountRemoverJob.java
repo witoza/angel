@@ -1,7 +1,7 @@
-package co.postscriptum.jobs;
+package co.postscriptum.job;
 
 import co.postscriptum.db.Account;
-import co.postscriptum.internal.AdminHelperService;
+import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.Message;
@@ -30,10 +30,14 @@ import java.util.stream.Stream;
 public class AccountRemoverJob extends AbstractAccountJob {
 
     public static final String releaseItem_message_uuid = "releaseItem.message.uuid";
+
     public static final String releaseItem_key = "releaseItem.key";
+
     public static final String remainder_uuid = "remainder.uuid";
+
     @Autowired
     private AdminHelperService adminHelperService;
+
     //10080 min == 7 days
     @Value("${accountRemoverJob.releaseItemAvailableForAfterOpeningMins:10080}")
     private Integer releaseItemAvailableForAfterOpeningMins;
@@ -43,6 +47,66 @@ public class AccountRemoverJob extends AbstractAccountJob {
 
     @Value("${accountRemoverJob.runLogicAfterTriggeringMins:20160}")
     private Integer runLogicAfterTriggeringMins;
+
+    @Override
+    public Stream<Account> getAccountsToTest() {
+        return db.getUserUnloadedAccounts();
+    }
+
+    //run every 15 minutes
+    @Scheduled(fixedDelay = 900000)
+    @Override
+    public void process() {
+        super.process();
+    }
+
+    @Override
+    public String processAccount(Account account) {
+        account.assertLockIsHeldByCurrentThread();
+
+        if (account.isToBeRemoved()) {
+            return "account is already marked as to be removed";
+        }
+
+        UserData userData = account.getUserData();
+        Trigger trigger = userData.getUser().getTrigger();
+
+        if (trigger.getStage() != Stage.released) {
+            return "not yet released";
+        }
+
+        if (trigger.getHaveBeenReleasedTime() == 0) {
+            return "admin didn't released yet";
+        }
+
+        if (lessThanXMinutesAgo(trigger.getHaveBeenReleasedTime(), runLogicAfterTriggeringMins)) {
+            return "released less than " + runLogicAfterTriggeringMins + " minutes ago";
+        }
+
+        log.info("verifying ...");
+
+        // after runLogicAfterTriggeringMins minutes from the triggering, we try to do the cleanup if necessary we will send admin event that msg has not been opened
+
+        db.loadAccount(account);
+
+        long newRemindersCreated = createReminders(userData);
+        if (newRemindersCreated > 0) {
+            return "there are " + newRemindersCreated + " messages that needs admin's attention";
+        }
+
+        boolean accountCanBeRemoved = userData.getMessages().stream().noneMatch(this::shouldMessageStillBeAvailable);
+        if (accountCanBeRemoved) {
+
+            userData.getUser().setActive(false);
+            account.setToBeRemoved(true);
+
+            adminHelperService.addAdminRequiredAction(DataFactory.newRequiredAction(userData, Type.account_can_be_removed));
+
+            return "account can be removed, all reachable release items are not available";
+        }
+
+        return "some release items can still be reachable, waiting for admin to verify";
+    }
 
     private boolean lessThanXMinutesAgo(long timestamp, long minutes) {
         return ZonedDateTime.now().isBefore(Utils.fromTimestamp(timestamp).plusMinutes(minutes));
@@ -133,66 +197,6 @@ public class AccountRemoverJob extends AbstractAccountJob {
 
     private boolean shouldMessageStillBeAvailable(Message message) {
         return message.getRelease().getItems().stream().anyMatch(this::releaseItemIsReachableOrShouldBeAvailable);
-    }
-
-    @Override
-    public String processAccount(Account account) {
-        account.assertLockIsHeldByCurrentThread();
-
-        if (account.isToBeRemoved()) {
-            return "account is already marked as to be removed";
-        }
-
-        UserData userData = account.getUserData();
-        Trigger trigger = userData.getUser().getTrigger();
-
-        if (trigger.getStage() != Stage.released) {
-            return "not yet released";
-        }
-
-        if (trigger.getHaveBeenReleasedTime() == 0) {
-            return "admin didn't released yet";
-        }
-
-        if (lessThanXMinutesAgo(trigger.getHaveBeenReleasedTime(), runLogicAfterTriggeringMins)) {
-            return "released less than " + runLogicAfterTriggeringMins + " minutes ago";
-        }
-
-        log.info("verifying ...");
-
-        // after runLogicAfterTriggeringMins minutes from the triggering, we try to do the cleanup if necessary we will send admin event that msg has not been opened
-
-        db.loadAccount(account);
-
-        long newRemindersCreated = createReminders(userData);
-        if (newRemindersCreated > 0) {
-            return "there are " + newRemindersCreated + " messages that needs admin's attention";
-        }
-
-        boolean accountCanBeRemoved = userData.getMessages().stream().noneMatch(this::shouldMessageStillBeAvailable);
-        if (accountCanBeRemoved) {
-
-            userData.getUser().setActive(false);
-            account.setToBeRemoved(true);
-
-            adminHelperService.addAdminRequiredAction(DataFactory.newRequiredAction(userData, Type.account_can_be_removed));
-
-            return "account can be removed, all reachable release items are not available";
-        }
-
-        return "some release items can still be reachable, waiting for admin to verify";
-    }
-
-    @Override
-    public Stream<Account> getAccountsToTest() {
-        return db.getUserUnloadedAccounts();
-    }
-
-    //run every 15 minutes
-    @Scheduled(fixedDelay = 900000)
-    @Override
-    public void process() {
-        super.process();
     }
 
 }

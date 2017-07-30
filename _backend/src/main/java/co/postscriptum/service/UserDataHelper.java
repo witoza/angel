@@ -1,12 +1,15 @@
 package co.postscriptum.service;
 
 import co.postscriptum.exception.ExceptionBuilder;
+import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.File;
 import co.postscriptum.model.bo.Message;
 import co.postscriptum.model.bo.Notification;
 import co.postscriptum.model.bo.ReleaseItem;
+import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.UserData;
+import co.postscriptum.security.PasswordUtils;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
@@ -47,7 +50,6 @@ public class UserDataHelper {
                 .orElseThrow(ExceptionBuilder.missingClass(File.class, "uuid=" + uuid));
     }
 
-
     public void addNotification(String message) {
 
         List<Notification> notifications = userData.getNotifications();
@@ -60,4 +62,46 @@ public class UserDataHelper {
 
         Utils.limit(notifications, 30);
     }
+
+    public long getUserUsedSpaceBytes() {
+        long total = 0;
+
+        for (File file : userData.getFiles()) {
+            total += file.getSize();
+            total += file.getName().length();
+        }
+        for (Message message : userData.getMessages()) {
+            total += message.getContent().getCt().length;
+            total += message.getTitle().length();
+        }
+        return total;
+    }
+
+    private long kb(long bytes) {
+        return bytes / 1024;
+    }
+
+    public void verifyQuotaNotExceeded(long addBytes) {
+
+        long usedBytes = getUserUsedSpaceBytes();
+        long quotaBytes = userData.getInternal().getQuotaBytes();
+
+        if (usedBytes + addBytes > quotaBytes) {
+            throw new ForbiddenException(
+                    "You don't have enough storage space to do that. Increase your quota and try again. Currently used: "
+                            + kb(usedBytes) + "kb, would be: " + kb(usedBytes + addBytes) + "kb, quota: " + kb(quotaBytes) + "kb.");
+
+        }
+    }
+
+    public boolean isUserAdmin() {
+        return userData.getUser().getRole() == User.Role.admin;
+    }
+
+    public void verifyLoginPasswordIsCorrect(String loginPassword) {
+        if (!PasswordUtils.checkPasswordHash(loginPassword, userData.getInternal())) {
+            throw new ForbiddenException("invalid password");
+        }
+    }
+
 }

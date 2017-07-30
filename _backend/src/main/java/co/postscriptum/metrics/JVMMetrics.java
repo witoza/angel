@@ -8,10 +8,6 @@ import java.lang.management.ThreadMXBean;
 
 public class JVMMetrics {
 
-    private long toMb(long bytes) {
-        return bytes / 1024 / 1024;
-    }
-
     public String dump() {
         StringBuilder sb = new StringBuilder();
 
@@ -37,5 +33,9 @@ public class JVMMetrics {
 
         return sb.toString();
 
+    }
+
+    private long toMb(long bytes) {
+        return bytes / 1024 / 1024;
     }
 }

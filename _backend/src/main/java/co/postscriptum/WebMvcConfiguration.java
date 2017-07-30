@@ -1,5 +1,6 @@
 package co.postscriptum;
 
+import co.postscriptum.web.UserDataArgumentResolver;
 import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,18 +10,24 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import java.util.List;
 
 @Configuration
 @EnableWebMvc
-public class WebMvcConfig extends WebMvcConfigurationSupport {
+public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
     @Value("${tomcat.ajp.port}")
     private int ajpPort;
 
     @Autowired
     private RuntimeEnvironment env;
+
+    @Autowired
+    private UserDataArgumentResolver userDataArgumentResolver;
 
     @Bean
     public InfoContributor envInfo() {
@@ -43,6 +50,11 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
         connector.setAllowTrace(false);
         connector.setScheme("ajp");
         return connector;
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+        argumentResolvers.add(userDataArgumentResolver);
     }
 
 }
