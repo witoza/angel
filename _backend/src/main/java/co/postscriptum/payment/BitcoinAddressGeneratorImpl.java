@@ -4,7 +4,7 @@ import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.PaymentAddress;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +48,7 @@ public class BitcoinAddressGeneratorImpl implements BitcoinAddressGenerator {
 
             try (Reader fr = new InputStreamReader(con.getInputStream())) {
 
-                Map<String, Object> result = Utils.fromJson(fr, new TypeToken<Map<String, Object>>() {
+                Map<String, Object> result = Utils.fromJson(fr, new TypeReference<Map<String, Object>>() {
                 });
                 paymentAddress.setBtcAddress((String) result.get("address"));
             }

@@ -13,7 +13,7 @@ import co.postscriptum.security.AESGCMEncrypted;
 import co.postscriptum.security.AESGCMUtils;
 import co.postscriptum.security.AESKeyUtils;
 import co.postscriptum.stk.ShortTimeKey;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -307,7 +307,7 @@ public class DB {
                 return IOUtils.toString(fr);
             }
 
-            AESGCMEncrypted encrypted = Utils.fromJson(fr, new TypeToken<AESGCMEncrypted>() {
+            AESGCMEncrypted encrypted = Utils.fromJson(fr, new TypeReference<AESGCMEncrypted>() {
             });
 
             return Utils.asString(AESGCMUtils.decrypt(dbEncryptionKey, encrypted, dbPath));
@@ -342,7 +342,7 @@ public class DB {
 
         UserData ud;
         try {
-            ud = Utils.fromJson(loadData(dbPath), new TypeToken<UserData>() {
+            ud = Utils.fromJson(loadData(dbPath), new TypeReference<UserData>() {
             });
         } catch (IOException e) {
             throw new InternalException("can't load user model from db", e);
@@ -433,7 +433,7 @@ public class DB {
 
         log.info("loading stub");
 
-        List<User> users = Utils.fromJson(loadData(getStubPath()), new TypeToken<List<User>>() {
+        List<User> users = Utils.fromJson(loadData(getStubPath()), new TypeReference<List<User>>() {
         });
 
         stub = new CopyOnWriteArrayList<>(

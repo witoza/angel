@@ -2,14 +2,12 @@ package co.postscriptum.email;
 
 import co.postscriptum.internal.AwsConfig;
 import co.postscriptum.internal.Utils;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -56,7 +54,7 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
         try {
             String json = new String(Utils.base64decode(data), StandardCharsets.UTF_8);
             try (Reader fr = new StringReader(json)) {
-                return Utils.fromJson(fr, new TypeToken<Map<String, String>>() {
+                return Utils.fromJson(fr, new TypeReference<Map<String, String>>() {
                 });
             }
         } catch (Exception e) {

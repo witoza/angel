@@ -43,7 +43,6 @@ dependencies {
     compile "org.apache.commons:commons-lang3:3.6"
     compile "com.github.spullara.mustache.java:compiler:0.9.5"
     compile "commons-validator:commons-validator:1.6"
-    compile "com.google.code.gson:gson"
     compile "com.google.zxing:core:3.3.0"
     compile "org.bouncycastle:bcprov-jdk15on:1.57"
     compile "net.sf.jsignature.io-tools:easystream:1.2.15"

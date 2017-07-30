@@ -2,7 +2,7 @@ package co.postscriptum.service;
 
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class CaptchaService {
 
             try (Reader fr = new InputStreamReader(con.getInputStream())) {
 
-                Map<String, Object> result = Utils.fromJson(fr, new TypeToken<Map<String, Object>>() {
+                Map<String, Object> result = Utils.fromJson(fr, new TypeReference<Map<String, Object>>() {
                 });
 
                 return Boolean.parseBoolean(result.get("success").toString());

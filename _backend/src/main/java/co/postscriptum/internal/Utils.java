@@ -1,15 +1,16 @@
 package co.postscriptum.internal;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -18,10 +19,10 @@ import org.jsoup.Jsoup;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
@@ -42,11 +43,19 @@ public class Utils {
 
     private static final EmailValidator EMAIL_VALIDATOR = EmailValidator.getInstance();
 
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .disableHtmlEscaping()
-            .registerTypeHierarchyAdapter(byte[].class, new ByteArrayToBase64TypeAdapter())
-            .create();
+    private static ObjectMapper getObjectMapper() {
+        SimpleModule testModule = new SimpleModule();
+        testModule.addSerializer(new ByteArrayToBase64Serializer());
+        testModule.addDeserializer(byte[].class, new ByteArrayToBase64Deserializer());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+        mapper.registerModule(testModule);
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return mapper;
+    }
+
+    private static final ObjectMapper OBJECT_MAPPER = getObjectMapper();
 
     private static final Base64 BASE64 = new Base64();
 
@@ -77,19 +86,31 @@ public class Utils {
     }
 
     public static String toJson(Object obj) {
-        return GSON.toJson(obj);
+        try {
+            return OBJECT_MAPPER.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("mapper error", e);
+        }
     }
 
-    public static <T> T fromJson(Reader fr, TypeToken<T> tt) {
-        return GSON.fromJson(fr, tt.getType());
+    public static <T> T fromJson(Reader fr, TypeReference<T> tt) {
+        try {
+            return OBJECT_MAPPER.readValue(fr, tt);
+        } catch (IOException e) {
+            throw new IllegalStateException("mapper error", e);
+        }
     }
 
-    public static <T> T fromJson(String data, TypeToken<T> tt) {
-        return GSON.fromJson(data, tt.getType());
+    public static <T> T fromJson(String data, TypeReference<T> tt) {
+        try {
+            return OBJECT_MAPPER.readValue(data, tt);
+        } catch (IOException e) {
+            throw new IllegalStateException("mapper error", e);
+        }
     }
 
     public static Map<String, Object> mapFromJson(String json) {
-        return fromJson(new StringReader(json), new TypeToken<Map<String, Object>>() {
+        return fromJson(new StringReader(json), new TypeReference<Map<String, Object>>() {
         });
     }
 
@@ -214,18 +235,33 @@ public class Utils {
         return Jsoup.parse(data).text();
     }
 
-    private static class ByteArrayToBase64TypeAdapter implements JsonSerializer<byte[]>, JsonDeserializer<byte[]> {
+
+    private static class ByteArrayToBase64Serializer extends JsonSerializer<byte[]> {
 
         @Override
-        public byte[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws
-                JsonParseException {
-            return base64decode(json.getAsString());
+        public void serialize(byte[] value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+            gen.writeString(base64encode(value));
         }
 
         @Override
-        public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(base64encode(src));
+        public Class<byte[]> handledType() {
+            return byte[].class;
         }
+
+    }
+
+    private static class ByteArrayToBase64Deserializer extends JsonDeserializer<byte[]> {
+
+        @Override
+        public byte[] deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            return base64decode(p.getCodec().readTree(p).toString());
+        }
+
+        @Override
+        public Class<?> handledType() {
+            return byte[].class;
+        }
+
     }
 
 }
