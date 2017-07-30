@@ -1,6 +1,6 @@
 package co.postscriptum.payment;
 
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.PaymentAddress;

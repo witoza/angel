@@ -1,8 +1,8 @@
 package co.postscriptum.web;
 
-import co.postscriptum.exceptions.BadRequestException;
-import co.postscriptum.exceptions.ForbiddenException;
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.BadRequestException;
+import co.postscriptum.exception.ForbiddenException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.metrics.RestMetrics;
 import lombok.Data;

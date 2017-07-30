@@ -2,7 +2,7 @@ package co.postscriptum.web;
 
 import co.postscriptum.db.Account;
 import co.postscriptum.db.DB;
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.metrics.RestMetrics;
 import co.postscriptum.model.bo.User.Role;

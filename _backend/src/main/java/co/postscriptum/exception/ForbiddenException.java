@@ -1,4 +1,4 @@
-package co.postscriptum.exceptions;
+package co.postscriptum.exception;
 
 public class ForbiddenException extends RuntimeException {
 

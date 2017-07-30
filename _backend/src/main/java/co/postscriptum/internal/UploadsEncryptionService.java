@@ -1,6 +1,6 @@
 package co.postscriptum.internal;
 
-import co.postscriptum.exceptions.BadRequestException;
+import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.fs.FS;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.File;

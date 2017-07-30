@@ -1,7 +1,7 @@
 package co.postscriptum.security;
 
 import co.postscriptum.RuntimeEnvironment;
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.QRGenerator;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.UserData;

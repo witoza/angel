@@ -1,7 +1,7 @@
 package co.postscriptum.service;
 
-import co.postscriptum.exceptions.ForbiddenException;
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.ForbiddenException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.MessageContentUtils;
 import co.postscriptum.model.BO2DTOConverter;
 import co.postscriptum.model.bo.DataFactory;

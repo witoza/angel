@@ -1,6 +1,6 @@
 package co.postscriptum.web;
 
-import co.postscriptum.exceptions.BadRequestException;
+import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.model.bo.Lang;
 import co.postscriptum.model.bo.Message;
 import co.postscriptum.model.bo.Message.Type;

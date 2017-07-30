@@ -1,7 +1,7 @@
 package co.postscriptum.db;
 
 import co.postscriptum.RuntimeEnvironment;
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.AdminHelperService;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.model.bo.User;

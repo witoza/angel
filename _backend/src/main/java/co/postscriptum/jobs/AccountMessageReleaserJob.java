@@ -2,7 +2,7 @@ package co.postscriptum.jobs;
 
 import co.postscriptum.db.Account;
 import co.postscriptum.email.UserEmailService;
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.AdminHelperService;
 import co.postscriptum.internal.ReleasedMessagesDetails;
 import co.postscriptum.model.bo.DataFactory;

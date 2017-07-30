@@ -1,6 +1,6 @@
 package co.postscriptum.email;
 
-import co.postscriptum.exceptions.BadRequestException;
+import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.jobs.EmailProcessor;
 import co.postscriptum.model.bo.Lang;

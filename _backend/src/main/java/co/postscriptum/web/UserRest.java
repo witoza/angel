@@ -1,6 +1,6 @@
 package co.postscriptum.web;
 
-import co.postscriptum.exceptions.BadRequestException;
+import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.internal.QRGenerator;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.Lang;

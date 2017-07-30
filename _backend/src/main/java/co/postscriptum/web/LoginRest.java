@@ -1,7 +1,7 @@
 package co.postscriptum.web;
 
-import co.postscriptum.exceptions.BadRequestException;
-import co.postscriptum.exceptions.ForbiddenException;
+import co.postscriptum.exception.BadRequestException;
+import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.internal.AdminHelperService;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;

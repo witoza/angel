@@ -1,6 +1,6 @@
 package co.postscriptum.stk;
 
-import co.postscriptum.exceptions.ExceptionBuilder;
+import co.postscriptum.exception.ExceptionBuilder;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.UserData;
 import org.springframework.stereotype.Component;

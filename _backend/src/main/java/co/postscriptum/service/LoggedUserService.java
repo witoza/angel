@@ -2,8 +2,8 @@ package co.postscriptum.service;
 
 import co.postscriptum.db.Account;
 import co.postscriptum.db.DB;
-import co.postscriptum.exceptions.ExceptionBuilder;
-import co.postscriptum.exceptions.ForbiddenException;
+import co.postscriptum.exception.ExceptionBuilder;
+import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.model.bo.File;
 import co.postscriptum.model.bo.Message;
 import co.postscriptum.model.bo.User;

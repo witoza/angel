@@ -1,6 +1,6 @@
 package co.postscriptum.internal;
 
-import co.postscriptum.exceptions.BadRequestException;
+import co.postscriptum.exception.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;

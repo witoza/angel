@@ -1,7 +1,7 @@
 package co.postscriptum.db;
 
-import co.postscriptum.exceptions.BadRequestException;
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.BadRequestException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.fs.FS;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;

@@ -1,6 +1,6 @@
 package co.postscriptum.db;
 
-import co.postscriptum.exceptions.InternalException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.model.bo.UserData;
 import lombok.Synchronized;
 

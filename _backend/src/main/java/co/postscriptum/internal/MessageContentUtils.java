@@ -1,6 +1,6 @@
 package co.postscriptum.internal;
 
-import co.postscriptum.exceptions.BadRequestException;
+import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.model.bo.Message;
 import co.postscriptum.security.AESGCMEncrypted;
 import co.postscriptum.security.AESGCMUtils;

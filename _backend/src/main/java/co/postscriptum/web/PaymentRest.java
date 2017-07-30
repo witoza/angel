@@ -1,6 +1,6 @@
 package co.postscriptum.web;
 
-import co.postscriptum.exceptions.BadRequestException;
+import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.payment.BitcoinService;
 import lombok.AllArgsConstructor;

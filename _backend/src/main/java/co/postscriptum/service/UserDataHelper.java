@@ -1,6 +1,6 @@
 package co.postscriptum.service;
 
-import co.postscriptum.exceptions.ExceptionBuilder;
+import co.postscriptum.exception.ExceptionBuilder;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.File;
 import co.postscriptum.model.bo.Message;

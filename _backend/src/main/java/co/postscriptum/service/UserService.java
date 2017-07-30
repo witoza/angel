@@ -2,8 +2,8 @@ package co.postscriptum.service;
 
 import co.postscriptum.db.DB;
 import co.postscriptum.email.UserEmailService;
-import co.postscriptum.exceptions.BadRequestException;
-import co.postscriptum.exceptions.ForbiddenException;
+import co.postscriptum.exception.BadRequestException;
+import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.internal.AdminHelperService;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.DataFactory;

@@ -1,6 +1,6 @@
 package co.postscriptum.service;
 
-import co.postscriptum.exceptions.ExceptionBuilder;
+import co.postscriptum.exception.ExceptionBuilder;
 import co.postscriptum.model.bo.Notification;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
