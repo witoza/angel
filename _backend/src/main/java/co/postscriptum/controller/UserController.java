@@ -11,7 +11,7 @@ import co.postscriptum.model.bo.TriggerInternal;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.UserDTO;
 import co.postscriptum.service.UserService;
-import co.postscriptum.web.AuthHelper;
+import co.postscriptum.web.AuthenticationHelper;
 import com.google.zxing.WriterException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,13 +48,13 @@ public class UserController {
 
     @GetMapping("/current")
     public UserDTO current(UserData userData) {
-        return userService.getUserDTO(userData, AuthHelper.getUserEncryptionKey());
+        return userService.getUserDTO(userData, AuthenticationHelper.getUserEncryptionKey());
     }
 
     @PostMapping("/logout")
     public void logout(UserData userData, HttpServletRequest request) {
 
-        if (AuthHelper.getAuthentication() == null) {
+        if (AuthenticationHelper.getAuthentication() == null) {
             throw new BadRequestException("user already logged out");
         }
 
@@ -107,9 +107,9 @@ public class UserController {
     @PostMapping("/get_aes_key")
     public Map<String, String> getAesKey() {
 
-        String aesKey = AuthHelper.getUserEncryptionKey()
-                                  .map(key -> Utils.base32encode(key.getEncoded()))
-                                  .orElse(null);
+        String aesKey = AuthenticationHelper.getUserEncryptionKey()
+                                            .map(key -> Utils.base32encode(key.getEncoded()))
+                                            .orElse(null);
 
         return Collections.singletonMap("aes_key", aesKey);
     }
@@ -118,11 +118,11 @@ public class UserController {
     public void setAesKey(UserData userData, @Valid @RequestBody SetAesKeyDTO dto) {
 
         byte[] secretKey = userService.setEncryptionKey(userData,
-                                                        AuthHelper.getUserEncryptionKey(),
+                                                        AuthenticationHelper.getUserEncryptionKey(),
                                                         dto.passwd,
                                                         dto.aes_key);
 
-        AuthHelper.setUserEncryptionKey(secretKey);
+        AuthenticationHelper.setUserEncryptionKey(secretKey);
 
     }
 
@@ -141,14 +141,14 @@ public class UserController {
 
         userService.updateUser(userData, dto);
 
-        return userService.getUserDTO(userData, AuthHelper.getUserEncryptionKey());
+        return userService.getUserDTO(userData, AuthenticationHelper.getUserEncryptionKey());
     }
 
     @PostMapping("/change_passwd")
     public void changeLoginPassword(UserData userData, @Valid @RequestBody ChangePasswordDTO dto) {
 
         userService.changeLoginPassword(userData,
-                                        AuthHelper.getUserEncryptionKey(),
+                                        AuthenticationHelper.getUserEncryptionKey(),
                                         dto.passwd,
                                         dto.passwd_new);
 

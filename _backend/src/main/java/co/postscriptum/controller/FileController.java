@@ -5,7 +5,7 @@ import co.postscriptum.model.bo.File;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.FileDTO;
 import co.postscriptum.service.FileService;
-import co.postscriptum.web.AuthHelper;
+import co.postscriptum.web.AuthenticationHelper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,7 +40,7 @@ public class FileController {
     public ResponseEntity<InputStreamResource> open(UserData userData, @RequestParam(value = "file_uuid") String fileUuid)
             throws IOException {
         return fileService.openFile(userData,
-                                    AuthHelper.requireUserEncryptionKey(),
+                                    AuthenticationHelper.requireUserEncryptionKey(),
                                     FilenameUtils.removeExtension(fileUuid));
     }
 
@@ -56,7 +56,7 @@ public class FileController {
                  title);
 
         File file = fileService.upload(userData,
-                                       AuthHelper.requireUserEncryptionKey(),
+                                       AuthenticationHelper.requireUserEncryptionKey(),
                                        multipartFile, title);
 
         return fileService.convertToDto(userData, file);
@@ -82,7 +82,7 @@ public class FileController {
     public void decrypt(UserData userData, @Valid @RequestBody DeEncryptDTO dto) throws IOException {
 
         fileService.decrypt(userData,
-                            AuthHelper.requireUserEncryptionKey(),
+                            AuthenticationHelper.requireUserEncryptionKey(),
                             dto.msg_uuid, dto.file_uuid, dto.encryption_passwd);
 
     }

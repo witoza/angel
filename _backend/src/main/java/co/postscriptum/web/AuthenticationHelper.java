@@ -11,7 +11,7 @@ import javax.crypto.SecretKey;
 import java.util.Optional;
 
 @UtilityClass
-public class AuthHelper {
+public class AuthenticationHelper {
 
     public Authentication getAuthentication() {
         return SecurityContextHolder.getContext().getAuthentication();
@@ -38,13 +38,13 @@ public class AuthHelper {
     }
 
     public boolean isUserLogged(String username) {
-        return isUserLogged() && username.equals(AuthHelper.requireLoggedUsername());
+        return isUserLogged() && username.equals(AuthenticationHelper.requireLoggedUsername());
     }
 
     public Optional<SecretKey> getUserEncryptionKey() {
-        return AuthHelper.getMyAuthenticationToken()
-                         .getKey()
-                         .map(AESKeyUtils::toSecretKey);
+        return AuthenticationHelper.getMyAuthenticationToken()
+                                   .getKey()
+                                   .map(AESKeyUtils::toSecretKey);
     }
 
     public SecretKey requireUserEncryptionKey() {

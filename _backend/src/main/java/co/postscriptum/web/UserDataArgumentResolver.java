@@ -32,7 +32,7 @@ public class UserDataArgumentResolver implements HandlerMethodArgumentResolver {
 
         log.info("Resolving logged UserData");
 
-        Account account = db.requireAccountByUsername(AuthHelper.requireLoggedUsername());
+        Account account = db.requireAccountByUsername(AuthenticationHelper.requireLoggedUsername());
         account.assertLockIsHeldByCurrentThread();
         db.loadAccount(account);
 

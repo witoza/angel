@@ -16,7 +16,7 @@ import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.MessageDTO;
 import co.postscriptum.security.AESGCMUtils;
 import co.postscriptum.security.AESKeyUtils;
-import co.postscriptum.web.AuthHelper;
+import co.postscriptum.web.AuthenticationHelper;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -88,11 +88,11 @@ public class PreviewService {
 
                 log.info("edit mode download");
 
-                if (!AuthHelper.isUserLogged(fileAccount.getUserData().getUser().getUsername())) {
+                if (!AuthenticationHelper.isUserLogged(fileAccount.getUserData().getUser().getUsername())) {
                     throw new ForbiddenException("file does not belong to the logged account");
                 }
 
-                encryptionKey = AuthHelper.requireUserEncryptionKey();
+                encryptionKey = AuthenticationHelper.requireUserEncryptionKey();
 
             }
 
@@ -145,7 +145,7 @@ public class PreviewService {
 
         UserDataHelper userDataHelper = new UserDataHelper(messageAccount.getUserData());
 
-        if (AuthHelper.isUserLogged(messageAccount.getUserData().getUser().getUsername())) {
+        if (AuthenticationHelper.isUserLogged(messageAccount.getUserData().getUser().getUsername())) {
 
             log.info("logged account is the owner of the message");
 
@@ -153,8 +153,8 @@ public class PreviewService {
             releaseItem.setFirstTimeAccess(System.currentTimeMillis());
             releaseItem.setRecipient(StringUtils.join(message.getRecipients(), ", "));
 
-            SecretKey secretKey = AuthHelper.getUserEncryptionKey()
-                                            .orElseGet(() -> getEncryptionKey(userEncryptionKey));
+            SecretKey secretKey = AuthenticationHelper.getUserEncryptionKey()
+                                                      .orElseGet(() -> getEncryptionKey(userEncryptionKey));
 
             return new ReleaseItemWithKey(releaseItem, secretKey);
 

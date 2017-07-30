@@ -2,7 +2,7 @@ package co.postscriptum.email;
 
 import co.postscriptum.internal.Utils;
 import co.postscriptum.metrics.ComponentMetrics;
-import co.postscriptum.web.AuthHelper;
+import co.postscriptum.web.AuthenticationHelper;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -39,8 +39,8 @@ public class EmailDiscWriter {
         EnvelopeEnqueuedInfo data = EnvelopeEnqueuedInfo.builder()
                                                         .envelope(envelope)
                                                         .reqId(MDC.get("reqId"))
-                                                        .principal(AuthHelper.getLoggedUsername()
-                                                                             .orElse("not logged"))
+                                                        .principal(AuthenticationHelper.getLoggedUsername()
+                                                                                       .orElse("not logged"))
                                                         .build();
 
         Path file = Paths.get(emailsDir + "/" + envelope.getEnvelopeId());

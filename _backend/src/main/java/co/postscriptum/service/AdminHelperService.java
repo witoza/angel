@@ -13,8 +13,7 @@ import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.security.RSAOAEPUtils;
 import co.postscriptum.security.RequestMetadata;
-import co.postscriptum.service.UserDataHelper;
-import co.postscriptum.web.AuthHelper;
+import co.postscriptum.web.AuthenticationHelper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -80,8 +79,8 @@ public class AdminHelperService {
     public void sendToAdminContactForm(String from, String title, String userInquiry, RequestMetadata metadata) {
 
         String loggedUsername = null;
-        if (AuthHelper.isUserLogged()) {
-            loggedUsername = AuthHelper.requireLoggedUsername();
+        if (AuthenticationHelper.isUserLogged()) {
+            loggedUsername = AuthenticationHelper.requireLoggedUsername();
         }
 
         String content =

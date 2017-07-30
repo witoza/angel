@@ -11,7 +11,7 @@ import co.postscriptum.security.VerifiedUsers;
 import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.service.CaptchaService;
 import co.postscriptum.service.LoginService;
-import co.postscriptum.web.AuthHelper;
+import co.postscriptum.web.AuthenticationHelper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -115,7 +115,7 @@ public class LoginController {
     @PostMapping("/send_message")
     public void sendMessage(@Valid @RequestBody SendMessageDTO dto, HttpServletRequest request) {
 
-        if (!AuthHelper.isUserLogged()) {
+        if (!AuthenticationHelper.isUserLogged()) {
             if (!captchaService.verify(dto.getMyRecaptchaResponse())) {
                 throw new BadRequestException("To send us a message you have to solve captcha");
             }

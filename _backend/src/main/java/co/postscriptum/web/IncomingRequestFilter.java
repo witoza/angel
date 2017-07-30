@@ -76,7 +76,7 @@ public class IncomingRequestFilter extends GenericFilterBean {
             try {
                 restMetrics.requestStart(request);
 
-                Authentication auth = AuthHelper.getAuthentication();
+                Authentication auth = AuthenticationHelper.getAuthentication();
                 if (auth instanceof MyAuthenticationToken) {
 
                     MyAuthenticationToken myAuthenticationToken = (MyAuthenticationToken) auth;
