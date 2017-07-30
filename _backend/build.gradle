@@ -8,7 +8,7 @@ ext {
     versions = [
             groovy: '2.4.12',
             spock : '1.1-groovy-2.4',
-            aws   : '1.11.158'
+            aws   : '1.11.170'
     ]
 }
 
@@ -63,8 +63,8 @@ dependencies {
 
 }
 
-def buildTime() {
+def static buildTime() {
     def df = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HHmm'Z'")
     df.setTimeZone(TimeZone.getTimeZone("UTC"))
-    return df.format(new Date())
+    df.format(new Date())
 }
