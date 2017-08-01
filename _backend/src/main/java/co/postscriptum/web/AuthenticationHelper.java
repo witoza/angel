@@ -22,11 +22,12 @@ public class AuthenticationHelper {
     }
 
     public boolean isUserLogged() {
-        return getAuthentication() instanceof MyAuthenticationToken;
+        Authentication authentication = getAuthentication();
+        return authentication != null && getAuthentication() instanceof MyAuthenticationToken;
     }
 
     public Optional<String> getLoggedUsername() {
-        if (getAuthentication() == null) {
+        if (!isUserLogged()) {
             return Optional.empty();
         }
         return Optional.of(getMyAuthenticationToken().getName());

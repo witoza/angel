@@ -261,7 +261,7 @@ public class LoginController {
         @Size(max = 1000)
         String content;
 
-        @Size(min = 300, max = 400)
+        @Size(max = 1024)
         String myRecaptchaResponse;
 
     }
