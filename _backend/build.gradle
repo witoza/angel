@@ -8,6 +8,7 @@ ext {
     versions = [
             groovy: '2.4.12',
             spock : '1.1-groovy-2.4',
+            cglib : '3.2.5',
             aws   : '1.11.170'
     ]
 }
@@ -59,6 +60,7 @@ dependencies {
             "org.springframework.boot:spring-boot-starter-test",
             "org.codehaus.groovy:groovy-all:$versions.groovy",
             "org.spockframework:spock-core:$versions.spock",
+            "cglib:cglib-nodep:$versions.cglib",
             "org.spockframework:spock-spring:$versions.spock")
 
 }

@@ -14,7 +14,7 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @ContextConfiguration(classes = TestConfiguration)
-class EmailDeliveryAWSSQSImplTest extends Specification {
+class EmailDeliveryAWSSQSImplSpec extends Specification {
 
     @Autowired
     private EmailSender emailSender
@@ -22,11 +22,11 @@ class EmailDeliveryAWSSQSImplTest extends Specification {
     @Autowired
     private EmailDelivery emailDelivery
 
-    def testSendAndDeliver() {
-
+    def "should send email and deliver to the queue notification"() {
         given:
         Map<String, String> headers = new HashMap<>()
         headers.put("userUuid", "user-john+model@postscriptum.co")
+
         EnvelopeType envelopeType = EnvelopeType.RELEASE_ITEM
         String content = "<h1>con</h1><b>ten</b>t"
         String title = "title"
@@ -48,7 +48,6 @@ class EmailDeliveryAWSSQSImplTest extends Specification {
 
         then:
         onDelivery.getReceivedMessagesId().contains(awsMessageId)
-
     }
 
     @Configuration
@@ -92,4 +91,5 @@ class EmailDeliveryAWSSQSImplTest extends Specification {
         }
 
     }
+
 }

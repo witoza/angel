@@ -14,12 +14,12 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @ContextConfiguration(classes = TestConfiguration)
-class EmailSenderAWSSESImplTest extends Specification {
+class EmailSenderAWSSESImplSpec extends Specification {
 
     @Autowired
     private EmailSenderAWSSESImpl emailSender
 
-    def testSendEmail() {
+    def "should send email via AWS"() {
         given:
         def envelope = Envelope.builder()
                                .type(EnvelopeType.CONTACT_FORM)
@@ -33,7 +33,6 @@ class EmailSenderAWSSESImplTest extends Specification {
 
         then:
         awsMessageId.length() > 1
-
     }
 
     @Configuration
@@ -72,4 +71,5 @@ class EmailSenderAWSSESImplTest extends Specification {
         }
 
     }
+
 }

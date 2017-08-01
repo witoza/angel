@@ -8,7 +8,7 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @ContextConfiguration(classes = TestConfiguration)
-class DeliveryServiceDummyImplTest extends Specification {
+class DeliveryServiceDummyImplSpec extends Specification {
 
     @Autowired
     private EmailSender emailSender
@@ -17,7 +17,6 @@ class DeliveryServiceDummyImplTest extends Specification {
     private EmailDeliveryDummyImpl emailDelivery
 
     def smokeTest() {
-
         when:
         emailDelivery.setDelayTimeMs(100)
 
@@ -48,7 +47,6 @@ class DeliveryServiceDummyImplTest extends Specification {
 
         then:
         onDelivery.getReceivedMessagesId() == [message1Id, message2Id]
-
     }
 
     @Configuration

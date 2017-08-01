@@ -26,4 +26,5 @@ public class OnDelivery implements EmailDelivery.OnDelivery {
         receivedMessagesId.add(messageId);
 
     }
+
 }

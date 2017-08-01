@@ -3,7 +3,6 @@ package co.postscriptum.job;
 import co.postscriptum.db.Account;
 import co.postscriptum.email.UserEmailService;
 import co.postscriptum.exception.InternalException;
-import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.internal.ReleasedMessagesDetails;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.RequiredAction;
@@ -12,6 +11,7 @@ import co.postscriptum.model.bo.Trigger;
 import co.postscriptum.model.bo.Trigger.Stage;
 import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.UserData;
+import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.service.MessageReleaseService;
 import co.postscriptum.service.UserDataHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -29,13 +30,13 @@ public class AccountMessageReleaserJob extends AbstractAccountJob {
     public static final String userLastAccess = "userLastAccess";
 
     @Autowired
-    private MessageReleaseService messageReleaseService;
+    MessageReleaseService messageReleaseService;
 
     @Autowired
-    private AdminHelperService adminHelperService;
+    AdminHelperService adminHelperService;
 
     @Autowired
-    private UserEmailService userEmailService;
+    UserEmailService userEmailService;
 
     @Override
     public Stream<Account> getAccountsToTest() {
@@ -82,7 +83,7 @@ public class AccountMessageReleaserJob extends AbstractAccountJob {
             throw new InternalException("messages has already been released but trigger is still enabled");
         }
 
-        TimeStages timeStages = new TimeStages(trigger, user.getLastAccess());
+        TimeStages timeStages = new TimeStages(trigger, LocalDateTime.now(), user.getLastAccess());
 
         log.info("verifying user trigger, debugData: {}", timeStages.debug());
 

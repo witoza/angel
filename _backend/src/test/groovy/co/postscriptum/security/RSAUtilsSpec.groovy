@@ -6,10 +6,9 @@ import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
 
-class RSAUtilsTest extends Specification {
+class RSAUtilsSpec extends Specification {
 
     def "should encrypt and decrypt with random key"() {
-
         given:
         String toEncrypt = "hello there"
         KeyPair keyPair = RSAOAEPUtils.generateKeys()
@@ -22,7 +21,6 @@ class RSAUtilsTest extends Specification {
 
         then:
         RSAOAEPUtils.decrypt(encrypted, privateKey) == toEncrypt.getBytes()
-
     }
 
 }

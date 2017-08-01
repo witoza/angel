@@ -4,36 +4,34 @@ import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.Trigger;
 import co.postscriptum.model.bo.Trigger.Stage;
 import com.google.common.collect.ImmutableMap;
-import lombok.Value;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
-@Value
 public class TimeStages {
 
-    private ZonedDateTime lastAccess;
+    private final LocalDateTime lastAccess;
 
-    private ZonedDateTime Xdt;
+    private final LocalDateTime Xdt;
 
-    private ZonedDateTime Ydt;
+    private final LocalDateTime Ydt;
 
-    private ZonedDateTime Zdt;
+    private final LocalDateTime Zdt;
 
-    private ZonedDateTime Wdt;
+    private final LocalDateTime Wdt;
 
-    private ZonedDateTime now;
+    private final LocalDateTime now;
 
-    public TimeStages(Trigger trigger, long userLastAccess) {
+    public TimeStages(Trigger trigger, LocalDateTime now, long userLastAccessTimestamp) {
+
         ChronoUnit timeUnit = trigger.getTimeUnit();
-
-        lastAccess = Utils.fromTimestamp(userLastAccess);
+        lastAccess = Utils.fromTimestamp(userLastAccessTimestamp);
         Xdt = lastAccess.plus(trigger.getX(), timeUnit);
         Ydt = Xdt.plus(trigger.getY(), timeUnit);
         Zdt = Ydt.plus(trigger.getZ(), timeUnit);
         Wdt = Zdt.plus(trigger.getW(), timeUnit);
-        now = ZonedDateTime.now();
+        this.now = now;
     }
 
     public Map<String, String> debug() {
@@ -47,19 +45,19 @@ public class TimeStages {
                 .build();
     }
 
-    public boolean nowIsAfterX() {
+    boolean nowIsAfterX() {
         return now.isAfter(Xdt);
     }
 
-    public boolean nowIsAfterY() {
+    boolean nowIsAfterY() {
         return now.isAfter(Ydt);
     }
 
-    public boolean nowIsAfterZ() {
+    boolean nowIsAfterZ() {
         return now.isAfter(Zdt);
     }
 
-    public boolean nowIsAfterW() {
+    boolean nowIsAfterW() {
         return now.isAfter(Wdt);
     }
 

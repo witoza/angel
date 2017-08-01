@@ -16,21 +16,21 @@ import spock.lang.Specification
 import java.security.KeyPair
 
 @ContextConfiguration(classes = TestConfiguration)
-class TestDataCreatorTest extends Specification {
+class TestDataCreatorSpec extends Specification {
 
     @Autowired
     private TestDataCreator testDataCreator
 
-    def smokeTest() {
+    def "should create all test users"() {
         given:
-        KeyPair kp = RSAOAEPUtils.generateKeys()
+        KeyPair adminKeyPair = RSAOAEPUtils.generateKeys()
 
         when:
         for (TestUser testUser : testDataCreator.getTestUsers()) {
 
             User user = testUser.createUser()
 
-            String json = Utils.toJson(testUser.createUserData(user, kp.getPublic()))
+            String json = Utils.toJson(testUser.createUserData(user, adminKeyPair.getPublic()))
 
             println json
 
@@ -39,7 +39,6 @@ class TestDataCreatorTest extends Specification {
 
         then:
         true
-
     }
 
     @Configuration
@@ -62,4 +61,5 @@ class TestDataCreatorTest extends Specification {
         }
 
     }
+
 }

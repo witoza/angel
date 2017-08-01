@@ -1,14 +1,12 @@
-package co.postscriptum
+package co.postscriptum.internal
 
-import co.postscriptum.internal.InfoInputStream
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.NullOutputStream
 import spock.lang.Specification
 
-class InfoInputStreamTest extends Specification {
+class InfoInputStreamSpec extends Specification {
 
     def "should calculate proper metrics"() {
-
         when:
         InfoInputStream iis = new InfoInputStream(new ByteArrayInputStream("test123".getBytes()))
         IOUtils.copy(iis, new NullOutputStream())
@@ -19,7 +17,6 @@ class InfoInputStreamTest extends Specification {
 
         cleanup:
         iis.close()
-
     }
 
 }

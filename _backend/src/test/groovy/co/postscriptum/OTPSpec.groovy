@@ -4,10 +4,9 @@ import org.apache.commons.codec.binary.Hex
 import org.jboss.security.otp.TimeBasedOTP
 import spock.lang.Specification
 
-class OTPTest extends Specification {
+class OTPSpec extends Specification {
 
     def "should generated token be a number"() {
-
         given:
         String secret = Hex.encodeHexString("secret".getBytes())
 
@@ -16,7 +15,6 @@ class OTPTest extends Specification {
 
         then:
         Integer.parseInt(token) > 1
-
     }
 
 }

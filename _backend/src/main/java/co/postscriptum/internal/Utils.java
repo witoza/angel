@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -27,11 +28,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -142,16 +143,17 @@ public class Utils {
         return Optional.of(list.get(list.size() - 1));
     }
 
-    public static ZonedDateTime fromTimestamp(long ts) {
-        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneId.systemDefault());
+    public static LocalDateTime fromTimestamp(long ts) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneId.systemDefault());
     }
 
     public static String format(long ts) {
         return format(fromTimestamp(ts));
     }
 
-    public static String format(ZonedDateTime dt) {
-        return dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss zzzZZZ"));
+    public static String format(LocalDateTime dt) {
+        Date out = Date.from(dt.atZone(ZoneId.systemDefault()).toInstant());
+        return new ISO8601DateFormat().format(out);
     }
 
     public static <T> ArrayList<T> asArrayList(T... args) {

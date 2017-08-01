@@ -39,6 +39,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -344,7 +345,7 @@ public class LoginService {
                 content = i18n.translate(lang, "%alive.trigger_not_active%", context);
             } else {
                 long totalTime = trigger.getX() + trigger.getY() + trigger.getZ() + trigger.getW();
-                ZonedDateTime releaseTm = ZonedDateTime.now().plus(totalTime, trigger.getTimeUnit());
+                LocalDateTime releaseTm = LocalDateTime.now().plus(totalTime, trigger.getTimeUnit());
                 context.put("totalTime", totalTime);
                 context.put("timeUnit",
                             i18n.translate(lang, "%time_unit." + trigger.getTimeUnit().toString().toLowerCase() + "%"));

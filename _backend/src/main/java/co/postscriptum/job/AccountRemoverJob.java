@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -109,7 +110,7 @@ public class AccountRemoverJob extends AbstractAccountJob {
     }
 
     private boolean lessThanXMinutesAgo(long timestamp, long minutes) {
-        return ZonedDateTime.now().isBefore(Utils.fromTimestamp(timestamp).plusMinutes(minutes));
+        return LocalDateTime.now().isBefore(Utils.fromTimestamp(timestamp).plusMinutes(minutes));
     }
 
     private boolean adminAbleToContactRecipient(ReleaseItem releaseItem) {

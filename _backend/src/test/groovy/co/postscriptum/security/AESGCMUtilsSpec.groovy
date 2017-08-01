@@ -5,10 +5,9 @@ import spock.lang.Specification
 
 import javax.crypto.SecretKey
 
-class AESGCMUtilsTest extends Specification {
+class AESGCMUtilsSpec extends Specification {
 
     def "should encrypt stream"() {
-
         given:
         String toEncrypt = "hello world!hello world!XYZ"
         SecretKey key = AESKeyUtils.generateRandomKey()
@@ -24,7 +23,6 @@ class AESGCMUtilsTest extends Specification {
 
         then:
         IOUtils.toString(dec, "UTF-8") == toEncrypt
-
     }
 
     def "should encrypt and decrypt with valid password"() {
@@ -42,7 +40,6 @@ class AESGCMUtilsTest extends Specification {
 
         then:
         secretKey.getEncoded() == key
-
     }
 
     def "should encrypt and not decrypt with invalid password"() {
@@ -75,11 +72,9 @@ class AESGCMUtilsTest extends Specification {
 
         then:
         res == toEncrypt.getBytes()
-
     }
 
     def "should encrypt with AAD"() {
-
         given:
         SecretKey secretKey = AESKeyUtils.generateRandomKey()
 
@@ -94,7 +89,6 @@ class AESGCMUtilsTest extends Specification {
 
         then:
         res == toEncrypt.getBytes()
-
     }
 
 }
