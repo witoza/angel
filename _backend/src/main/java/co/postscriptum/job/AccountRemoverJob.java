@@ -1,7 +1,6 @@
 package co.postscriptum.job;
 
 import co.postscriptum.db.Account;
-import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.Message;
@@ -12,6 +11,7 @@ import co.postscriptum.model.bo.RequiredAction.Type;
 import co.postscriptum.model.bo.Trigger;
 import co.postscriptum.model.bo.Trigger.Stage;
 import co.postscriptum.model.bo.UserData;
+import co.postscriptum.service.AdminHelperService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,20 +21,20 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 
 @Component
 @Slf4j
 public class AccountRemoverJob extends AbstractAccountJob {
 
-    public static final String releaseItem_message_uuid = "releaseItem.message.uuid";
+    public static final String RELEASE_ITEM_MESSAGE_UUID = "releaseItem.message.uuid";
 
-    public static final String releaseItem_key = "releaseItem.key";
+    public static final String RELEASE_ITEM_KEY = "releaseItem.key";
 
-    public static final String remainder_uuid = "remainder.uuid";
+    public static final String REMAINDER_UUID = "remainder.uuid";
+
+    public static final String CAN_NOT_CONTACT_RECIPIENT = "can_not_contact_recipient";
 
     @Autowired
     private AdminHelperService adminHelperService;
@@ -54,8 +54,8 @@ public class AccountRemoverJob extends AbstractAccountJob {
         return db.getUserUnloadedAccounts();
     }
 
-    //run every 15 minutes
-    @Scheduled(fixedDelay = 900000)
+    // run every hour
+    @Scheduled(fixedDelay = 60 * 3600 * 1000)
     @Override
     public void process() {
         super.process();
@@ -66,25 +66,25 @@ public class AccountRemoverJob extends AbstractAccountJob {
         account.assertLockIsHeldByCurrentThread();
 
         if (account.isToBeRemoved()) {
-            return "account is already marked as to be removed";
+            return "Account is already marked as to be removed";
         }
 
         UserData userData = account.getUserData();
         Trigger trigger = userData.getUser().getTrigger();
 
-        if (trigger.getStage() != Stage.released) {
-            return "not yet released";
+        if (trigger.getStage() != Stage.RELEASED) {
+            return "Account is not in RELEASED state";
         }
 
-        if (trigger.getHaveBeenReleasedTime() == 0) {
-            return "admin didn't released yet";
+        if (trigger.getReleasedTime() == 0) {
+            return "Messages haven't been released yet";
         }
 
-        if (lessThanXMinutesAgo(trigger.getHaveBeenReleasedTime(), runLogicAfterTriggeringMins)) {
-            return "released less than " + runLogicAfterTriggeringMins + " minutes ago";
+        if (lessThanXMinutesAgo(trigger.getReleasedTime(), runLogicAfterTriggeringMins)) {
+            return "Account has been released less than " + runLogicAfterTriggeringMins + " minutes ago";
         }
 
-        log.info("verifying ...");
+        log.info("Verifying if account can be removed");
 
         // after runLogicAfterTriggeringMins minutes from the triggering, we try to do the cleanup if necessary we will send admin event that msg has not been opened
 
@@ -92,7 +92,7 @@ public class AccountRemoverJob extends AbstractAccountJob {
 
         long newRemindersCreated = createReminders(userData);
         if (newRemindersCreated > 0) {
-            return "there are " + newRemindersCreated + " messages that needs admin's attention";
+            return "There are " + newRemindersCreated + " messages that needs admin's attention (reminders has been created)";
         }
 
         boolean accountCanBeRemoved = userData.getMessages().stream().noneMatch(this::shouldMessageStillBeAvailable);
@@ -101,12 +101,12 @@ public class AccountRemoverJob extends AbstractAccountJob {
             userData.getUser().setActive(false);
             account.setToBeRemoved(true);
 
-            adminHelperService.addAdminRequiredAction(DataFactory.newRequiredAction(userData, Type.account_can_be_removed));
+            adminHelperService.addAdminRequiredAction(DataFactory.newRequiredAction(userData, Type.ACCOUNT_CAN_BE_REMOVED));
 
-            return "account can be removed, all reachable release items are not available";
+            return "Account can be removed, all reachable release items are not available";
         }
 
-        return "some release items can still be reachable, waiting for admin to verify";
+        return "Some release items can still be reachable, waiting for admin to verify";
     }
 
     private boolean lessThanXMinutesAgo(long timestamp, long minutes) {
@@ -117,7 +117,7 @@ public class AccountRemoverJob extends AbstractAccountJob {
         Optional<Reminder> lastReminder = Utils.getLast(releaseItem.getReminders());
 
         if (lastReminder.isPresent()) {
-            if (StringUtils.equalsIgnoreCase(lastReminder.get().getInput(), "can_not_contact_recipient")) {
+            if (StringUtils.equalsIgnoreCase(lastReminder.get().getInput(), CAN_NOT_CONTACT_RECIPIENT)) {
                 return false;
             }
         }
@@ -134,11 +134,11 @@ public class AccountRemoverJob extends AbstractAccountJob {
         Reminder reminder = lastReminder.get();
 
         if (!reminder.isResolved()) {
-            //if the reminder is not resolved, don't create new ones
+            // if the reminder is not resolved, don't create new ones
             return false;
         }
 
-        //create new Reminder every so often
+        // create new Reminder every so often
         return !lessThanXMinutesAgo(reminder.getResolvedTime(), createNewReminderAfterMins);
     }
 
@@ -175,12 +175,15 @@ public class AccountRemoverJob extends AbstractAccountJob {
             Reminder remainder = DataFactory.newReminder();
             releaseItem.getReminders().add(remainder);
 
-            RequiredAction ra = DataFactory.newRequiredAction(userData, Type.message_not_opened_by_the_recipient);
-            ra.getDetails().put(remainder_uuid, remainder.getUuid());
-            ra.getDetails().put(releaseItem_message_uuid, message.getUuid());
-            ra.getDetails().put(releaseItem_key, releaseItem.getKey());
+            log.info("Creating new Remainder: {}", remainder);
+
+            RequiredAction ra = DataFactory.newRequiredAction(userData, Type.MESSAGE_NOT_YET_OPENED_BY_THE_RECIPIENT);
+            ra.getDetails().put(REMAINDER_UUID, remainder.getUuid());
+            ra.getDetails().put(RELEASE_ITEM_MESSAGE_UUID, message.getUuid());
+            ra.getDetails().put(RELEASE_ITEM_KEY, releaseItem.getKey());
             ra.getDetails().put("releaseItem.message.title", message.getTitle());
             ra.getDetails().put("releaseItem.recipient", releaseItem.getRecipient());
+
 
             adminHelperService.addAdminRequiredAction(ra);
 
@@ -192,7 +195,7 @@ public class AccountRemoverJob extends AbstractAccountJob {
         if (releaseItem.getFirstTimeAccess() == 0) {
             return adminAbleToContactRecipient(releaseItem);
         }
-        //message has been opened
+        // message has been opened
         return lessThanXMinutesAgo(releaseItem.getFirstTimeAccess(), releaseItemAvailableForAfterOpeningMins);
     }
 

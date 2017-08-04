@@ -3,8 +3,6 @@ package co.postscriptum.email;
 import co.postscriptum.RuntimeEnvironment;
 import co.postscriptum.internal.AwsConfig;
 import co.postscriptum.internal.Utils;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.RawMessage;
@@ -47,15 +45,15 @@ public class EmailSenderAWSSESImpl implements EmailSender {
     @PostConstruct
     public void init() {
 
-        log.info("using from domain={}", env.getDomain());
-        log.info("connecting to AWS SES ...");
+        log.info("Using from domain: {}", env.getDomain());
+        log.info("Connecting to AWS SES ...");
 
         service = AmazonSimpleEmailServiceClientBuilder.standard()
                                                        .withCredentials(awsConfig.awsCredentialsProvider())
                                                        .withRegion(awsConfig.getSesRegion())
                                                        .build();
 
-        log.info("connected to AWS SES");
+        log.info("Connected to AWS SES");
 
     }
 
@@ -89,17 +87,17 @@ public class EmailSenderAWSSESImpl implements EmailSender {
             mimeMessage.writeTo(outputStream);
             return new RawMessage(ByteBuffer.wrap(outputStream.toByteArray()));
         } catch (Exception e) {
-            throw new IllegalStateException("can't prepare email raw message", e);
+            throw new IllegalStateException("Can't prepare email raw message", e);
         }
     }
 
     public String sendEmail(Envelope envelope) {
 
         if (!Utils.isValidEmail(envelope.getRecipient())) {
-            throw new IllegalArgumentException("recipient email address '" + envelope.getRecipient() + "' is invalid");
+            throw new IllegalArgumentException("Recipient email address '" + envelope.getRecipient() + "' is invalid");
         }
 
-        log.info("sending email: envelopeId={}, title={}, recipient={}",
+        log.info("Sending email: envelopeId: {}, title: {}, recipient: {}",
                  envelope.getEnvelopeId(),
                  envelope.getTitle(),
                  envelope.getRecipient());
@@ -109,7 +107,7 @@ public class EmailSenderAWSSESImpl implements EmailSender {
         SendRawEmailResult result = service.sendRawEmail(new SendRawEmailRequest(rawMessage));
 
         String messageId = result.getMessageId();
-        log.info("email has been sent: messageId={}", messageId);
+        log.info("Email has been sent: messageId: {}", messageId);
 
         return messageId;
     }

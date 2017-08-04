@@ -29,11 +29,11 @@ public abstract class AbstractAccountJob extends AbstractJob {
 
             try {
                 account.lock();
-                log.info("Processing: username: {}, uuid={}", username, uuid);
+                log.info("Processing: user [username: {}, uuid: {}]", username, uuid);
                 String result = processAccount(account);
-                log.info("=> {}", result);
+                log.info("Result: {}", result);
             } catch (Exception e) {
-                log.error("error occurred while processing user " + username, e);
+                log.error("Error occurred while processing user.username: {}", username, e);
                 thrown = e;
             } finally {
                 account.unlock();

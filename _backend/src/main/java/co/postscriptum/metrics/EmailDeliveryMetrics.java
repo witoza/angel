@@ -32,16 +32,16 @@ public class EmailDeliveryMetrics {
             stats.totalBounced++;
             map = stats.bouncedByType;
 
-            stats.last10Bounced.add(EmailDeliveryMetricsData.Bounced.builder()
-                                                                    .envelopeId(envelopeId)
-                                                                    .cause(bounceCause)
-                                                                    .build());
-            if (stats.last10Bounced.size() > 10) {
-                stats.last10Bounced.remove(0);
+            stats.lastBounced.add(EmailDeliveryMetricsData.Bounced.builder()
+                                                                  .envelopeId(envelopeId)
+                                                                  .cause(bounceCause)
+                                                                  .build());
+            if (stats.lastBounced.size() > 10) {
+                stats.lastBounced.remove(0);
             }
 
         } else {
-            throw new IllegalStateException("can't process deliveryType: " + deliveryType);
+            throw new IllegalStateException("Can't process deliveryType: " + deliveryType);
         }
 
         EnvelopeType envelopeType = EnvelopeType.fromEnvelopeId(envelopeId);
@@ -57,17 +57,22 @@ public class EmailDeliveryMetrics {
 
         Map<EnvelopeType, Integer> bouncedByType = new LinkedHashMap<>();
 
-        List<Bounced> last10Bounced = new ArrayList<>();
+        List<Bounced> lastBounced = new ArrayList<>();
 
         Integer totalDelivered = 0;
+
         Map<EnvelopeType, Integer> deliveredByType = new LinkedHashMap<>();
 
         @Value
         @Builder
         static class Bounced {
+
             long time = System.currentTimeMillis();
+
             String envelopeId;
+
             Map<String, Object> cause;
+
         }
 
     }

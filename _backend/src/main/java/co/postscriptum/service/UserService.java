@@ -64,7 +64,7 @@ public class UserService {
 
             return sb.toString().trim();
         } catch (Exception e) {
-            log.info("can't figure out screenName from email: {}" + email, e);
+            log.info("Can't figure out screenName from email: {}" + email);
             return email;
         }
 
@@ -98,11 +98,10 @@ public class UserService {
 
         }
 
-        dto.setUnreadNotifs(
-                userData.getNotifications()
-                        .stream()
-                        .filter(n -> !n.isRead())
-                        .count());
+        dto.setUnreadNotifs(userData.getNotifications()
+                                    .stream()
+                                    .filter(n -> !n.isRead())
+                                    .count());
 
         dto.setUserPlan(userData.getInternal().getUserPlan());
         dto.setTotpUri(totpHelperService.getTotpUri(userData));
@@ -131,7 +130,7 @@ public class UserService {
 
         new UserDataHelper(userData).addNotification("User issued request for storage increase of " + numberOfMb + " MB");
 
-        RequiredAction ra = DataFactory.newRequiredAction(userData, Type.storage_increase);
+        RequiredAction ra = DataFactory.newRequiredAction(userData, Type.USER_STORAGE_INCREASE_REQUEST);
         ra.getDetails().put("numberOfMb", "" + numberOfMb);
 
         adminHelperService.addAdminRequiredAction(ra);
@@ -147,8 +146,7 @@ public class UserService {
         if (!new UserDataHelper(userData).isUserAdmin()) {
             userEncryptionKey
                     .ifPresent(encryptionKey -> {
-                        log.info("user encryption key is there, encrypting it by a new password");
-
+                        log.info("User encryption key is present, encrypting it by a new login password");
                         userInternal.setEncryptionKey(AESGCMUtils.encryptByPassword(newLoginPassword, encryptionKey.getEncoded()));
                     });
 
@@ -233,15 +231,15 @@ public class UserService {
 
     }
 
-    public byte[] setEncryptionKey(UserData userData, Optional<SecretKey> userEncryptionKey, String loginPassword, String encryptionKey) {
+    public byte[] setEncryptionKey(UserData userData, String loginPassword, String encryptionKeyToSet) {
 
         new UserDataHelper(userData).verifyLoginPasswordIsCorrect(loginPassword);
 
         UserInternal internal = userData.getInternal();
 
-        if (StringUtils.isEmpty(encryptionKey)) {
+        if (StringUtils.isEmpty(encryptionKeyToSet)) {
 
-            log.info("empty key => removing key");
+            log.info("Removing EncryptionKey from UserData");
 
             internal.setEncryptionKey(null);
             internal.setEncryptionKeyEncryptedByAdminPublicKey(null);
@@ -249,13 +247,13 @@ public class UserService {
             return null;
         } else {
 
-            log.info("key present => installing it");
+            log.info("Installing EncryptionKey in UserData");
 
-            byte[] secretKey = Utils.base32decode(encryptionKey);
+            byte[] secretKey = Utils.base32decode(encryptionKeyToSet);
 
             internal.setEncryptionKey(AESGCMUtils.encryptByPassword(loginPassword, secretKey));
-            internal.setEncryptionKeyEncryptedByAdminPublicKey(RSAOAEPUtils.encrypt(secretKey,
-                                                                                    adminHelperService.getAdminPublicKey()));
+            internal.setEncryptionKeyEncryptedByAdminPublicKey(
+                    RSAOAEPUtils.encrypt(secretKey, adminHelperService.getAdminPublicKey()));
 
             return secretKey;
         }
@@ -263,15 +261,15 @@ public class UserService {
     }
 
     public List<String> sendTriggerAfterX(UserData userData, boolean sendEmailOnlyToUser) {
-        return userEmailService.sendTriggerAfterX(userData, sendEmailOnlyToUser);
+        return userEmailService.sendUserVerificationAfterX(userData, sendEmailOnlyToUser);
     }
 
     public List<String> sendTriggerAfterY(UserData userData, boolean sendEmailOnlyToUser) {
-        return userEmailService.sendTriggerAfterY(userData, sendEmailOnlyToUser);
+        return userEmailService.sendUserVerificationAfterY(userData, sendEmailOnlyToUser);
     }
 
     public List<String> sendTriggerAfterZ(UserData userData, boolean sendEmailOnlyToUser) {
-        return userEmailService.sendTriggerAfterZ(userData, sendEmailOnlyToUser);
+        return userEmailService.sendUserVerificationAfterZ(userData, sendEmailOnlyToUser);
     }
 
     public void unloadUser(UserData userData) {
@@ -279,16 +277,16 @@ public class UserService {
         try {
             db.unloadUserByUuid(userData.getUser().getUuid());
         } catch (IOException e) {
-            log.error("problem with user unloading", e);
+            log.error("Exception when unloading User", e);
         }
 
     }
 
     public void enable2FA(UserData userData, String totpToken) {
-        log.info("enabling 2FA");
+        log.info("Enabling 2FA");
 
         if (totpHelperService.isTokenValid(userData, totpToken)) {
-            log.info("provided token is correct, enabling 2FA");
+            log.info("Provided TOTP token is correct, enabling 2FA");
 
             userData.getInternal().setEnableTotp(true);
         } else {
@@ -298,12 +296,12 @@ public class UserService {
     }
 
     public void disable2FA(UserData userData) {
-        log.info("disabling 2FA");
+        log.info("Disabling 2FA");
         userData.getInternal().setEnableTotp(false);
     }
 
     public void generateTotpSecret(UserData userData) {
-        log.info("generate TotpSecret");
+        log.info("Generating TOTP Secret");
         userData.getInternal().setTotpSecret(AESKeyUtils.randomByteArray(8));
         disable2FA(userData);
     }
@@ -314,7 +312,7 @@ public class UserService {
 
     public String getPaymentBitcoinAddress(UserData userData) {
         if (!needPayment(userData)) {
-            throw new ForbiddenException("can't obtain payment address when account is paid off");
+            throw new ForbiddenException("Can't obtain payment address for paid off account");
         }
         return bitcoinService.getPaymentForUser(userData).getBtcAddress();
     }

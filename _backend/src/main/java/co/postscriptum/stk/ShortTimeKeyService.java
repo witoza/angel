@@ -9,28 +9,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-// we don't persist as they are not very important and user can always regenerate them
 @Component
 public class ShortTimeKeyService {
 
+    // Don't persist as they are not very important and user can always regenerate them
     private final List<ShortTimeKey> shortTimeKeys = new CopyOnWriteArrayList<>();
 
-    private void removeOld() {
-        shortTimeKeys.removeIf(stk -> System.currentTimeMillis() > stk.getValidUntil());
-    }
-
     public ShortTimeKey require(String key, ShortTimeKey.Type type) {
-        return getByKey(key, type).orElseThrow(ExceptionBuilder.missingClass(ShortTimeKey.class, "key=" + key));
+        return getByKey(key, type)
+                .orElseThrow(ExceptionBuilder.missingClass(ShortTimeKey.class, "key=" + key));
     }
 
     public Optional<ShortTimeKey> getByKey(String key, ShortTimeKey.Type type) {
-
         removeOld();
-
         return shortTimeKeys.stream()
                             .filter(stk -> stk.getKey().equals(key) && stk.getType() == type)
                             .findAny();
-
     }
 
     public void removeKey(ShortTimeKey key) {
@@ -42,29 +36,29 @@ public class ShortTimeKeyService {
     }
 
     public ShortTimeKey create(String username, ShortTimeKey.Type type) {
-
         removeOld();
 
-        Optional<ShortTimeKey> existing = shortTimeKeys.stream()
-                                                       .filter(p -> p.getUsername().equals(username) && p.getType() == type)
-                                                       .findAny();
+        ShortTimeKey shortTimeKey =
+                shortTimeKeys.stream()
+                             .filter(p -> p.getUsername().equals(username) && p.getType() == type)
+                             .findAny()
+                             .orElseGet(() -> {
+                                 ShortTimeKey stk = ShortTimeKey.builder()
+                                                                .username(username)
+                                                                .key(Utils.randKey(""))
+                                                                .type(type)
+                                                                .build();
+                                 shortTimeKeys.add(stk);
+                                 return stk;
+                             });
 
-        ShortTimeKey shortTimeKey;
-        if (existing.isPresent()) {
-            shortTimeKey = existing.get();
-        } else {
-            shortTimeKey = ShortTimeKey.builder()
-                                       .username(username)
-                                       .key(Utils.randKey(""))
-                                       .type(type)
-                                       .build();
-
-            shortTimeKeys.add(shortTimeKey);
-        }
-
-        shortTimeKey.setValidUntil(System.currentTimeMillis() + Utils.minutesInMs(60));
+        shortTimeKey.setValidUntil(System.currentTimeMillis() + Utils.minutesToMillis(60));
 
         return shortTimeKey;
+    }
+
+    private void removeOld() {
+        shortTimeKeys.removeIf(stk -> System.currentTimeMillis() > stk.getValidUntil());
     }
 
 }

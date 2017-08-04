@@ -1,6 +1,7 @@
 package co.postscriptum.fs;
 
 import com.gc.iotools.stream.os.OutputStreamToInputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.input.ReaderInputStream;
 
 import java.io.IOException;

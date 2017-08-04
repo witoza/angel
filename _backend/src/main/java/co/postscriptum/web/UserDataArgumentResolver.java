@@ -28,9 +28,9 @@ public class UserDataArgumentResolver implements HandlerMethodArgumentResolver {
     public Object resolveArgument(MethodParameter parameter,
                                   ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest,
-                                  WebDataBinderFactory binderFactory) throws Exception {
+                                  WebDataBinderFactory binderFactory) {
 
-        log.info("Resolving logged UserData");
+        log.debug("Resolving logged UserData");
 
         Account account = db.requireAccountByUsername(AuthenticationHelper.requireLoggedUsername());
         account.assertLockIsHeldByCurrentThread();

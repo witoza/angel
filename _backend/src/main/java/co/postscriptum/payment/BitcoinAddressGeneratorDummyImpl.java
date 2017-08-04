@@ -14,14 +14,15 @@ public class BitcoinAddressGeneratorDummyImpl implements BitcoinAddressGenerator
 
     @Override
     public PaymentAddress generateNewAddress() {
+        log.info("Generating dummy Payment Address");
+        return PaymentAddress.builder()
+                             .uuid(uuid())
+                             .btcAddress("BTC-" + uuid())
+                             .build();
+    }
 
-        PaymentAddress paymentAddress = new PaymentAddress();
-
-        paymentAddress.setUuid(UUID.randomUUID().toString());
-        paymentAddress.setAssignedTime(System.currentTimeMillis());
-        paymentAddress.setBtcAddress("BTC-" + paymentAddress.getUuid());
-
-        return paymentAddress;
+    private static String uuid() {
+        return UUID.randomUUID().toString();
     }
 
 }

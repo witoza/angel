@@ -8,6 +8,7 @@ import co.postscriptum.model.bo.Lang;
 import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.UserData;
 import com.google.common.collect.ImmutableMap;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +21,7 @@ import java.util.Map;
 
 @Component
 @Slf4j
+@Setter
 public class EnvelopeCreatorService {
 
     @Autowired
@@ -32,7 +34,6 @@ public class EnvelopeCreatorService {
     private String dispatcherPrefix;
 
     public Map<String, Object> createContext(UserData userData) {
-
         Map<String, Object> context = new HashMap<>();
         context.put("uuid", Utils.randKey("EMAIL"));
         context.put("host", hostUrl);
@@ -47,7 +48,6 @@ public class EnvelopeCreatorService {
         }
 
         return context;
-
     }
 
     public Envelope create(EnvelopeType type,

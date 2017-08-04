@@ -23,7 +23,7 @@ public class EmailDeliveryDummyImpl implements EmailDeliveryDummy {
     @Override
     public void process(OnDelivery onDelivery) {
 
-        log.info("checking for delivered emails");
+        log.info("Checking for delivered emails");
 
         List<DeliveredEmail> toRemove = deliveredEmails
                 .stream()
@@ -46,7 +46,7 @@ public class EmailDeliveryDummyImpl implements EmailDeliveryDummy {
     @Override
     public void markAsDelivered(Envelope envelope, String messageId) {
 
-        log.info("enqueuing email " + messageId + " as delivered in " + delayTimeMs + "ms");
+        log.info("Enqueuing messageId: {} as delivered in {} ms", messageId, delayTimeMs);
 
         deliveredEmails.add(DeliveredEmail.builder()
                                           .envelopeId(envelope.getEnvelopeId())
@@ -62,10 +62,12 @@ public class EmailDeliveryDummyImpl implements EmailDeliveryDummy {
     @Value
     @Builder
     private static class DeliveredEmail {
-        long time = System.currentTimeMillis();
 
+        long time = System.currentTimeMillis();
         String envelopeId;
         String messageId;
         Map<String, String> headers;
+
     }
+
 }

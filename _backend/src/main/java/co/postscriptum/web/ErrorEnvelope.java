@@ -1,9 +1,9 @@
 package co.postscriptum.web;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @AllArgsConstructor
 public class ErrorEnvelope {
 

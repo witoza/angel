@@ -23,12 +23,12 @@ public class RequiredAction {
     }
 
     public enum Type {
-        storage_increase,
-        new_user_password,
-        manual_release_messages,
-        automatic_release_messages,
-        message_not_opened_by_the_recipient,
-        account_can_be_removed
+        USER_STORAGE_INCREASE_REQUEST,
+        USER_RESET_PASSWORD_REQUEST,
+        REQUIRE_MANUAL_RELEASE_MESSAGES,
+        AUTOMATIC_RELEASE_MESSAGES_HAS_BEEN_DONE,
+        MESSAGE_NOT_YET_OPENED_BY_THE_RECIPIENT,
+        ACCOUNT_CAN_BE_REMOVED
     }
 
     @Data

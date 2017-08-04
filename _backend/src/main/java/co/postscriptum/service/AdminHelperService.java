@@ -83,13 +83,13 @@ public class AdminHelperService {
             loggedUsername = AuthenticationHelper.requireLoggedUsername();
         }
 
-        String content =
-                "<pre>From:\n" + Utils.asSafeText(from) + "</pre>" +
-                        (loggedUsername != null
-                                ? "<pre>Logged user:\n" + loggedUsername + "</pre>"
-                                : "") +
-                        "<pre>Content:\n" + Utils.asSafeText(userInquiry) + "</pre>" +
-                        "<pre>Metadata:\n" + metadata.getRequestDetails() + "</pre>";
+        String content = "" +
+                pre("From:\n" + Utils.asSafeText(from)) +
+                (loggedUsername != null
+                        ? pre("Logged user:\n" + loggedUsername)
+                        : "") +
+                pre("Content:\n" + Utils.asSafeText(userInquiry)) +
+                pre("Metadata:\n" + metadata.getRequestDetails());
 
         emailProcessor.enqueue(Envelope.builder()
                                        .type(EnvelopeType.CONTACT_FORM)
@@ -102,10 +102,9 @@ public class AdminHelperService {
     }
 
     private void sendToAdminRequiredAction(RequiredAction requiredAction) {
+        log.info("Send email to admin about RequiredAction uuid: {}", requiredAction.getUuid());
 
-        log.info("send email to admin about RequiredAction uuid={}", requiredAction.getUuid());
-
-        String content = "<pre>" + Utils.toJson(requiredAction) + "</pre>";
+        String content = pre(Utils.toJson(requiredAction));
 
         emailProcessor.enqueue(Envelope.builder()
                                        .type(EnvelopeType.SYSTEM_TO_ADMIN)
@@ -117,7 +116,7 @@ public class AdminHelperService {
     }
 
     public void addAdminRequiredAction(RequiredAction requiredAction) {
-        log.info("add admin RequiredAction: {}", requiredAction);
+        log.info("Add admin RequiredAction: {}", requiredAction);
 
         sendToAdminRequiredAction(requiredAction);
 
@@ -128,13 +127,16 @@ public class AdminHelperService {
     }
 
     public void addAdminNotification(String message) {
-
-        log.info("add admin Notification: {}", message);
+        log.info("Add admin Notification: {}", message);
 
         db.withLoadedAccountByUsername(configuration.getAdminEmail(), account -> {
             new UserDataHelper(account.getUserData()).addNotification(message);
         });
 
+    }
+
+    private static String pre(String str) {
+        return "<pre>" + str + "</pre>";
     }
 
 }

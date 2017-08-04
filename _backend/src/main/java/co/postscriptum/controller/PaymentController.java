@@ -32,7 +32,7 @@ public class PaymentController {
             throw new BadRequestException("invalid payment secret");
         }
 
-        boolean res = bitcoinService.paymentReceived(uuid, transaction_hash, value);
+        bitcoinService.paymentReceived(uuid, transaction_hash, value);
 
         return "*ok*";
     }

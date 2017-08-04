@@ -50,26 +50,6 @@ public class MethodUsageInfo {
 
     }
 
-    @Override
-    public String toString() {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(method + ": total=" + total);
-        if (err > 0) {
-            sb.append(", err=" + err);
-        }
-        if (total > timeSamples.length) {
-            sb.append(", avgTm=" + getAvg());
-        }
-        sb.append(", maxTm=" + maxTm);
-
-        if (!lastExceptions.isEmpty()) {
-            sb.append(", last 3 exceptions:\n")
-              .append(lastExceptions.stream().collect(Collectors.joining("\n\n")));
-        }
-        return sb.toString();
-    }
-
     private static String exceptionToString(Exception exception) {
         StringWriter sw = new StringWriter();
 
@@ -90,6 +70,26 @@ public class MethodUsageInfo {
         return "date=" + date + ", reqId=" + reqId + ", stackTrace=" + stackTrace;
     }
 
+    @Override
+    public String toString() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(method + ": total=" + total);
+        if (err > 0) {
+            sb.append(", err=" + err);
+        }
+        if (total > timeSamples.length) {
+            sb.append(", avgTm=" + getAvg());
+        }
+        sb.append(", maxTm=" + maxTm);
+
+        if (!lastExceptions.isEmpty()) {
+            sb.append(", last 3 exceptions:\n")
+              .append(lastExceptions.stream().collect(Collectors.joining("\n\n")));
+        }
+        return sb.toString();
+    }
+
     private long getAvg() {
         int sum = 0;
         for (int val : timeSamples) {
@@ -97,4 +97,5 @@ public class MethodUsageInfo {
         }
         return sum / timeSamples.length;
     }
+
 }

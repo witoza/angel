@@ -32,7 +32,7 @@ public class EmailTemplateService {
         try {
             return IOUtils.toString(new ClassPathResource("emailTemplate.html").getInputStream());
         } catch (IOException e) {
-            throw new RuntimeException("can't obtain email template");
+            throw new RuntimeException("Can't obtain email template", e);
         }
     }
 

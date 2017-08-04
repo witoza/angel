@@ -34,11 +34,11 @@ public class HDFS implements FS {
 
         if (!file.getParentFile().exists()) {
             Path dir = file.getParentFile().toPath();
-            log.info("parent directory: {} not exists - creating", dir);
+            log.info("Parent directory: {} not exists - creating", dir);
             Files.createDirectories(dir);
         }
 
-        log.info("saving stream to file: {}", file.getAbsoluteFile());
+        log.info("Saving stream to file: {}", file.getAbsoluteFile());
         try (FileOutputStream fos = new FileOutputStream(file)) {
             IOUtils.copy(is, fos);
         }
@@ -49,7 +49,7 @@ public class HDFS implements FS {
 
         String absPath = getAbsolutePath(relPath);
 
-        log.info("removing file: {}", absPath);
+        log.info("Removing file: {}", absPath);
 
         Files.delete(Paths.get(absPath));
 
@@ -60,7 +60,7 @@ public class HDFS implements FS {
 
         String absPath = getAbsolutePath(relPath);
 
-        log.info("loading file: {}", absPath);
+        log.info("Loading file: {}", absPath);
 
         return new FileInputStream(absPath);
     }

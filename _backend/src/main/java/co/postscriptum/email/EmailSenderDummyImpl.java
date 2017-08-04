@@ -17,14 +17,13 @@ public class EmailSenderDummyImpl implements EmailSender {
 
     @Override
     public String sendEmail(Envelope envelope) {
-        log.info("sending email: envelope={}", envelope);
+        log.info("Sending email: envelope: {}", envelope);
 
         String messageId = UUID.randomUUID().toString();
 
         emailDeliveryDummy.markAsDelivered(envelope, messageId);
 
         return messageId;
-
     }
 
 }

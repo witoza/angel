@@ -27,7 +27,7 @@ public class Params {
     public <T> T require(String name) {
         T value = get(name);
         if (value == null) {
-            throw new BadRequestException("missing required param '" + name + "'");
+            throw new BadRequestException(String.format("missing required param '%s'", name));
         }
         return value;
     }

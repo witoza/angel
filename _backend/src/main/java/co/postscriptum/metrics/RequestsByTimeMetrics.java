@@ -72,8 +72,11 @@ public class RequestsByTimeMetrics {
     }
 
     private static class DataHolder {
+
         final long timestamp = System.currentTimeMillis();
+
         int value = 1;
+
     }
 
 }

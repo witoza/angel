@@ -49,7 +49,6 @@ public class AdminService {
     private final ShortTimeKeyService shortTimeKeyService;
 
     public List<RequiredAction> getRequiredAction(UserData userData, Status status) {
-
         return userData.getRequiredActions()
                        .stream()
                        .filter(ra -> ra.getStatus() == status)
@@ -59,12 +58,12 @@ public class AdminService {
 
     private String resolveIssueImpl(String adminInput, SecretKey userEncryptionKey, RequiredAction item) {
 
-        if (item.getType() == Type.automatic_release_messages) {
+        if (item.getType() == Type.AUTOMATIC_RELEASE_MESSAGES_HAS_BEEN_DONE) {
             return "ACK";
         }
 
         if (item.getUserUuid() == null) {
-            throw new IllegalStateException("need to have userUuid");
+            throw new IllegalStateException("Need to have userUuid");
         }
 
         return db.withLoadedAccountByUuid(item.getUserUuid(), account -> {
@@ -72,28 +71,28 @@ public class AdminService {
 
             String returnMessage = null;
 
-            if (item.getType() == Type.storage_increase) {
+            if (item.getType() == Type.USER_STORAGE_INCREASE_REQUEST) {
 
-                returnMessage = cmdStorageIncrease(userData, Params.of(item.getDetails()));
+                returnMessage = cmdUserStorageIncreaseRequest(userData, Params.of(item.getDetails()));
 
-            } else if (item.getType() == Type.new_user_password) {
+            } else if (item.getType() == Type.USER_RESET_PASSWORD_REQUEST) {
 
-                returnMessage = cmdNewUserPassword(userData, userEncryptionKey);
+                returnMessage = cmdUserResetPasswordRequest(userData, userEncryptionKey);
 
-            } else if (item.getType() == Type.manual_release_messages) {
+            } else if (item.getType() == Type.REQUIRE_MANUAL_RELEASE_MESSAGES) {
 
-                returnMessage = cmdManualReleaseMessages(userData, Params.of(item.getDetails()), userEncryptionKey);
+                returnMessage = cmdManualReleaseMessagesRequired(userData, Params.of(item.getDetails()), userEncryptionKey);
 
-            } else if (item.getType() == Type.message_not_opened_by_the_recipient) {
+            } else if (item.getType() == Type.MESSAGE_NOT_YET_OPENED_BY_THE_RECIPIENT) {
 
                 returnMessage = cmdMessageNotOpenedByTheRecipient(userData, Params.of(item.getDetails()), adminInput);
 
-            } else if (item.getType() == Type.account_can_be_removed) {
+            } else if (item.getType() == Type.ACCOUNT_CAN_BE_REMOVED) {
 
                 cmdAccountCanBeRemoved(account);
 
             } else {
-                throw new IllegalArgumentException("don't know how to resolve " + item.getType());
+                throw new IllegalArgumentException("Don't know how to resolve issue of type " + item.getType());
             }
 
             if (returnMessage != null) {
@@ -105,13 +104,12 @@ public class AdminService {
 
     }
 
-    private String cmdManualReleaseMessages(UserData userData, Params params, SecretKey userEncryptionKey) {
-
+    private String cmdManualReleaseMessagesRequired(UserData userData, Params params, SecretKey userEncryptionKey) {
         if (userEncryptionKey == null) {
-            throw new BadRequestException("you have to provide user encryption key to release user messages");
+            throw new BadRequestException("You have to provide user encryption key to release user messages");
         }
 
-        long userLastAccess = Long.parseLong(params.require(AccountMessageReleaserJob.userLastAccess));
+        long userLastAccess = Long.parseLong(params.require(AccountMessageReleaserJob.USER_LAST_ACCESS));
 
         if (userLastAccess != userData.getUser().getLastAccess()) {
             return "User has logged in again after this issue was created, messages won't be send out";
@@ -120,49 +118,45 @@ public class AdminService {
         UserInternal internal = userData.getInternal();
 
         if (internal.getEncryptionKeyEncryptedByAdminPublicKey() == null) {
-            throw new InternalException(
-                    "There is no EncryptionKeyEncryptedByAdminPublicKey, messages should have been released automatically");
+            throw new InternalException("There is no EncryptionKeyEncryptedByAdminPublicKey, messages should have been released automatically");
         }
 
         ReleasedMessagesDetails details = messageReleaseService.releaseMessages(userData, Optional.of(userEncryptionKey));
 
-        messageReleaseService.sendUserReleasedMessageSummary(userData, details);
+        messageReleaseService.sendToOwnerReleasedMessageSummary(userData, details);
 
-        userData.getUser().getTrigger().setHaveBeenReleasedTime(System.currentTimeMillis());
+        userData.getUser().getTrigger().setReleasedTime(System.currentTimeMillis());
 
         return "User messages have been released:\n" + messageReleaseService.toHumanReadable(internal.getLang(), details);
-
     }
 
     private void cmdAccountCanBeRemoved(Account account) {
-
         db.removeAccount(account);
-
     }
 
     private String cmdMessageNotOpenedByTheRecipient(UserData userData, Params params, String adminInput) {
         if (StringUtils.isEmpty(adminInput)) {
-            throw new BadRequestException("admin input is required");
+            throw new BadRequestException("Admin input is required");
         }
 
-        String releaseItem_key = params.require(AccountRemoverJob.releaseItem_key);
-        String remainder_uuid = params.require(AccountRemoverJob.remainder_uuid);
+        String releaseItemKey = params.require(AccountRemoverJob.RELEASE_ITEM_KEY);
+        String remainderUuid = params.require(AccountRemoverJob.REMAINDER_UUID);
 
         Message message = new UserDataHelper(userData)
-                .requireMessageByUuid(params.require(AccountRemoverJob.releaseItem_message_uuid));
+                .requireMessageByUuid(params.require(AccountRemoverJob.RELEASE_ITEM_MESSAGE_UUID));
 
         if (message.getRelease() == null) {
             return "There is no Release on the message, user must have resurrected";
         }
 
-        ReleaseItem releaseItem = new UserDataHelper(userData).requireReleaseItem(message, releaseItem_key);
+        ReleaseItem releaseItem = new UserDataHelper(userData).requireReleaseItem(message, releaseItemKey);
 
         Reminder remainder = releaseItem
                 .getReminders()
                 .stream()
-                .filter(r -> r.getUuid().equals(remainder_uuid))
+                .filter(r -> r.getUuid().equals(remainderUuid))
                 .findFirst()
-                .orElseThrow(ExceptionBuilder.missingClass(Reminder.class, "uuid=" + remainder_uuid));
+                .orElseThrow(ExceptionBuilder.missingClass(Reminder.class, "uuid=" + remainderUuid));
 
         remainder.setResolvedTime(System.currentTimeMillis());
         remainder.setResolved(true);
@@ -171,10 +165,9 @@ public class AdminService {
         return "Recipient " + releaseItem.getRecipient() + " has been manually contacted: " + adminInput;
     }
 
-    private String cmdNewUserPassword(UserData userData, SecretKey userEncryptionKey) {
-
+    private String cmdUserResetPasswordRequest(UserData userData, SecretKey userEncryptionKey) {
         if (userEncryptionKey == null) {
-            throw new BadRequestException("you have to provide user encryption key to set user password");
+            throw new BadRequestException("You have to provide user encryption key to set user password");
         }
 
         UserInternal internal = userData.getInternal();
@@ -186,16 +179,15 @@ public class AdminService {
 
         SecretKey tmpKey = AESKeyUtils.generateRandomKey();
 
-        ShortTimeKey stk = shortTimeKeyService.create(userData, ShortTimeKey.Type.password_change_req);
+        ShortTimeKey stk = shortTimeKeyService.create(userData, ShortTimeKey.Type.USER_RESET_PASSWORD_REQUEST);
         stk.setExtraData(AESGCMUtils.encrypt(tmpKey, userEncryptionKey.getEncoded()));
 
-        userEmailService.sendAdminApprovedPasswordChange(userData, stk, tmpKey);
+        userEmailService.sendToOwnerAdminApprovedRequestPasswordReset(userData, stk, tmpKey);
 
         return "User's request for password change has been approved";
     }
 
-    private String cmdStorageIncrease(UserData userData, Params params) {
-
+    private String cmdUserStorageIncreaseRequest(UserData userData, Params params) {
         UserInternal internal = userData.getInternal();
 
         Integer numberOfMb = Integer.parseInt(params.require("numberOfMb"));
@@ -212,8 +204,7 @@ public class AdminService {
     }
 
     public void removeIssue(UserData userData, String issueUuid) {
-
-        log.info("removing issue: {}", issueUuid);
+        log.info("Removing issue.uuid: {}", issueUuid);
 
         requireRequiredActionByUuid(userData, issueUuid);
 
@@ -223,7 +214,7 @@ public class AdminService {
     }
 
     public String getUserEncryptedEncryptionKey(String userUuid) {
-        log.info("getUserEncryptedEncryptionKey {}", userUuid);
+        log.info("Get user.uuid: {} encrypted EncryptionKey", userUuid);
 
         RSAOAEPEncrypted encrypted = db.withLoadedAccountByUuid(userUuid, account -> {
             return account.getUserData().getInternal().getEncryptionKeyEncryptedByAdminPublicKey();
@@ -243,7 +234,7 @@ public class AdminService {
         try {
             return AESKeyUtils.toSecretKey(Utils.base64decode(userEncryptionKeyBase64));
         } catch (Exception e) {
-            throw new BadRequestException("the user encryption key is invalid", e);
+            throw new BadRequestException("The user encryption key is invalid", e);
         }
     }
 

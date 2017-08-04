@@ -43,6 +43,9 @@ import java.util.stream.Collectors;
 public class Utils {
 
     private static final EmailValidator EMAIL_VALIDATOR = EmailValidator.getInstance();
+    private static final ObjectMapper OBJECT_MAPPER = getObjectMapper();
+    private static final Base64 BASE64 = new Base64();
+    private static final Base32 BASE32 = new Base32();
 
     private static ObjectMapper getObjectMapper() {
         SimpleModule testModule = new SimpleModule();
@@ -55,12 +58,6 @@ public class Utils {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         return mapper;
     }
-
-    private static final ObjectMapper OBJECT_MAPPER = getObjectMapper();
-
-    private static final Base64 BASE64 = new Base64();
-
-    private static final Base32 BASE32 = new Base32();
 
     public static byte[] base32decode(String data) {
         return BASE32.decode(data);
@@ -201,12 +198,12 @@ public class Utils {
                      .findAny();
     }
 
-    public static long minutesInMs(long minutes) {
+    public static long minutesToMillis(long minutes) {
         return minutes * 60 * 1000;
     }
 
     public static long daysInMs(long days) {
-        return minutesInMs(days * 24 * 60);
+        return minutesToMillis(days * 24 * 60);
     }
 
     public static String asSafeText(String data) {

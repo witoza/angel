@@ -22,7 +22,7 @@ public final class MyAuthenticationEntryPoint implements AuthenticationEntryPoin
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
 
-        log.info("commencing login, creating session & CSRF cookie, sending 401");
+        log.info("Commencing login, creating session & CSRF cookie, sending 401");
 
         request.getSession(true);
 

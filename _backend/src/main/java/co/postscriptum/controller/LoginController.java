@@ -176,7 +176,7 @@ public class LoginController {
         }
     }
 
-    @GetMapping(value = "/alive")
+    @GetMapping(value = "/alive", produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String alive(@RequestParam("user_uuid") String userUuid, @RequestParam("key") String key) {
         try {

@@ -8,60 +8,75 @@ import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.bo.UserPlan;
 import co.postscriptum.service.UserDataHelper;
+import lombok.AllArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Component
 @Slf4j
+@AllArgsConstructor
 public class BitcoinService {
 
-    @Autowired
-    private BitcoinAddressGenerator bitcoinAddressGenerator;
+    private final BitcoinAddressGenerator bitcoinAddressGenerator;
 
-    @Autowired
-    private DB db;
+    private final DB db;
 
     @Synchronized
-    public boolean paymentReceived(String paymentUuid, String transactionHash, String value) {
-        log.info("payment with: uuid={}, transactionHash={}, value={} received", paymentUuid, transactionHash, value);
+    public Optional<Account> paymentReceived(String paymentUuid, String transactionHash, String value) {
+        log.info("Payment with: uuid: {}, transactionHash: {}, value: {} has been received", paymentUuid, transactionHash, value);
 
-        Optional<Account> accountWithAddress = db.getAccountWithAssignedPayment(paymentUuid);
+        Optional<Account> accountWithAddressOpt = getAccountWithAssignedPayment(paymentUuid);
 
-        if (!accountWithAddress.isPresent()) {
-            log.error("can't find Account with paymentAddress={}", paymentUuid);
-            return false;
+        if (!accountWithAddressOpt.isPresent()) {
+            log.error("Can't find Account with paymentAddress: {}", paymentUuid);
+            return Optional.empty();
         }
 
-        log.info("Account with that payment uuid has been found");
+        log.info("User with payment.uuid: {} is user.uuid: {}", paymentUuid,
+                 accountWithAddressOpt.get().getUserData().getUser().getUuid());
 
-        db.withLoadedAccount(accountWithAddress, account -> {
+        db.withLoadedAccount(accountWithAddressOpt.get(), account -> {
             UserData userData = account.getUserData();
 
             String msg = "Payment of " + value + " Satoshi has been sent to BTC address " +
                     userData.getUser().getPaymentAddress().getBtcAddress() + " in transaction " + transactionHash;
 
-            userData.getInternal().getUserPlan().getPayments().add(UserPlan.Payment.builder()
-                                                                                   .time(System.currentTimeMillis())
-                                                                                   .amount(value + " Satoshi")
-                                                                                   .details(msg)
-                                                                                   .build());
+            UserPlan userPlan = userData.getInternal().getUserPlan();
+            if (userPlan.getPayments() == null) {
+                userPlan.setPayments(new ArrayList<>());
+            }
+            userPlan.getPayments().add(UserPlan.Payment.builder()
+                                                       .time(System.currentTimeMillis())
+                                                       .amount(value + " Satoshi")
+                                                       .details(msg)
+                                                       .build());
 
-            userData.getInternal().getUserPlan().setPaidUntil(System.currentTimeMillis() + Utils.daysInMs(356));
+            userPlan.setPaidUntil(System.currentTimeMillis() + Utils.daysInMs(356));
             userData.getUser().setPaymentAddress(null);
 
             new UserDataHelper(userData).addNotification(msg + ".\nYour account has been extended for another year.");
 
         });
 
-        return true;
+        return accountWithAddressOpt;
+    }
+
+    private Optional<Account> getAccountWithAssignedPayment(String paymentUuid) {
+        return db.getAccount(account -> {
+            PaymentAddress paymentAddress = account.getUserData().getUser().getPaymentAddress();
+            if (paymentAddress == null) {
+                return false;
+            }
+            return paymentAddress.getUuid().equals(paymentUuid);
+        });
     }
 
     public PaymentAddress getPaymentForUser(UserData userData) {
-        log.info("get payment address for user {}", userData.getUser().getUuid());
+        log.info("Getting payment address for user.uuid: {}", userData.getUser().getUuid());
 
         PaymentAddress paymentAddress = getPaymentForUserImpl(userData.getUser());
         paymentAddress.setAssignedTime(System.currentTimeMillis());
@@ -75,20 +90,43 @@ public class BitcoinService {
 
         // try to use address which was previously assigned for that user
         if (user.getPaymentAddress() != null) {
-            log.info("reusing assigned address");
+            log.info("Reusing same user assigned address");
             return user.getPaymentAddress();
         }
 
-        //try to get unused address from the pool (>30min)
-        Optional<PaymentAddress> unused = db.harvestPaymentAddressFromUnloadedAccounts();
-        if (unused.isPresent()) {
-            log.info("using other user unused address");
-            return unused.get();
-        }
+        return harvestPaymentAddressFromUnloadedAccounts()
+                .map(paymentAddress -> {
+                    log.info("Using other user unused payment address");
+                    return paymentAddress;
+                })
+                .orElseGet(() -> {
+                    log.info("Can't reuse address, generating new one");
+                    return bitcoinAddressGenerator.generateNewAddress();
+                });
 
-        //get fresh one
-        log.info("generating new one");
-        return bitcoinAddressGenerator.generateNewAddress();
+    }
+
+    private Optional<PaymentAddress> harvestPaymentAddressFromUnloadedAccounts() {
+        return db.getUserUnloadedAccounts()
+                 .filter(a -> isPaymentAddressUnused(a.getUserData().getUser().getPaymentAddress()))
+                 .findAny()
+                 .map(account -> {
+                     try {
+                         account.lock();
+                         User user = account.getUserData().getUser();
+                         PaymentAddress paymentAddress = user.getPaymentAddress();
+                         user.setPaymentAddress(null);
+                         return paymentAddress;
+                     } finally {
+                         account.unlock();
+                     }
+                 });
+    }
+
+    private boolean isPaymentAddressUnused(PaymentAddress paymentAddress) {
+        // after 30 minutes, unloaded user's paymentAddress can be reused
+        return paymentAddress != null &&
+                paymentAddress.getAssignedTime() + Utils.minutesToMillis(30) < System.currentTimeMillis();
     }
 
 }

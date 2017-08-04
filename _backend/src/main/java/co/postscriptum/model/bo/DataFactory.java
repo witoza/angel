@@ -15,6 +15,7 @@ import java.security.PublicKey;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class DataFactory {
 
@@ -41,7 +42,7 @@ public class DataFactory {
                                    .y(10)
                                    .z(10)
                                    .w(10)
-                                   .stage(Stage.beforeX)
+                                   .stage(Stage.BEFORE_X)
                                    .build())
                    .build();
     }
@@ -58,7 +59,6 @@ public class DataFactory {
 
     private static UserInternal newUserInternal(String loginPassword) {
         UserInternal internal = new UserInternal();
-
         internal.setLang(Lang.en);
         internal.setPasswordHash(PasswordUtils.hashPassword(loginPassword));
         internal.setLoginHistory(new ArrayList<>());
@@ -67,7 +67,6 @@ public class DataFactory {
         internal.setCreationTime(System.currentTimeMillis());
         internal.setInvalidLoginTs(new ArrayList<>());
         internal.setVerifyUnknownBrowsers(true);
-
         return internal;
     }
 
@@ -107,17 +106,21 @@ public class DataFactory {
         return internal;
     }
 
-    public static RequiredAction newRequiredAction(UserData userData, Type type) {
+    public static RequiredAction newRequiredAction(UserData userData, Type type, Map<String, Object> details) {
         RequiredAction requiredAction = new RequiredAction();
         requiredAction.setType(type);
         requiredAction.setCreatedTime(System.currentTimeMillis());
         requiredAction.setUuid(Utils.randKey("RA"));
-        requiredAction.setDetails(new HashMap<>());
+        requiredAction.setDetails(details);
         requiredAction.setStatus(Status.unresolved);
         requiredAction.setResolutions(new ArrayList<>());
         requiredAction.setUserUuid(userData.getUser().getUuid());
         requiredAction.setUserUsername(userData.getUser().getUsername());
         return requiredAction;
+    }
+
+    public static RequiredAction newRequiredAction(UserData userData, Type type) {
+        return newRequiredAction(userData, type, new HashMap<>());
     }
 
     public static ReleaseItem.Reminder newReminder() {
@@ -128,12 +131,15 @@ public class DataFactory {
         return remainder;
     }
 
-    public static UserData newUserData() {
+    public static UserData newUserData(User user, UserInternal internal) {
         UserData userData = new UserData();
         userData.setFiles(new ArrayList<>());
         userData.setMessages(new ArrayList<>());
         userData.setNotifications(new ArrayList<>());
         userData.setRequiredActions(new ArrayList<>());
+        userData.setUser(user);
+        userData.setInternal(internal);
         return userData;
     }
+
 }

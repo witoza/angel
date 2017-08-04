@@ -5,8 +5,8 @@ import co.postscriptum.db.Account;
 import co.postscriptum.db.DB;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
-import co.postscriptum.internal.MessageContentUtils;
 import co.postscriptum.internal.FileEncryptionService;
+import co.postscriptum.internal.MessageContentUtils;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.BO2DTOConverter;
 import co.postscriptum.model.bo.File;
@@ -58,13 +58,13 @@ public class PreviewService {
 
             File file = userDataHelper.requireFileByUuid(form.getFile_uuid());
 
-            log.info("downloading file name={}, uuid={}", file.getName(), file.getUuid());
+            log.info("Downloading file name: {}, uuid: {}", file.getName(), file.getUuid());
 
             SecretKey encryptionKey;
 
             if (!StringUtils.isEmpty(form.getMsg_uuid())) {
 
-                log.info("preview mode download");
+                log.info("Preview mode download");
 
                 Message message = userDataHelper.requireMessageByUuid(form.getMsg_uuid());
 
@@ -86,7 +86,7 @@ public class PreviewService {
 
             } else {
 
-                log.info("edit mode download");
+                log.info("Edit mode download");
 
                 if (!AuthenticationHelper.isUserLogged(fileAccount.getUserData().getUser().getUsername())) {
                     throw new ForbiddenException("file does not belong to the logged account");
@@ -109,7 +109,7 @@ public class PreviewService {
                 if (file.getMime().equals("video/webm")) {
                     fileName = fileName + ".webm";
                 } else {
-                    log.warn("possible issue with download file content type");
+                    log.warn("Possible issue with download file content type");
                 }
             }
 
@@ -132,7 +132,7 @@ public class PreviewService {
         try {
             return AESKeyUtils.toSecretKey(Utils.base32decode(aesKey));
         } catch (Exception e) {
-            log.warn("provided data is not a proper AES key: {}", Utils.exceptionInfo(e));
+            log.warn("Provided data is not a proper AES key: {}", Utils.exceptionInfo(e));
         }
         return null;
     }
@@ -147,7 +147,7 @@ public class PreviewService {
 
         if (AuthenticationHelper.isUserLogged(messageAccount.getUserData().getUser().getUsername())) {
 
-            log.info("logged account is the owner of the message");
+            log.info("Logged account is the owner of the message");
 
             ReleaseItem releaseItem = new ReleaseItem();
             releaseItem.setFirstTimeAccess(System.currentTimeMillis());
@@ -175,13 +175,13 @@ public class PreviewService {
 
         if (releaseItem.getUserEncryptionKeyEncodedByRecipientKey() == null) {
 
-            log.info("missing EncryptionKey, getting one from user input params");
+            log.info("No EncryptionKey in UserData, getting one from user input params");
 
             return new ReleaseItemWithKey(releaseItem, getEncryptionKey(userEncryptionKey));
 
         } else {
 
-            log.info("decrypting EncryptionKey by RecipientKey");
+            log.info("Decrypting User's EncryptionKey by RecipientKey");
 
             SecretKey recipientSecretKey = AESKeyUtils.toSecretKey(Utils.base64decode(recipientKey));
 
@@ -283,7 +283,6 @@ public class PreviewService {
 
     }
 
-
     private void setFiles(MessageDTO mdto, UserData userData) {
         mdto.setFiles(userData.getFiles()
                               .stream()
@@ -297,6 +296,7 @@ public class PreviewService {
     private static class ReleaseItemWithKey {
 
         ReleaseItem releaseItem;
+
         SecretKey encryptionKey;
 
     }

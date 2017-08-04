@@ -19,10 +19,12 @@ public class ShortTimeKey {
     private AESGCMEncrypted extraData;
 
     public enum Type {
-        password_change_req,
-        recall_otp_key,
-        register_user,
-        login
+
+        USER_RESET_PASSWORD_REQUEST,
+        RECALL_TOTP_KEY,
+        REGISTER_NEW_USER,
+        LOGIN_FROM_NOT_VERIFIED_BROWSER_TOKEN
+
     }
 
 }

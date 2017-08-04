@@ -20,7 +20,7 @@ angular
 
                     camera: {
                         error: "Problem z kamerą: <b>{0}</b>",
-                        turnon_info: "Włącz obsługe kamery.",
+                        turnon_info: "Włącz obsługe kamery",
                         recording_error: "Problem occurred during recording, the video will be discarded. Please record the video again",
                     },
 

@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 public class ExceptionBuilder {
 
     public static Supplier<BadRequestException> missingClass(Class<?> clazz, String msg) {
-        return () -> new BadRequestException("can't find " + clazz.getSimpleName() + " with " + msg);
+        return () -> new BadRequestException(String.format("Can't find %s with %s", clazz.getSimpleName(), msg));
     }
 
     public static Supplier<BadRequestException> badRequest(String msg) {

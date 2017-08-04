@@ -1,7 +1,7 @@
 package co.postscriptum.test_data;
 
-import co.postscriptum.internal.MessageContentUtils;
 import co.postscriptum.internal.FileEncryptionService;
+import co.postscriptum.internal.MessageContentUtils;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.File;
@@ -77,9 +77,8 @@ public class TestDataCreator {
             trigger.setZ(10);
             trigger.setW(5);
 
-            UserData userData = DataFactory.newUserData();
-            userData.setUser(user);
-            userData.setInternal(DataFactory.newUserInternal(loginPassword, adminPublicKey));
+            UserData userData = DataFactory.newUserData(
+                    user, DataFactory.newUserInternal(loginPassword, adminPublicKey));
             userData.getInternal().setQuotaBytes(1024 * 1024 * 50);
 
             //now Jane has to extend the account
@@ -89,6 +88,7 @@ public class TestDataCreator {
             return userData;
         }
     };
+
     private final TestUser jackEmpty = new TestUser() {
 
         @Override
@@ -114,15 +114,15 @@ public class TestDataCreator {
             trigger.setZ(10);
             trigger.setW(5);
 
-            UserData userData = DataFactory.newUserData();
-            userData.setUser(user);
-            userData.setInternal(DataFactory.newUserInternal(loginPassword, adminPublicKey));
+            UserData userData = DataFactory.newUserData(
+                    user, DataFactory.newUserInternal(loginPassword, adminPublicKey));
             userData.getInternal().setQuotaBytes(500);
 
             fixUserData(userData);
             return userData;
         }
     };
+
     private final TestUser bobNonactive = new TestUser() {
 
         @Override
@@ -143,9 +143,8 @@ public class TestDataCreator {
             Trigger trigger = user.getTrigger();
             trigger.setEnabled(false);
 
-            UserData userData = DataFactory.newUserData();
-            userData.setInternal(DataFactory.newUserInternal(loginPassword, adminPublicKey));
-            userData.setUser(user);
+            UserData userData = DataFactory.newUserData(
+                    user, DataFactory.newUserInternal(loginPassword, adminPublicKey));
 
             userData.getInternal().setQuotaBytes(1024 * 1024 * 50);
 
@@ -153,6 +152,7 @@ public class TestDataCreator {
             return userData;
         }
     };
+
     private final TestUser johnData = new TestUser() {
 
         @Override
@@ -167,7 +167,7 @@ public class TestDataCreator {
         }
 
         private long lastXMinutes(long minutes) {
-            return System.currentTimeMillis() - Utils.minutesInMs(minutes);
+            return System.currentTimeMillis() - Utils.minutesToMillis(minutes);
         }
 
         @Override
@@ -308,12 +308,10 @@ public class TestDataCreator {
                                               encryptionKey,
                                               "Imagine there's no heaven<br/>It's easy if you try<br/>No hell below us<br/>Above us only sky<br/><br/>Imagine all the people<br/>Living for today<br/>Aha-ahh<br/><br/>Imagine there's no countries<br/>It isn't hard to do<br/>Nothing to kill or die for<br/>And no religion too<br/><br/>Imagine all the people<br/>Living life in peace<br/>Yoohoo-ooh<br/><br/>You may say I'm a dreamer<br/>But I'm not the only one<br/>I hope someday you'll join us<br/>And the world will be as one<br/><br/>Imagine no possessions<br/>I wonder if you can<br/>No need for greed or hunger<br/>A brotherhood of man<br/><br/>Imagine all the people<br/>Sharing all the world<br/>Yoohoo-ooh<br/><br/>You may say I'm a dreamer<br/>But I'm not the only one<br/>I hope someday you'll join us<br/>And the world will live as one"));
 
-            UserData userData = DataFactory.newUserData();
-            userData.setUser(user);
+            UserData userData = DataFactory.newUserData(user, internal);
             userData.setFiles(asArrayList(f1, encF1, f2, f4, f5, f6, f7));
             userData.setMessages(asArrayList(m0, m1, m2, m3, m4, m5, m6, m7));
-            userData.setInternal(internal);
-            //never have to pay
+            // never has to pay
             userData.getInternal().getUserPlan().setPaidUntil(System.currentTimeMillis() + Utils.daysInMs(10000));
             userData.getInternal().setQuotaBytes(1024 * 1024 * 50);
             fixUserData(userData);

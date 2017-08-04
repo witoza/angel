@@ -24,13 +24,13 @@ public class RSAOAEPUtils {
     private static final SecureRandom SECURE_RANDOM;
 
     static {
-        log.info("adding BouncyCastleProvider");
+        log.info("Registering BouncyCastleProvider");
 
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         try {
             SECURE_RANDOM = SecureRandom.getInstanceStrong();
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("can't init SecureRandom", e);
+            throw new IllegalStateException("Can't initialize SecureRandom", e);
         }
     }
 
@@ -38,7 +38,7 @@ public class RSAOAEPUtils {
         try (PemReader pemReader = new PemReader(new StringReader(pem))) {
             return pemReader.readPemObject().getContent();
         } catch (IOException e) {
-            throw new IllegalStateException("unexpected exception while reading from PEM", e);
+            throw new IllegalStateException("Unexpected exception while reading from PEM", e);
         }
     }
 

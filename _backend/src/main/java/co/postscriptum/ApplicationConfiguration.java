@@ -23,7 +23,7 @@ public class ApplicationConfiguration {
     public RuntimeEnvironment env() {
         String activeProfile = System.getProperty("spring.profiles.active");
         if (activeProfile == null) {
-            throw new IllegalArgumentException("you have to define spring.profiles.active");
+            throw new IllegalArgumentException("You have to define spring.profiles.active");
         }
         return RuntimeEnvironment.valueOf(activeProfile.toUpperCase());
     }

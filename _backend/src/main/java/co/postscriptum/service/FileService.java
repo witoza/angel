@@ -45,7 +45,7 @@ public class FileService {
             throw new BadRequestException("preview not available for password encrypted file");
         }
 
-        log.info("opening file name={}, uuid={}", file.getName(), file.getUuid());
+        log.info("Opening file name: {}, uuid: {}", file.getName(), file.getUuid());
 
         return ResponseEntity
                 .ok()
@@ -104,7 +104,7 @@ public class FileService {
 
         userData.getFiles().add(file);
 
-        log.info("file has been uploaded name={}, uuid={}", file.getName(), file.getUuid());
+        log.info("File has been uploaded name: {}, uuid: {}", file.getName(), file.getUuid());
 
         return file;
     }
@@ -123,7 +123,7 @@ public class FileService {
 
     private void deleteFile(UserData userData, File file) throws IOException {
 
-        log.info("deleting file name={}, uuid={}", file.getName(), file.getUuid());
+        log.info("Deleting file name: {}, uuid: {}", file.getName(), file.getUuid());
 
         fs.remove(filePath(userData, file));
 
@@ -164,7 +164,7 @@ public class FileService {
         File originalFile;
         if (!originalFileOpt.isPresent()) {
 
-            log.info("original file has been removed, recreating original file based on encrypted one");
+            log.info("Original file has been removed, recreating original file based on encrypted one");
 
             originalFile = DataFactory.cloneBasicData(encryptedFile);
             originalFile.setUuid(encryptedFile.getOriginalFileUuid());
@@ -180,7 +180,7 @@ public class FileService {
 
         } else {
 
-            log.info("original file exists - switching references only");
+            log.info("Original file exists - switching references only");
 
             originalFile = originalFileOpt.get();
 
@@ -208,7 +208,7 @@ public class FileService {
         if (attachmentIndex == -1) {
             throw new BadRequestException("file is not connected to that message");
         }
-        log.info("msg attachment index={}", attachmentIndex);
+        log.info("Message attachment index: {}", attachmentIndex);
 
         File encryptedFile = fileEncryptionService.encryptFileByPassword(file, userData.getUser(), password);
         // this file is *only* attached to this message, it belongs to that message

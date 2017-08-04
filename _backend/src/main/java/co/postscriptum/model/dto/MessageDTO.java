@@ -10,6 +10,7 @@ import java.util.List;
 
 @Data
 public class MessageDTO {
+
     String uuid;
 
     long creationTime;

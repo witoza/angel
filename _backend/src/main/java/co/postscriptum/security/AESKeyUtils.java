@@ -17,7 +17,7 @@ public class AESKeyUtils {
         try {
             SECURE_RANDOM = SecureRandom.getInstanceStrong();
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("can't init SecureRandom", e);
+            throw new IllegalStateException("Can't initialize SecureRandom", e);
         }
     }
 

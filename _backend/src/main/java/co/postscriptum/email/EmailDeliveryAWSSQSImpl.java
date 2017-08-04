@@ -31,23 +31,16 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
 
     private AmazonSQSAsync sqsClient;
 
-    private String queueUrl;
-
     @PostConstruct
     public void init() {
-        log.info("connecting to AWS SQS ...");
+        log.info("Connecting to AWS SQS ...");
 
         sqsClient = AmazonSQSAsyncClientBuilder.standard()
                                                .withCredentials(awsConfig.awsCredentialsProvider())
                                                .withRegion(awsConfig.getSqsRegion())
                                                .build();
 
-        queueUrl = awsConfig.getSqsQueueName();
-
-        log.info("using queue={}", queueUrl);
-
-        log.info("connected to AWS SQS");
-
+        log.info("Connected to AWS SQS");
     }
 
     private Map<String, String> fromHeaderData(String data) {
@@ -58,7 +51,7 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
                 });
             }
         } catch (Exception e) {
-            log.error("can't convert ENVELOPE_HEADER_DATA to Map");
+            log.error("Can't convert ENVELOPE_HEADER_DATA to Map");
             return new HashMap<>();
         }
     }
@@ -68,13 +61,13 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
 
         ReceiveMessageRequest request = new ReceiveMessageRequest();
         request.setMaxNumberOfMessages(10);
-        request.setQueueUrl(queueUrl);
+        request.setQueueUrl(awsConfig.getSqsQueueName());
         request.setWaitTimeSeconds(5);
 
         ReceiveMessageResult result;
         do {
 
-            log.info("call AWSSQS::receiveMessage");
+            log.info("Call AWSSQS::receiveMessage");
 
             result = sqsClient.receiveMessage(request);
 
@@ -96,8 +89,8 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
 
                 onDelivery.onDelivery(messageId, envelopeId, fromHeaderData(headerData), getDeliveryType(Message), bounceCause);
 
-                log.info("call AWSSQS::deleteMessage");
-                sqsClient.deleteMessage(queueUrl, message.getReceiptHandle());
+                log.info("Call AWSSQS::deleteMessage");
+                sqsClient.deleteMessage(awsConfig.getSqsQueueName(), message.getReceiptHandle());
 
             }
 

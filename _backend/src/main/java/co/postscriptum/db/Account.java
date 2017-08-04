@@ -25,17 +25,17 @@ public class Account {
 
     public void assertLockIsHeldByCurrentThread() {
         if (!lock.isHeldByCurrentThread()) {
-            throw new InternalException("account lock must be held by this thread");
+            throw new InternalException("Account lock must be held by this thread");
         }
     }
 
     public void lock() {
         try {
             if (!lock.tryLock(5, TimeUnit.SECONDS)) {
-                throw new InternalException("count't lock Account for 5 seconds");
+                throw new InternalException("Can't lock Account for 5 seconds");
             }
         } catch (InterruptedException e) {
-            throw new InternalException("waiting for Account lock has been interrupted", e);
+            throw new InternalException("Waiting for Account lock has been interrupted", e);
         }
 
     }

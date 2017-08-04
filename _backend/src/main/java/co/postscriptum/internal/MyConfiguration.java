@@ -26,12 +26,12 @@ public class MyConfiguration {
     public void init() throws IOException {
 
         if (StringUtils.isEmpty(configFileUrl)) {
-            throw new IOException("you have to configure 'my.secret_config_file' property");
+            throw new IOException("You have to configure 'my.secret_config_file' property");
         }
 
         Path configFilePath = Paths.get(configFileUrl);
 
-        log.info("loading config from {}", configFilePath);
+        log.info("Loading config from {}", configFilePath);
 
         try (Reader reader = new FileReader(configFilePath.toFile())) {
             properties = new Properties();

@@ -32,9 +32,9 @@ public class BitcoinAddressGeneratorImpl implements BitcoinAddressGenerator {
 
     public PaymentAddress generateNewAddress() {
 
-        log.info("generate new bitcoin address");
+        log.info("Generate new bitcoin address");
 
-        PaymentAddress paymentAddress = new PaymentAddress();
+        PaymentAddress paymentAddress = PaymentAddress.builder().build();
         paymentAddress.setUuid(UUID.randomUUID().toString());
 
         String url = configuration.getBitcoinPaymentAdr();
@@ -55,7 +55,7 @@ public class BitcoinAddressGeneratorImpl implements BitcoinAddressGenerator {
 
             return paymentAddress;
         } catch (IOException e) {
-            throw new InternalException("exception occurred while connecting to Bitcoin payment service", e);
+            throw new InternalException("Exception occurred while connecting to Bitcoin payment service", e);
         }
     }
 

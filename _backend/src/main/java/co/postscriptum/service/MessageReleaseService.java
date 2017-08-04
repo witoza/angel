@@ -86,12 +86,12 @@ public class MessageReleaseService {
         return sb.toString();
     }
 
-    private Map<String, String> releaseMessage(UserData userData, Message message, Optional<SecretKey> userEncryptionKey) {
+    private Map<String, String> releaseMessage(UserData userData, Message message, Optional<SecretKey> userEncryptionKeyOpt) {
 
-        log.info("processing release message uuid={} addressed to recipients={}", message.getUuid(), message.getRecipients());
+        log.info("Releasing message.uuid: {} to recipients: {}", message.getUuid(), message.getRecipients());
 
         if (message.getType() != Message.Type.outbox) {
-            throw new IllegalArgumentException("can't release not outbox type messages");
+            throw new IllegalArgumentException("Can't release not outbox type messages");
         }
 
         Lang lang = ObjectUtils.firstNonNull(message.getLang(), userData.getInternal().getLang());
@@ -107,6 +107,8 @@ public class MessageReleaseService {
                 continue;
             }
 
+            log.info("Valid recipient: {}", recipient);
+
             ReleaseItem release = createReleaseItem(message, recipient);
 
             Map<String, Object> context = new HashMap<>();
@@ -114,17 +116,16 @@ public class MessageReleaseService {
             context.put("lang", lang);
             context.put("release", release);
 
-            if (userEncryptionKey.isPresent()) {
+            userEncryptionKeyOpt.ifPresent(userEncryptionKey -> {
 
                 SecretKey recipientKey = AESKeyUtils.generateRandomKey();
 
-                release.setUserEncryptionKeyEncodedByRecipientKey(
-                        AESGCMUtils.encrypt(recipientKey, userEncryptionKey.get().getEncoded()));
+                release.setUserEncryptionKeyEncodedByRecipientKey(AESGCMUtils.encrypt(recipientKey, userEncryptionKey.getEncoded()));
 
-                //key is only present in email
+                // recipientKey is only present in email
                 context.put("recipientKey", Utils.urlEncode(Utils.base64encode(recipientKey.getEncoded())));
 
-            }
+            });
 
             Envelope messageEnvelope = envelopeCreatorService.create(EnvelopeType.RELEASE_ITEM,
                                                                      userData,
@@ -141,20 +142,21 @@ public class MessageReleaseService {
         return recipientsStatus;
     }
 
-    public ReleasedMessagesDetails releaseMessages(UserData userData, Optional<SecretKey> userEncryptionKey) {
+    public ReleasedMessagesDetails releaseMessages(UserData userData, Optional<SecretKey> userEncryptionKeyOpt) {
 
-        log.info("releasing outbox messages for user.uuid={}", userData.getUser().getUuid());
+        log.info("Releasing outbox messages for user.uuid: {}, hasUserEncryptionKey: {}",
+                 userData.getUser().getUuid(), userEncryptionKeyOpt.isPresent());
 
         ReleasedMessagesDetails details = new ReleasedMessagesDetails();
 
         List<Message> outboxMessages = getOutboxMessages(userData);
         if (outboxMessages.isEmpty()) {
-            log.info("nothing to send in outbox");
+            log.info("Nothing to send in outbox");
             return details;
         }
 
         for (Message message : outboxMessages) {
-            details.add(message, releaseMessage(userData, message, userEncryptionKey));
+            details.add(message, releaseMessage(userData, message, userEncryptionKeyOpt));
         }
 
         return details;
@@ -167,9 +169,9 @@ public class MessageReleaseService {
                        .collect(Collectors.toList());
     }
 
-    public void sendUserReleasedMessageSummary(UserData userData, ReleasedMessagesDetails details) {
+    public void sendToOwnerReleasedMessageSummary(UserData userData, ReleasedMessagesDetails details) {
 
-        log.info("sending email to user.uuid={} about released messages", userData.getUser().getUuid());
+        log.info("Sending email to user.uuid: {} about released messages", userData.getUser().getUuid());
 
         Map<String, Object> context = new HashMap<>();
         context.put("release_msgs_report", toHumanReadable(userData.getInternal().getLang(), details));

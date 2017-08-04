@@ -63,35 +63,35 @@ public class TimeStages {
 
     public Stage nextStage(Stage stageNow) {
         if (!nowIsAfterX()) {
-            return Stage.beforeX;
+            return Stage.BEFORE_X;
         }
 
-        if (stageNow == Stage.beforeX) {
-            return Stage.afterXbeforeY;
+        if (stageNow == Stage.BEFORE_X) {
+            return Stage.AFTER_X_BEFORE_Y;
         }
 
         if (!nowIsAfterY()) {
-            return Stage.afterXbeforeY;
+            return Stage.AFTER_X_BEFORE_Y;
         }
 
-        if (stageNow == Stage.afterXbeforeY) {
-            return Stage.afterYbeforeZ;
+        if (stageNow == Stage.AFTER_X_BEFORE_Y) {
+            return Stage.AFTER_Y_BEFORE_Z;
         }
 
         if (!nowIsAfterZ()) {
-            return Stage.afterYbeforeZ;
+            return Stage.AFTER_Y_BEFORE_Z;
         }
 
-        if (stageNow == Stage.afterYbeforeZ) {
-            return Stage.afterZbeforeW;
+        if (stageNow == Stage.AFTER_Y_BEFORE_Z) {
+            return Stage.AFTER_Z_BEFORE_RELEASE;
         }
 
         if (!nowIsAfterW()) {
-            return Stage.afterZbeforeW;
+            return Stage.AFTER_Z_BEFORE_RELEASE;
         }
 
-        if (stageNow == Stage.afterZbeforeW) {
-            return Stage.released;
+        if (stageNow == Stage.AFTER_Z_BEFORE_RELEASE) {
+            return Stage.RELEASED;
         }
 
         throw new IllegalStateException("trigger invalid state");

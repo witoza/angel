@@ -46,7 +46,7 @@ public class S3FS implements FS {
 
         Path cacheDirPath = Paths.get(cacheDir);
 
-        log.info("creating file cache dir: {}", cacheDirPath);
+        log.info("Creating file cache dir: {}", cacheDirPath);
 
         Files.createDirectories(cacheDirPath);
     }
@@ -55,13 +55,13 @@ public class S3FS implements FS {
     public void init() throws IOException {
         createCacheDir();
 
-        log.info("connecting to AWS S3 ...");
+        log.info("Connecting to AWS S3 ...");
 
         s3client = AmazonS3Client.builder()
                                  .withCredentials(awsConfig.awsCredentialsProvider())
                                  .build();
 
-        log.info("connected to AWS S3");
+        log.info("Connected to AWS S3");
     }
 
     @Override
@@ -69,14 +69,14 @@ public class S3FS implements FS {
 
         String absPath = getAbsolutePath(relPath);
 
-        log.info("saving inputStream in object {}", absPath);
+        log.info("Saving inputStream in object {}", absPath);
 
         ObjectMetadata metadata = new ObjectMetadata();
 
         try {
             s3client.putObject(awsConfig.getS3Bucket(), absPath, is, metadata);
         } catch (Exception e) {
-            throw new IOException("can't fulfill S3 putObject", e);
+            throw new IOException("Can't fulfill S3 putObject", e);
         }
     }
 
@@ -85,12 +85,12 @@ public class S3FS implements FS {
 
         String absPath = getAbsolutePath(relPath);
 
-        log.info("saving string in object {}", absPath);
+        log.info("Saving string in object {}", absPath);
 
         try {
             s3client.putObject(awsConfig.getS3Bucket(), absPath, data);
         } catch (Exception e) {
-            throw new IOException("can't fulfill S3 putObject", e);
+            throw new IOException("Can't fulfill S3 putObject", e);
         }
     }
 
@@ -99,18 +99,18 @@ public class S3FS implements FS {
 
         String absPath = getAbsolutePath(relPath);
 
-        log.info("loading direct from s3 {}", absPath);
+        log.info("Loading direct from s3 {}", absPath);
 
         try {
             return s3client.getObject(awsConfig.getS3Bucket(), absPath).getObjectContent();
         } catch (Exception e) {
-            throw new IOException("can't fulfill S3 getObject", e);
+            throw new IOException("Can't fulfill S3 getObject", e);
         }
     }
 
     @Override
     public InputStream load(String relPath, boolean allowCache) throws IOException {
-        log.info("loading object {}", relPath);
+        log.info("Loading object {}", relPath);
 
         if (!allowCache) {
             return load(relPath);
@@ -119,30 +119,30 @@ public class S3FS implements FS {
         File cachedFile = new File(cacheDir + relPath.replace("/", "_"));
         if (cachedFile.exists()) {
 
-            log.info("returning cached file");
+            log.info("Returning cached file");
             try {
                 return new FileInputStream(cachedFile);
             } catch (Exception e) {
-                log.error("can't get s3 object from cache, returning original stream", e);
+                log.error("Can't get s3 object from cache, returning original stream", e);
                 return load(relPath);
             }
 
         }
 
         try {
-            log.info("returning original stream and caching it");
+            log.info("Returning original stream and caching it");
 
             FileOutputStream cached = new FileOutputStream(cachedFile) {
                 @Override
                 public void close() throws IOException {
                     super.close();
-                    log.info("file {} has been successfully cached to {}", relPath, cachedFile.getPath());
+                    log.info("File {} has been successfully cached to {}", relPath, cachedFile.getPath());
                 }
             };
 
             return new TeeInputStream(load(relPath), cached, true);
         } catch (Exception e) {
-            log.error("can't put s3 object into cache, returning original stream", e);
+            log.error("Can't put s3 object into cache, returning original stream", e);
             return load(relPath);
         }
 
@@ -153,12 +153,12 @@ public class S3FS implements FS {
 
         String absPath = getAbsolutePath(relPath);
 
-        log.info("removing object {}", absPath);
+        log.info("Removing object {}", absPath);
 
         try {
             s3client.deleteObject(awsConfig.getS3Bucket(), absPath);
         } catch (Exception e) {
-            throw new IOException("can't fulfill S3 deleteObject", e);
+            throw new IOException("Can't fulfill S3 deleteObject", e);
         }
 
     }

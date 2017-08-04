@@ -54,7 +54,7 @@ public class EmailProcessor extends AbstractJob {
                                DeliveryType deliveryType,
                                Map<String, Object> bounceCause) {
 
-            log.info("email has been delivered: messageId={}, envelopeId={}, headers={}, deliveryType={}, bounceCause={}",
+            log.info("Email has been delivered: messageId: {}, envelopeId: {}, headers: {}, deliveryType: {}, bounceCause: {}",
                      messageId, envelopeId, headers, deliveryType, bounceCause);
 
             emailDeliveryMetrics.process(messageId, envelopeId, deliveryType, bounceCause);
@@ -71,7 +71,7 @@ public class EmailProcessor extends AbstractJob {
                 try {
                     reportMessageDelivery(headers, deliveryType);
                 } catch (Exception e) {
-                    log.error("error occurred while trying to add user notification about email delivery status", e);
+                    log.error("Error occurred while trying to add user notification about email delivery status", e);
                 }
             }
 
@@ -113,14 +113,14 @@ public class EmailProcessor extends AbstractJob {
         try {
             sendEmails();
         } catch (Exception e) {
-            log.error("problem while sending emails", e);
+            log.error("Problem while sending emails", e);
             reportError("sendEmails", e);
         }
 
         try {
             checkDeliveredEmails();
         } catch (Exception e) {
-            log.error("problem while checking email deliveries", e);
+            log.error("Problem while checking email deliveries", e);
             reportError("checkDeliveredEmails", e);
         }
 
@@ -130,13 +130,13 @@ public class EmailProcessor extends AbstractJob {
         if (queued.isEmpty()) {
             return;
         }
-        log.info("there are {} emails to send", queued.size());
+        log.info("There are {} emails to send", queued.size());
 
         for (Envelope envelope : queued) {
 
             String messageId = emailSender.sendEmail(envelope);
 
-            //can't remove by Iterator, as queued is CopyOnWriteArrayList
+            // can't remove by Iterator, as queued is CopyOnWriteArrayList
             queued.remove(envelope);
 
             if (envelope.getType().isDurable()) {
@@ -148,10 +148,10 @@ public class EmailProcessor extends AbstractJob {
     }
 
     public void enqueue(Envelope envelope) {
-        log.info("enqueueing envelope: {}", envelope.getEnvelopeId());
+        log.info("Enqueueing envelope: {}", envelope.getEnvelopeId());
 
         if (logEmails) {
-            log.info("envelope details: {}", envelope.toString());
+            log.info("Envelope details: {}", envelope.toString());
         }
 
         if (envelope.getType().isDurable()) {
@@ -165,7 +165,7 @@ public class EmailProcessor extends AbstractJob {
         if (durableSent.isEmpty()) {
             return;
         }
-        log.info("checking delivery queue for {} emails", durableSent.size());
+        log.info("Checking delivery queue for {} emails", durableSent.size());
         emailDelivery.process(handler);
     }
 

@@ -5,7 +5,6 @@ import co.postscriptum.exception.InternalException;
 import co.postscriptum.fs.FS;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;
-import co.postscriptum.model.bo.PaymentAddress;
 import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.User.Role;
 import co.postscriptum.model.bo.UserData;
@@ -14,6 +13,7 @@ import co.postscriptum.security.AESGCMUtils;
 import co.postscriptum.security.AESKeyUtils;
 import co.postscriptum.stk.ShortTimeKey;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,18 +56,28 @@ public class DB {
 
     private SecretKey dbEncryptionKey;
 
+    @PostConstruct
+    public void init() throws IOException, DecoderException {
+        log.info("Initialize DB");
+
+        if (!isEmpty(configuration.getDbEncKey())) {
+            log.info("DB encryption is enabled");
+            dbEncryptionKey = AESKeyUtils.toSecretKey(Hex.decodeHex(configuration.getDbEncKey().toCharArray()));
+        } else {
+            log.info("DB encryption is disabled");
+        }
+    }
+
     public void shutdown() {
-        log.info("shutdown DB");
+        log.info("Shutdown DB");
         try {
             for (Account account : stub) {
-
                 try {
                     account.lock();
                     unloadAccount(account);
                 } finally {
                     account.unlock();
                 }
-
             }
 
             saveStub();
@@ -77,41 +86,25 @@ public class DB {
             try {
                 FileUtils.writeStringToFile(new java.io.File("stub.dump"), Utils.toJson(stub));
             } catch (Exception e1) {
-                log.error("Error occurred while persisting STUB", e1);
+                log.error("Error occurred while persisting Stub", e1);
             }
         }
     }
 
-    @PostConstruct
-    public void init() throws IOException, DecoderException {
-        log.info("initialize DB");
-
-        if (!isEmpty(configuration.getDbEncKey())) {
-            log.info("db encryption is enabled");
-            dbEncryptionKey = AESKeyUtils.toSecretKey(Hex.decodeHex(configuration.getDbEncKey().toCharArray()));
-        } else {
-            log.info("db encryption is disabled");
-        }
-
-    }
-
-    public void loadDB() throws IOException {
+    public void loadDb() throws IOException {
         try {
             loadStub();
         } catch (IOException e) {
-            log.warn("can't load STUB", e);
             stub = new CopyOnWriteArrayList<>();
             throw e;
         }
     }
 
     public Map<String, Object> getStats() {
-        Map<String, Object> map = new HashMap<>();
-
-        map.put("totalAccounts", stub.size());
-        map.put("loadedAccounts", getLoadedAccounts().count());
-
-        return map;
+        return ImmutableMap.of(
+                "totalAccounts", stub.size(),
+                "loadedAccounts", getLoadedAccounts().count()
+        );
     }
 
     public Stream<Account> getUserUnloadedAccounts() {
@@ -124,58 +117,15 @@ public class DB {
                    .filter(Account::isLoaded);
     }
 
-    private Optional<Account> getAccount(Predicate<Account> filter) {
+    public Optional<Account> getAccount(Predicate<Account> filter) {
         return stub.stream()
                    .filter(filter)
                    .findFirst();
     }
 
-    private boolean isPaymentAddressUnused(PaymentAddress paymentAddress) {
-        //after 30 minutes, unloaded user's paymentAddress can be reused
-        return paymentAddress != null &&
-                paymentAddress.getAssignedTime() + Utils.minutesInMs(30) < System.currentTimeMillis();
-    }
-
-    private boolean isPaymentAddress(PaymentAddress paymentAddress, String paymentUuid) {
-        return paymentAddress != null && paymentAddress.getUuid().equals(paymentUuid);
-    }
-
-    public Optional<Account> getAccountWithAssignedPayment(String paymentUuid) {
-        return getAccount(a -> isPaymentAddress(a.getUserData().getUser().getPaymentAddress(), paymentUuid));
-    }
-
-    public Optional<PaymentAddress> harvestPaymentAddressFromUnloadedAccounts() {
-
-        Optional<Account> accountOpt = getUserUnloadedAccounts()
-                .filter(a -> isPaymentAddressUnused(a.getUserData().getUser().getPaymentAddress()))
-                .findAny();
-
-        if (!accountOpt.isPresent()) {
-            return Optional.empty();
-        }
-
-        Account account = accountOpt.get();
-
-        try {
-            account.lock();
-
-            User user = account.getUserData().getUser();
-
-            PaymentAddress paymentAddress = user.getPaymentAddress();
-
-            user.setPaymentAddress(null);
-
-            return Optional.of(paymentAddress);
-
-        } finally {
-            account.unlock();
-        }
-
-    }
-
     public Account requireAccountByUuid(String uuid) {
         return getAccount(a -> a.getUserData().getUser().getUuid().equals(uuid))
-                .orElseThrow(() -> new IllegalArgumentException("can't find account with uuid: " + uuid));
+                .orElseThrow(() -> new IllegalArgumentException("Can't find account with uuid: " + uuid));
     }
 
     public Optional<Account> getAccountByUsername(String username) {
@@ -184,7 +134,7 @@ public class DB {
 
     public Account requireAccountByUsername(String username) {
         return getAccount(a -> a.getUserData().getUser().getUsername().equals(username))
-                .orElseThrow(() -> new IllegalArgumentException("can't find account with username: " + username));
+                .orElseThrow(() -> new IllegalArgumentException("Can't find account with username: " + username));
     }
 
     public boolean hasAccountByUsername(String username) {
@@ -192,20 +142,14 @@ public class DB {
                 .isPresent();
     }
 
-    public void withLoadedAccount(Optional<Account> account, Consumer<Account> func) {
-        withLoadedAccount(account.get(), func);
-    }
-
     public void withLoadedAccount(Account account, Consumer<Account> func) {
         withLoadedAccount(account, account1 -> {
             func.accept(account1);
             return null;
         });
-
     }
 
     public <R> R withLoadedAccount(Account account, Function<Account, R> func) {
-
         try {
             account.lock();
             loadAccount(account);
@@ -213,19 +157,18 @@ public class DB {
         } finally {
             account.unlock();
         }
-
     }
 
     public void withLoadedAccountByUuid(String userUuid, Consumer<Account> func) {
         withLoadedAccount(requireAccountByUuid(userUuid), func);
     }
 
-    public <R> R withLoadedAccountByShortTimeKey(ShortTimeKey stk, Function<Account, R> func) {
-        return withLoadedAccountByUsername(stk.getUsername(), func);
+    public <R> R withLoadedAccountByShortTimeKey(ShortTimeKey shortTimeKey, Function<Account, R> func) {
+        return withLoadedAccountByUsername(shortTimeKey.getUsername(), func);
     }
 
-    public void withLoadedAccountByShortTimeKey(ShortTimeKey stk, Consumer<Account> func) {
-        withLoadedAccount(requireAccountByUsername(stk.getUsername()), func);
+    public void withLoadedAccountByShortTimeKey(ShortTimeKey shortTimeKey, Consumer<Account> func) {
+        withLoadedAccount(requireAccountByUsername(shortTimeKey.getUsername()), func);
     }
 
     public <R> R withLoadedAccountByUuid(String userUuid, Function<Account, R> func) {
@@ -248,7 +191,7 @@ public class DB {
 
         String username = userData.getUser().getUsername();
 
-        log.info("adding user: {}", username);
+        log.info("Adding user: {}", username);
 
         Account account = new Account(userData);
         account.setLoaded(true);
@@ -269,62 +212,35 @@ public class DB {
 
         account.assertLockIsHeldByCurrentThread();
 
+        log.info("Removing user {}", account.getUserData().getUser().getUsername());
+
         stub.remove(account);
 
         loadAccount(account);
 
         UserData userData = account.getUserData();
 
-        log.info("removing user {}", userData.getUser().getUsername());
-
         userData.getFiles().forEach(f -> {
             try {
                 fs.remove(userData.getUser().getUuid() + "/" + f.getUuid());
             } catch (IOException e) {
-                log.error("problem with removing user file", e);
+                log.error("Problem with removing user file", e);
             }
         });
         try {
             fs.remove(userData.getUser().getUuid() + "/db.json");
         } catch (IOException e) {
-            log.error("problem with removing db user", e);
+            log.error("Problem with removing db user", e);
         }
         try {
             fs.remove(userData.getUser().getUuid());
         } catch (IOException e) {
-            log.error("problem with removing user file directory", e);
+            log.error("Problem with removing user file directory", e);
         }
     }
 
     public void removeUserByUuid(String uuid) {
         removeAccount(requireAccountByUuid(uuid));
-    }
-
-    private String loadData(String dbPath) throws IOException {
-
-        try (Reader fr = new InputStreamReader(fs.load(dbPath), StandardCharsets.UTF_8)) {
-            if (dbEncryptionKey == null) {
-                return IOUtils.toString(fr);
-            }
-
-            AESGCMEncrypted encrypted = Utils.fromJson(fr, new TypeReference<AESGCMEncrypted>() {
-            });
-
-            return Utils.asString(AESGCMUtils.decrypt(dbEncryptionKey, encrypted, dbPath));
-        }
-
-    }
-
-    private void saveData(String dataJson, String dbPath) throws IOException {
-
-        if (dbEncryptionKey == null) {
-            fs.save(dbPath, dataJson);
-
-        } else {
-            AESGCMEncrypted encrypted = AESGCMUtils.encrypt(dbEncryptionKey, dataJson.getBytes(), dbPath);
-            fs.save(dbPath, Utils.toJson(encrypted));
-        }
-
     }
 
     public void loadAccount(Account account) {
@@ -336,27 +252,18 @@ public class DB {
             return;
         }
 
-        log.info("model for user " + account.getUserData().getUser().getUsername() + " is not loaded, loading it");
+        log.info("Loading model for user {}", account.getUserData().getUser().getUsername());
 
-        String dbPath = getUserDBPath(account.getUserData().getUser());
+        UserData userData = loadUserData(userDbPath(account.getUserData().getUser()));
 
-        UserData ud;
-        try {
-            ud = Utils.fromJson(loadData(dbPath), new TypeReference<UserData>() {
-            });
-        } catch (IOException e) {
-            throw new InternalException("can't load user model from db", e);
-        }
-
-        account.getUserData().setInternal(ud.getInternal());
-        account.getUserData().setMessages(ud.getMessages());
-        account.getUserData().setFiles(ud.getFiles());
-        account.getUserData().setNotifications(ud.getNotifications());
-        account.getUserData().setRequiredActions(ud.getRequiredActions());
+        account.getUserData().setInternal(userData.getInternal());
+        account.getUserData().setMessages(userData.getMessages());
+        account.getUserData().setFiles(userData.getFiles());
+        account.getUserData().setNotifications(userData.getNotifications());
+        account.getUserData().setRequiredActions(userData.getRequiredActions());
 
         account.setLoaded(true);
-        log.info("user model has been loaded");
-
+        log.info("User's account has been loaded");
     }
 
     public void unloadAccount(Account account) throws IOException {
@@ -367,7 +274,7 @@ public class DB {
             return;
         }
 
-        log.info("unloading user {}", account.getUserData().getUser().getUsername());
+        log.info("Unloading user {}", account.getUserData().getUser().getUsername());
 
         persistUser(account.getUserData());
 
@@ -378,74 +285,100 @@ public class DB {
         account.getUserData().setRequiredActions(null);
 
         account.setLoaded(false);
-        log.info("user has been unloaded");
-
-    }
-
-    private String getUserDBPath(User user) {
-        return user.getUuid() + "/db.json";
+        log.info("User has been unloaded");
     }
 
     private void persistUser(UserData userData) throws IOException {
         if (userData.getInternal() == null) {
             throw new IllegalArgumentException("shouldn't persist user when unloaded");
         }
-        String userDBPath = getUserDBPath(userData.getUser());
+        String userDbPath = userDbPath(userData.getUser());
 
-        log.info("persisting user {} to {}", userData.getUser().getUsername(), userDBPath);
+        log.info("Persisting user: {} to: {}", userData.getUser().getUsername(), userDbPath);
 
         String userDataJson = Utils.toJson(userData);
-
-        if (userDataJson.length() > 100000) {
-            log.warn("user {} model size is over 100kb", userData.getUser().getUsername());
+        if (userDataJson.length() > 50000) {
+            log.warn("User model size is > 50kb");
         }
+        if (userDataJson.length() > 200000) {
+            throw new InternalException("User " + userData.getUser().getUsername() + " model size is " + userDataJson.length());
+        }
+        saveData(userDataJson, userDbPath);
+    }
 
-        saveData(userDataJson, userDBPath);
+    private String userDbPath(User user) {
+        return user.getUuid() + "/db.json";
+    }
 
+    public void saveStub() throws IOException {
+        List<User> users = stub.stream()
+                               .map(a -> a.getUserData().getUser())
+                               .collect(Collectors.toList());
+
+        String stubJson = Utils.toJson(users);
+
+        int stubHashCode = stubJson.hashCode();
+
+        if (lastStubHashCode != stubHashCode) {
+            log.info("Saving Stub");
+            saveData(stubJson, getStubPath());
+            lastStubHashCode = stubHashCode;
+        }
+    }
+
+    private void loadStub() throws IOException {
+        log.info("Loading Stub");
+
+        List<User> users = Utils.fromJson(loadData(getStubPath()), new TypeReference<List<User>>() {
+        });
+
+        List<Account> accounts = users.stream()
+                                      .map(user -> {
+                                          UserData userData = new UserData();
+                                          userData.setUser(user);
+
+                                          Account account = new Account(userData);
+                                          account.setLoaded(false);
+                                          return account;
+                                      }).collect(Collectors.toList());
+
+        stub = new CopyOnWriteArrayList<>(accounts);
     }
 
     private String getStubPath() {
         return "stub.json";
     }
 
-    public void saveStub() throws IOException {
-
-        List<User> users = stub.stream()
-                               .map(a -> a.getUserData().getUser())
-                               .collect(Collectors.toList());
-
-        String jsonStub = Utils.toJson(users);
-
-        int stubHashCode = jsonStub.hashCode();
-
-        if (lastStubHashCode != stubHashCode) {
-            log.info("saving stub");
-
-            saveData(jsonStub, getStubPath());
-
-            lastStubHashCode = stubHashCode;
-
+    private UserData loadUserData(String dbPath) {
+        try {
+            return Utils.fromJson(loadData(dbPath), new TypeReference<UserData>() {
+            });
+        } catch (IOException e) {
+            throw new InternalException("Can't load user model from db", e);
         }
-
     }
 
-    private void loadStub() throws IOException {
+    private String loadData(String dbPath) throws IOException {
+        try (Reader fr = new InputStreamReader(fs.load(dbPath), StandardCharsets.UTF_8)) {
+            if (dbEncryptionKey == null) {
+                return IOUtils.toString(fr);
+            }
 
-        log.info("loading stub");
+            AESGCMEncrypted encrypted = Utils.fromJson(fr, new TypeReference<AESGCMEncrypted>() {
+            });
 
-        List<User> users = Utils.fromJson(loadData(getStubPath()), new TypeReference<List<User>>() {
-        });
+            return Utils.asString(AESGCMUtils.decrypt(dbEncryptionKey, encrypted, dbPath));
+        }
+    }
 
-        stub = new CopyOnWriteArrayList<>(
-                users.stream().map(user -> {
-                    UserData userData = new UserData();
-                    userData.setUser(user);
-
-                    Account account = new Account(userData);
-                    account.setLoaded(false);
-                    return account;
-                }).collect(Collectors.toList()));
-
+    private void saveData(String data, String dbPath) throws IOException {
+        log.info("Persisting {} KB", data.length() / 1024);
+        if (dbEncryptionKey == null) {
+            fs.save(dbPath, data);
+        } else {
+            AESGCMEncrypted encrypted = AESGCMUtils.encrypt(dbEncryptionKey, data.getBytes(), dbPath);
+            fs.save(dbPath, Utils.toJson(encrypted));
+        }
     }
 
 }

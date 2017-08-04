@@ -34,13 +34,11 @@ public class AccountDBPersisterJob extends AbstractAccountJob {
         if (notActiveFor > (inactivityPeriodSec * 1000)) {
 
             String username = account.getUserData().getUser().getUsername();
-            log.info("user {} has not been active for {} ms, unloading it", username, notActiveFor);
+            log.info("User.username: {} has not been active for {} ms, unloading it", username, notActiveFor);
             db.unloadAccount(account);
-
-            return "unloaded";
+            return "User has been unloaded";
         }
-
-        return "active";
+        return "User is still active";
     }
 
     @Override

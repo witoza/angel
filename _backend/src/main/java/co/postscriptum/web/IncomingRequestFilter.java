@@ -40,12 +40,23 @@ public class IncomingRequestFilter extends GenericFilterBean {
 
     private final DB db;
 
+    private static String getFullURL(HttpServletRequest request) {
+        String requestURI = request.getRequestURI();
+        String queryString = request.getQueryString();
+
+        if (queryString == null) {
+            return requestURI;
+        } else {
+            return requestURI + "?" + queryString;
+        }
+    }
+
     public void shutdownAndAwaitTermination() throws InterruptedException {
-        log.info("do not accept any more requests");
+        log.info("Do not accept any more requests");
         shouldAcceptNewRequests.set(false);
 
         while (numberOfInFlightTransactions.get() != 0) {
-            log.info("waiting for {} requests to finish", numberOfInFlightTransactions.get());
+            log.info("Waiting for {} requests to finish", numberOfInFlightTransactions.get());
             Thread.sleep(1000);
         }
 
@@ -91,7 +102,7 @@ public class IncomingRequestFilter extends GenericFilterBean {
                     try {
                         account.lock();
                         UserData userData = account.getUserData();
-                        log.debug("updating user lastAccess time");
+                        log.debug("Updating user lastAccess time");
                         userData.getUser().setLastAccess(System.currentTimeMillis());
 
                         chain.doFilter(request, response);
@@ -105,7 +116,7 @@ public class IncomingRequestFilter extends GenericFilterBean {
                 }
 
             } catch (Exception e) {
-                log.error("internal error", e);
+                log.error("Internal error", e);
                 restMetrics.reportException(request, e);
                 throw new InternalException("Our servers are experiencing issues, please come back later");
             } finally {
@@ -118,17 +129,6 @@ public class IncomingRequestFilter extends GenericFilterBean {
             numberOfInFlightTransactions.decrementAndGet();
         }
 
-    }
-
-    private static String getFullURL(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        String queryString = request.getQueryString();
-
-        if (queryString == null) {
-            return requestURI;
-        } else {
-            return requestURI + "?" + queryString;
-        }
     }
 
 }

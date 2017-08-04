@@ -20,6 +20,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -27,7 +29,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class AccountMessageReleaserJob extends AbstractAccountJob {
 
-    public static final String userLastAccess = "userLastAccess";
+    public static final String USER_LAST_ACCESS = "userLastAccess";
 
     @Autowired
     MessageReleaseService messageReleaseService;
@@ -55,128 +57,129 @@ public class AccountMessageReleaserJob extends AbstractAccountJob {
         account.assertLockIsHeldByCurrentThread();
 
         if (account.isLoaded()) {
-            throw new IllegalStateException("account must be unloaded");
+            throw new IllegalStateException("Account must be unloaded");
         }
 
         User user = account.getUserData().getUser();
 
         if (user.getRole() != User.Role.user) {
-            throw new IllegalStateException("admin user not allowed");
+            throw new IllegalStateException("Admin user not allowed");
         }
 
         if (!user.isActive()) {
-            return "not active";
+            return "Not active";
         }
         if (!user.isTosAccepted()) {
-            return "tos not accepted";
+            return "TOS not accepted";
         }
         if (user.getLastAccess() == 0) {
-            return "account never logged to";
+            return "Account never logged to";
         }
 
         Trigger trigger = user.getTrigger();
         if (!trigger.getEnabled()) {
-            return "trigger is disabled";
+            return "Trigger is disabled";
         }
 
-        if (trigger.getStage() == Stage.released) {
-            throw new InternalException("messages has already been released but trigger is still enabled");
+        if (trigger.getStage() == Stage.RELEASED) {
+            throw new InternalException("Messages has already been released but trigger is still enabled");
         }
 
         TimeStages timeStages = new TimeStages(trigger, LocalDateTime.now(), user.getLastAccess());
 
-        log.info("verifying user trigger, debugData: {}", timeStages.debug());
+        log.info("Verifying user trigger, debugData: {}", timeStages.debug());
 
         Stage nextStage = timeStages.nextStage(trigger.getStage());
-
         if (nextStage == trigger.getStage()) {
-            return "still " + trigger.getStage();
-        } else {
-            activate(account, nextStage, timeStages);
-
-            log.info("stage {} has been activated", nextStage);
-
-            return nextStage + " activated";
-        }
-    }
-
-    private UserData loadUserData(Account account) {
-
-        db.loadAccount(account);
-
-        return account.getUserData();
-    }
-
-    private void activate(Account account, Stage stage, TimeStages timeStages) {
-
-        log.info("activating stage {}", stage);
-
-        UserData userData = loadUserData(account);
-
-        if (stage == Stage.beforeX) {
-            // nothing to activate
-
-        } else if (stage == Stage.afterXbeforeY) {
-
-            userEmailService.sendTriggerAfterX(userData, false);
-
-        } else if (stage == Stage.afterYbeforeZ) {
-
-            userEmailService.sendTriggerAfterY(userData, false);
-
-        } else if (stage == Stage.afterZbeforeW) {
-
-            userEmailService.sendTriggerAfterZ(userData, false);
-
-        } else if (stage == Stage.released) {
-
-            activateRelease(userData, timeStages);
-
-        } else {
-            throw new IllegalArgumentException("can't activate stage " + stage);
+            return "Still " + trigger.getStage();
         }
 
-        userData.getUser().getTrigger().setStage(stage);
+        activateStage(account, nextStage, timeStages);
+        log.info("Stage {} has been activated", nextStage);
+        return nextStage + " activated";
+    }
+
+    private void activateStage(Account acc, Stage stage, TimeStages timeStages) {
+        log.info("Activating stage {}", stage);
+
+        db.withLoadedAccount(acc, account -> {
+            UserData userData = account.getUserData();
+
+            if (stage == Stage.BEFORE_X) {
+                // nothing to activate
+
+            } else if (stage == Stage.AFTER_X_BEFORE_Y) {
+
+                userEmailService.sendUserVerificationAfterX(userData, false);
+
+            } else if (stage == Stage.AFTER_Y_BEFORE_Z) {
+
+                userEmailService.sendUserVerificationAfterY(userData, false);
+
+            } else if (stage == Stage.AFTER_Z_BEFORE_RELEASE) {
+
+                userEmailService.sendUserVerificationAfterZ(userData, false);
+
+            } else if (stage == Stage.RELEASED) {
+
+                ReleasedMessagesDetails details = releaseMessages(userData);
+
+                Trigger trigger = userData.getUser().getTrigger();
+
+                Map<String, Object> raDetails = new HashMap<>();
+                raDetails.put(USER_LAST_ACCESS, String.valueOf(userData.getUser().getLastAccess()));
+                raDetails.put("timeStages", timeStages.debug());
+                raDetails.put("trigger", trigger);
+
+                RequiredAction.Type type;
+                if (details != null) {
+                    raDetails.put("status", details.getDetails());
+                    type = Type.AUTOMATIC_RELEASE_MESSAGES_HAS_BEEN_DONE;
+                } else {
+                    type = Type.REQUIRE_MANUAL_RELEASE_MESSAGES;
+                }
+
+                adminHelperService.addAdminRequiredAction(DataFactory.newRequiredAction(userData, type, raDetails));
+
+                trigger.setEnabled(false);
+
+            } else {
+                throw new IllegalArgumentException("Don't know how to activate stage " + stage);
+            }
+
+            userData.getUser().getTrigger().setStage(stage);
+        });
+
+        try {
+            db.unloadAccount(acc);
+        } catch (Exception e) {
+            log.error("error while unloading account");
+        }
 
     }
 
-    private void activateRelease(UserData userData, TimeStages timeStages) {
+    private ReleasedMessagesDetails releaseMessages(UserData userData) {
 
-        userEmailService.sendUserMessagesAreAboutToBeReleased(userData);
+        userEmailService.sendToOwnerMessagesAreAboutToBeReleased(userData);
 
-        Trigger trigger = userData.getUser().getTrigger();
-
-        trigger.setEnabled(false);
-        trigger.setReadyToBeReleasedTime(System.currentTimeMillis());
-
-        RequiredAction ra = DataFactory.newRequiredAction(userData, null);
-        ra.getDetails().put(userLastAccess, "" + userData.getUser().getLastAccess());
-        ra.getDetails().put("timeStages", timeStages.debug());
-        ra.getDetails().put("trigger", trigger);
-
-        if (userData.getInternal().getEncryptionKeyEncryptedByAdminPublicKey() == null) {
-
-            ra.setType(Type.automatic_release_messages);
-
-            ReleasedMessagesDetails details = messageReleaseService.releaseMessages(userData, Optional.empty());
-
-            messageReleaseService.sendUserReleasedMessageSummary(userData, details);
-
-            ra.getDetails().put("status", details.getDetails());
-
-            new UserDataHelper(userData).addNotification(
-                    "User messages have been released:\n" + messageReleaseService.toHumanReadable(
-                            userData.getInternal().getLang(), details));
-
-            trigger.setHaveBeenReleasedTime(System.currentTimeMillis());
-        } else {
-
-            ra.setType(Type.manual_release_messages);
-
+        if (userData.getInternal().getEncryptionKeyEncryptedByAdminPublicKey() != null) {
+            log.info("Message release must be done by Admin");
+            return null;
         }
 
-        adminHelperService.addAdminRequiredAction(ra);
+        log.info("About to message release");
 
+        ReleasedMessagesDetails details = messageReleaseService.releaseMessages(userData, Optional.empty());
+
+        messageReleaseService.sendToOwnerReleasedMessageSummary(userData, details);
+
+        new UserDataHelper(userData).addNotification(
+                "User messages have been released:\n" + messageReleaseService.toHumanReadable(
+                        userData.getInternal().getLang(), details));
+
+        userData.getUser().getTrigger().setReleasedTime(System.currentTimeMillis());
+
+        return details;
     }
 
 }

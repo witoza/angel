@@ -24,7 +24,7 @@ import java.security.Security;
 public class AESGCMUtils {
 
     static {
-        log.info("adding BouncyCastleProvider");
+        log.info("Registering BouncyCastleProvider");
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     }
 

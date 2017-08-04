@@ -32,11 +32,11 @@ class TimeStagesSpec extends Specification {
         stages.nextStage(currentStage) == nextStage
 
         where:
-        currentStage        | nextStage
-        Stage.beforeX       | Stage.beforeX
-        Stage.afterXbeforeY | Stage.beforeX
-        Stage.afterYbeforeZ | Stage.beforeX
-        Stage.afterZbeforeW | Stage.beforeX
+        currentStage                 | nextStage
+        Stage.BEFORE_X               | Stage.BEFORE_X
+        Stage.AFTER_X_BEFORE_Y       | Stage.BEFORE_X
+        Stage.AFTER_Y_BEFORE_Z       | Stage.BEFORE_X
+        Stage.AFTER_Z_BEFORE_RELEASE | Stage.BEFORE_X
     }
 
     def 'should move to proper state when userLastAccessTime is after X, before Y'() {
@@ -47,11 +47,11 @@ class TimeStagesSpec extends Specification {
         stages.nextStage(currentStage) == nextStage
 
         where:
-        currentStage        | nextStage
-        Stage.beforeX       | Stage.afterXbeforeY
-        Stage.afterXbeforeY | Stage.afterXbeforeY
-        Stage.afterYbeforeZ | Stage.afterXbeforeY
-        Stage.afterZbeforeW | Stage.afterXbeforeY
+        currentStage                 | nextStage
+        Stage.BEFORE_X               | Stage.AFTER_X_BEFORE_Y
+        Stage.AFTER_X_BEFORE_Y       | Stage.AFTER_X_BEFORE_Y
+        Stage.AFTER_Y_BEFORE_Z       | Stage.AFTER_X_BEFORE_Y
+        Stage.AFTER_Z_BEFORE_RELEASE | Stage.AFTER_X_BEFORE_Y
     }
 
     def 'should move to proper state when userLastAccessTime is after Y, before Z'() {
@@ -62,11 +62,11 @@ class TimeStagesSpec extends Specification {
         stages.nextStage(currentStage) == nextStage
 
         where:
-        currentStage        | nextStage
-        Stage.beforeX       | Stage.afterXbeforeY
-        Stage.afterXbeforeY | Stage.afterYbeforeZ
-        Stage.afterYbeforeZ | Stage.afterYbeforeZ
-        Stage.afterZbeforeW | Stage.afterYbeforeZ
+        currentStage                 | nextStage
+        Stage.BEFORE_X               | Stage.AFTER_X_BEFORE_Y
+        Stage.AFTER_X_BEFORE_Y       | Stage.AFTER_Y_BEFORE_Z
+        Stage.AFTER_Y_BEFORE_Z       | Stage.AFTER_Y_BEFORE_Z
+        Stage.AFTER_Z_BEFORE_RELEASE | Stage.AFTER_Y_BEFORE_Z
     }
 
     def 'should move to proper state when userLastAccessTime is after Z, before W'() {
@@ -77,11 +77,11 @@ class TimeStagesSpec extends Specification {
         stages.nextStage(currentStage) == nextStage
 
         where:
-        currentStage        | nextStage
-        Stage.beforeX       | Stage.afterXbeforeY
-        Stage.afterXbeforeY | Stage.afterYbeforeZ
-        Stage.afterYbeforeZ | Stage.afterZbeforeW
-        Stage.afterZbeforeW | Stage.afterZbeforeW
+        currentStage                 | nextStage
+        Stage.BEFORE_X               | Stage.AFTER_X_BEFORE_Y
+        Stage.AFTER_X_BEFORE_Y       | Stage.AFTER_Y_BEFORE_Z
+        Stage.AFTER_Y_BEFORE_Z       | Stage.AFTER_Z_BEFORE_RELEASE
+        Stage.AFTER_Z_BEFORE_RELEASE | Stage.AFTER_Z_BEFORE_RELEASE
     }
 
     def 'should move to proper state when userLastAccessTime is after W'() {
@@ -92,11 +92,11 @@ class TimeStagesSpec extends Specification {
         stages.nextStage(currentStage) == nextStage
 
         where:
-        currentStage        | nextStage
-        Stage.beforeX       | Stage.afterXbeforeY
-        Stage.afterXbeforeY | Stage.afterYbeforeZ
-        Stage.afterYbeforeZ | Stage.afterZbeforeW
-        Stage.afterZbeforeW | Stage.released
+        currentStage                 | nextStage
+        Stage.BEFORE_X               | Stage.AFTER_X_BEFORE_Y
+        Stage.AFTER_X_BEFORE_Y       | Stage.AFTER_Y_BEFORE_Z
+        Stage.AFTER_Y_BEFORE_Z       | Stage.AFTER_Z_BEFORE_RELEASE
+        Stage.AFTER_Z_BEFORE_RELEASE | Stage.RELEASED
     }
 
     static timeStages(Trigger trigger, LocalDateTime now, LocalDateTime userLastAccessTime) {

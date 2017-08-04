@@ -1,30 +1,31 @@
 package co.postscriptum.email;
 
+import com.google.common.collect.ImmutableMap;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Data
+@Value
 public class Envelope {
 
-    private final EnvelopeType type;
+    private EnvelopeType type;
 
-    private final String envelopeId;
+    private String envelopeId;
 
-    private final String recipient;
+    private String recipient;
 
-    private final String title;
+    private String title;
 
-    private final String msgHeader;
+    private String msgHeader;
 
-    private final String msgContent;
+    private String msgContent;
 
-    private final String msgFooter;
+    private String msgFooter;
 
-    private final Map<String, String> headers;
+    private Map<String, String> headers;
 
     @Builder
     private Envelope(EnvelopeType type,
@@ -39,7 +40,7 @@ public class Envelope {
         if (headers == null) {
             this.headers = new HashMap<>();
         } else {
-            this.headers = headers;
+            this.headers = ImmutableMap.copyOf(headers);
         }
         this.envelopeId = type.name() + "#" + UUID.randomUUID().toString();
         this.recipient = recipient;
@@ -47,7 +48,6 @@ public class Envelope {
         this.msgHeader = msgHeader;
         this.msgContent = msgContent;
         this.msgFooter = msgFooter;
-
     }
 
 }

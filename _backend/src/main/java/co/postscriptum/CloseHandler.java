@@ -32,30 +32,31 @@ public class CloseHandler implements ApplicationListener<ContextClosedEvent> {
 
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
-        log.info("GENTLE SHUTDOWN BEGIN");
+        log.info("Close Handler begins");
 
-        log.info("shutdown in-flight requests");
+        log.info("Shutdown in-flight requests");
         try {
             incomingRequestFilter.shutdownAndAwaitTermination();
         } catch (InterruptedException e) {
-            log.error("interrupted while waiting for web requests to finish");
+            log.error("Interrupted while waiting for web requests to finish", e);
         }
-        log.info("shutdown jobs executor");
+        log.info("Shutdown jobs executor");
         scheduledExecutorService.shutdown();
         try {
             scheduledExecutorService.awaitTermination(60, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            log.error("interrupted while waiting for jobs to finish");
+            log.error("Interrupted while waiting for jobs to finish", e);
         }
 
-        log.info("invoke job manually last time");
+        log.info("Invoke email processor job manually last time");
 
         emailProcessor.process();
 
-        log.info("shutdown db");
+        log.info("Shutdown db");
         db.shutdown();
 
-        log.info("GENTLE SHUTDOWN END");
-
+        log.info("Close handler ends");
     }
+
 }
+

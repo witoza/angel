@@ -33,8 +33,9 @@ public class DBDataInitializer {
     public void init() throws IOException {
 
         try {
-            db.loadDB();
+            db.loadDb();
         } catch (Exception e) {
+            log.warn("Problem with loading DB", e);
             if (env == RuntimeEnvironment.PROD) {
                 //for prod make sure DB won't be recreated accidentally
                 if (!"true".equalsIgnoreCase(System.getProperty("createDb"))) {
@@ -46,8 +47,7 @@ public class DBDataInitializer {
     }
 
     public void createNewDB() throws IOException {
-
-        log.info("creating new DB");
+        log.info("Creating new DB");
 
         if (!db.hasAccountByUsername(configuration.getAdminEmail())) {
             db.insertUser(adminHelperService.createAdmin("passwd"));
@@ -58,11 +58,10 @@ public class DBDataInitializer {
         insertTestData();
 
         db.saveStub();
-
     }
 
     private void insertTestData() throws IOException {
-        log.info("inserting test data");
+        log.info("Inserting test data");
         for (TestUser testUser : testDataCreator.getTestUsers()) {
 
             User testUserUser = testUser.createUser();
@@ -70,7 +69,7 @@ public class DBDataInitializer {
             if (!db.hasAccountByUsername(testUserUser.getUsername())) {
                 db.insertUser(testUser.createUserData(testUserUser, adminHelperService.getAdminPublicKey()));
             } else {
-                log.info("test user {} exists", testUserUser.getUsername());
+                log.info("Test user {} already exists", testUserUser.getUsername());
             }
         }
     }

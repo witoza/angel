@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -30,13 +31,16 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorEnvelope> handleException(HttpServletRequest request, Exception thrown) {
 
-        log.warn("handling exception: {}", Utils.exceptionInfo(thrown));
+        // force json
+        request.removeAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
+
+        log.warn("Handling exception: {}", Utils.exceptionInfo(thrown));
 
         restMetrics.reportException(request, thrown);
 
         ErrorEnvelope errorEnvelope = handleException(thrown);
 
-        log.info("errorEnvelope={}", errorEnvelope);
+        log.info("ErrorEnvelope: {}", errorEnvelope);
 
         return new ResponseEntity<>(errorEnvelope, HttpStatus.valueOf(errorEnvelope.getCode()));
     }
@@ -54,7 +58,7 @@ public class ControllerExceptionHandler {
         if (thrown instanceof IOException ||
                 thrown instanceof InternalException) {
 
-            log.info("full stack trace", thrown);
+            log.info("Full stack trace", thrown);
 
             return new ErrorEnvelope(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal problem occurred, we have been notified about the issue");
         }

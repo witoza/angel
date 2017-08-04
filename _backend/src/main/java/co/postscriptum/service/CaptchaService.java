@@ -26,7 +26,7 @@ public class CaptchaService {
     private MyConfiguration configuration;
 
     public boolean verify(String recaptchaResponse) {
-        log.info("Verifying captcha2 {}", recaptchaResponse);
+        log.info("Verifying recaptchaResponse: {}", recaptchaResponse);
 
         if (StringUtils.isEmpty(recaptchaResponse)) {
             return false;
@@ -58,7 +58,7 @@ public class CaptchaService {
             }
 
         } catch (IOException e) {
-            log.error("captcha validation error", e);
+            log.error("Captcha validation error", e);
             return false;
         }
 

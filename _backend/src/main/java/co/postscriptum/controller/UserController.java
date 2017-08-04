@@ -117,10 +117,7 @@ public class UserController {
     @PostMapping("/set_aes_key")
     public void setAesKey(UserData userData, @Valid @RequestBody SetAesKeyDTO dto) {
 
-        byte[] secretKey = userService.setEncryptionKey(userData,
-                                                        AuthenticationHelper.getUserEncryptionKey(),
-                                                        dto.passwd,
-                                                        dto.aes_key);
+        byte[] secretKey = userService.setEncryptionKey(userData, dto.passwd, dto.aes_key);
 
         AuthenticationHelper.setUserEncryptionKey(secretKey);
 

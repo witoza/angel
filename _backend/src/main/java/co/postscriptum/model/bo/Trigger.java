@@ -17,18 +17,15 @@ public class Trigger {
     private Integer z;
     private Integer w;
 
-    //time when automated process marks as ready to be released
-    private long readyToBeReleasedTime;
-
-    //time when automated process, or admin, really releases messages
-    private long haveBeenReleasedTime;
+    // time when automated process or admin released messages
+    private long releasedTime;
 
     public enum Stage {
-        beforeX,
-        afterXbeforeY,
-        afterYbeforeZ,
-        afterZbeforeW,
-        released,
+        BEFORE_X,
+        AFTER_X_BEFORE_Y,
+        AFTER_Y_BEFORE_Z,
+        AFTER_Z_BEFORE_RELEASE,
+        RELEASED,
     }
 
 }

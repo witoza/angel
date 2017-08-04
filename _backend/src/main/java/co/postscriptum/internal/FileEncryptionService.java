@@ -29,7 +29,7 @@ public class FileEncryptionService {
                                       @NonNull User owner,
                                       @NonNull String encryptionPassword) throws IOException {
 
-        log.info("encrypting file uuid={} by password", file.getUuid());
+        log.info("Encrypting file uuid: {} by password", file.getUuid());
 
         File encryptedFile = DataFactory.cloneBasicData(file);
         encryptedFile.setUuid(Utils.randKey("EF"));
@@ -83,10 +83,10 @@ public class FileEncryptionService {
         InputStream fis = fs.load(getFilePath(file, owner), true);
 
         if (file.getEncryption() != null) {
-            log.info("file is password encrypted");
+            log.info("File is password encrypted");
 
             if (encryptionPassword == null) {
-                throw new BadRequestException("encryptionPassword is required to decrypt file");
+                throw new BadRequestException("EncryptionPassword is required to decrypt file");
             }
 
             SecretKey passwordKey = AESKeyUtils.deriveKey(encryptionPassword, file.getEncryption().getSalt());
@@ -99,7 +99,7 @@ public class FileEncryptionService {
                                                new String[]{file.getOriginalFileUuid()});
 
         } else {
-            log.info("file is not password encrypted");
+            log.info("File is not password encrypted");
 
             return AESGCMUtils.decryptedStream(fis, encryptionKey, file.getIv(), new String[]{file.getUuid()});
         }

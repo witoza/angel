@@ -30,7 +30,7 @@ public class EmailDiscWriter {
         try {
             FileUtils.writeStringToFile(path.toFile(), Utils.toJson(data), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("can't write envelope to disk", e);
+            log.error("Can't write envelope to disk", e);
             componentMetrics.put(this.getClass(), "persist", 0, e);
         }
     }
@@ -45,7 +45,7 @@ public class EmailDiscWriter {
 
         Path file = Paths.get(emailsDir + "/" + envelope.getEnvelopeId());
 
-        log.info("persisting {}: envelopeId={} to {}", data.getClass().getSimpleName(), envelope.getEnvelopeId(), file);
+        log.info("Persisting {}: envelopeId: {} to {}", data.getClass().getSimpleName(), envelope.getEnvelopeId(), file);
         //TODO: encrypt content
 
         persist(data, file);
@@ -58,7 +58,7 @@ public class EmailDiscWriter {
 
         Path file = Paths.get(emailsDir + "/" + envelope.getEnvelopeId() + ".sent");
 
-        log.info("persisting {}: messageId={}, envelopeId={} to {}",
+        log.info("Persisting {}: messageId: {}, envelopeId: {} to {}",
                  data.getClass().getSimpleName(),
                  messageId,
                  envelope.getEnvelopeId(),
@@ -79,7 +79,7 @@ public class EmailDiscWriter {
 
         Path file = Paths.get(emailsDir + "/" + envelopeId + "." + deliveryType.toString().toLowerCase());
 
-        log.info("persisting {}: messageId={}, envelopeId={} to {}",
+        log.info("Persisting {}: messageId: {}, envelopeId: {} to {}",
                  data.getClass().getSimpleName(),
                  messageId,
                  envelopeId,
@@ -97,6 +97,7 @@ public class EmailDiscWriter {
         private String reqId;
         private String principal;
         private Envelope envelope;
+
     }
 
     @lombok.Value
@@ -105,6 +106,7 @@ public class EmailDiscWriter {
 
         private long creationTime = System.currentTimeMillis();
         private String messageId;
+
     }
 
     @lombok.Value
@@ -114,5 +116,7 @@ public class EmailDiscWriter {
         private long creationTime = System.currentTimeMillis();
         private DeliveryType deliveryType;
         private Map<String, Object> bounceCause;
+
     }
+
 }

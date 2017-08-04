@@ -10,10 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public abstract class AbstractJob {
 
+    private final AtomicInteger jobInstanceId = new AtomicInteger(0);
     @Autowired
     protected ComponentMetrics componentMetrics;
-
-    private final AtomicInteger jobInstanceId = new AtomicInteger(0);
 
     public abstract void processImpl();
 

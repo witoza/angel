@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,19 +71,18 @@ public class LoginService {
 
     private void verifyIsActive(User user) {
         if (!user.isActive()) {
-            throw new ForbiddenException("user " + user.getUsername() + " is not active");
+            throw new ForbiddenException("User " + user.getUsername() + " is not active");
         }
     }
 
     private void resurrectUser(UserData userData) {
-        if (userData.getUser().getTrigger().getStage() == Stage.released) {
+        if (userData.getUser().getTrigger().getStage() == Stage.RELEASED) {
 
-            log.info("user is resurrecting, invalidating all msg releases");
+            log.info("User is resurrecting, invalidating all message releases");
 
             Trigger trigger = userData.getUser().getTrigger();
-            trigger.setStage(Stage.beforeX);
-            trigger.setReadyToBeReleasedTime(0);
-            trigger.setHaveBeenReleasedTime(0);
+            trigger.setStage(Stage.BEFORE_X);
+            trigger.setReleasedTime(0);
 
             userData.getMessages().forEach(message -> {
                 message.setRelease(null);
@@ -108,29 +106,29 @@ public class LoginService {
 
         String username = user.getUsername();
 
-        log.info("authing: {}", username);
+        log.info("Authing: {}", username);
 
         verifyIsActive(user);
         verifyAccountNotLocked(userData);
         verifyProvidedPassword(userData, password);
 
-        log.info("user has been authenticated");
+        log.info("User has been authenticated");
 
         user.setLastAccess(System.currentTimeMillis());
 
         if (userData.getInternal().isVerifyUnknownBrowsers() && !verifiedUsers.isUserVerified(userData)) {
 
-            log.info("user login is from not verified browser");
+            log.info("User login is from not verified browser");
 
-            Optional<ShortTimeKey> loginTokenSTP = shortTimeKeyService.getByKey(verifyToken, ShortTimeKey.Type.login);
+            Optional<ShortTimeKey> loginTokenStk = shortTimeKeyService.getByKey(verifyToken, ShortTimeKey.Type.LOGIN_FROM_NOT_VERIFIED_BROWSER_TOKEN);
 
-            if (!loginTokenSTP.isPresent() || !StringUtils.equals(loginTokenSTP.get().getUsername(), username)) {
+            if (!loginTokenStk.isPresent() || !StringUtils.equals(loginTokenStk.get().getUsername(), username)) {
 
-                log.info("the loginToken is not correct");
+                log.info("loginToken is not correct");
 
-                ShortTimeKey newLoginTokenSTP = shortTimeKeyService.create(username, ShortTimeKey.Type.login);
+                ShortTimeKey newLoginTokenStk = shortTimeKeyService.create(username, ShortTimeKey.Type.LOGIN_FROM_NOT_VERIFIED_BROWSER_TOKEN);
 
-                userEmailService.sendUserLoginVerification(userData, newLoginTokenSTP, metadata);
+                userEmailService.sendToOwnerBrowserRequiresVerification(userData, newLoginTokenStk, metadata);
 
                 throw new ForbiddenException("Please provide login token");
             }
@@ -158,7 +156,7 @@ public class LoginService {
 
     private void verifyTotpToken(UserData userData, String totpToken) {
         if (userData.getInternal().isEnableTotp()) {
-            log.info("2FA is enabled, checking OTP token");
+            log.info("2FA is enabled, checking TOTP token");
 
             if (StringUtils.isEmpty(totpToken)) {
                 throw new ForbiddenException("Please provide security token");
@@ -171,22 +169,22 @@ public class LoginService {
     }
 
     private void verifyProvidedPassword(UserData userData, String password) {
-        log.info("verifying password");
+        log.info("Verifying login password");
         UserInternal internal = userData.getInternal();
 
         if (!PasswordUtils.checkPasswordHash(password, internal)) {
 
             internal.getInvalidLoginTs().add(System.currentTimeMillis());
-            internal.getInvalidLoginTs().removeIf(ts -> System.currentTimeMillis() - ts > Utils.minutesInMs(20));
+            internal.getInvalidLoginTs().removeIf(ts -> System.currentTimeMillis() - ts > Utils.minutesToMillis(20));
             if (internal.getInvalidLoginTs().size() > 3) {
 
-                userEmailService.sendUserInvalid3Logins(userData);
+                userEmailService.sendToOwnerTooManyInvalidLoginAttempts(userData);
 
                 addNotification(userData,
                                 "You provided invalid password 3 times in a row in the last 30 minutes, your account has been locked for 5 minutes");
 
                 log.warn("locking out user account for 5 minutes");
-                internal.setAccountLockedUntil(System.currentTimeMillis() + Utils.minutesInMs(5));
+                internal.setAccountLockedUntil(System.currentTimeMillis() + Utils.minutesToMillis(5));
                 internal.getInvalidLoginTs().clear();
 
             }
@@ -222,22 +220,22 @@ public class LoginService {
 
         Optional<Account> possibleAccount = db.getAccountByUsername(username);
         if (possibleAccount.isPresent()) {
-            log.info("user already exists");
+            log.info("User already exists");
 
-            db.withLoadedAccount(possibleAccount, account -> {
+            db.withLoadedAccount(possibleAccount.get(), account -> {
 
-                userEmailService.sendUserAccountAlreadyExists(account.getUserData());
+                userEmailService.sendToOwnerAccountAlreadyExists(account.getUserData());
 
                 addLoginAttempt(account, metadata, "someone tries to register user with your email address");
 
             });
 
         } else {
-            log.info("user does not exist, creating ShortTimeKey and sending email with token");
+            log.info("User does not exist, creating ShortTimeKey and sending email with token");
 
-            ShortTimeKey shortTimeKey = shortTimeKeyService.create(username, ShortTimeKey.Type.register_user);
+            ShortTimeKey shortTimeKey = shortTimeKeyService.create(username, ShortTimeKey.Type.REGISTER_NEW_USER);
 
-            userEmailService.sendUserPreregisters(username, lang, shortTimeKey);
+            userEmailService.sendToOwnerPreregisters(username, lang, shortTimeKey);
 
         }
 
@@ -249,7 +247,7 @@ public class LoginService {
                                    RequestMetadata metadata,
                                    VerifiedUsers verifiedUsers) throws IOException {
 
-        ShortTimeKey stk = shortTimeKeyService.require(shortTimeKey, ShortTimeKey.Type.register_user);
+        ShortTimeKey stk = shortTimeKeyService.require(shortTimeKey, ShortTimeKey.Type.REGISTER_NEW_USER);
 
         shortTimeKeyService.removeKey(stk);
 
@@ -272,9 +270,7 @@ public class LoginService {
 
         userInternal.getTriggerInternal().setXemails(username);
 
-        UserData userData = DataFactory.newUserData();
-        userData.setUser(user);
-        userData.setInternal(userInternal);
+        UserData userData = DataFactory.newUserData(user, userInternal);
         addNotification(userData, "Your account has been activated");
 
         Account account = db.insertUser(userData);
@@ -372,9 +368,9 @@ public class LoginService {
                 throw new ForbiddenException("invalid password");
             }
 
-            ShortTimeKey stk = shortTimeKeyService.create(username, ShortTimeKey.Type.recall_otp_key);
+            ShortTimeKey stk = shortTimeKeyService.create(username, ShortTimeKey.Type.RECALL_TOTP_KEY);
 
-            userEmailService.sendTOTPTokenDetails(userData, stk);
+            userEmailService.sendToOwnerTOTPTokenDetails(userData, stk);
 
             String recoveryEmail = userData.getInternal().getTotpRecoveryEmail();
 
@@ -397,13 +393,13 @@ public class LoginService {
             verifyIsActive(userData.getUser());
 
             if (userData.getInternal().getEncryptionKeyEncryptedByAdminPublicKey() != null) {
-                adminHelperService.addAdminRequiredAction(DataFactory.newRequiredAction(userData, Type.new_user_password));
+                adminHelperService.addAdminRequiredAction(DataFactory.newRequiredAction(userData, Type.USER_RESET_PASSWORD_REQUEST));
 
-                userEmailService.sendUserResetsPasswordReq(userData);
+                userEmailService.sendToOwnerRequestedPasswordReset(userData);
             } else {
 
-                ShortTimeKey stk = shortTimeKeyService.create(userData, ShortTimeKey.Type.password_change_req);
-                userEmailService.sendAdminApprovedPasswordChange(userData, stk, null);
+                ShortTimeKey stk = shortTimeKeyService.create(userData, ShortTimeKey.Type.USER_RESET_PASSWORD_REQUEST);
+                userEmailService.sendToOwnerAdminApprovedRequestPasswordReset(userData, stk, null);
 
             }
         });
@@ -414,7 +410,7 @@ public class LoginService {
                                          String extraDataEncryptionKey,
                                          String newLoginPassword) {
 
-        ShortTimeKey stk = shortTimeKeyService.require(resetPasswordKey, ShortTimeKey.Type.password_change_req);
+        ShortTimeKey stk = shortTimeKeyService.require(resetPasswordKey, ShortTimeKey.Type.USER_RESET_PASSWORD_REQUEST);
 
         db.withLoadedAccountByShortTimeKey(stk, account -> {
 
@@ -431,7 +427,7 @@ public class LoginService {
             internal.setAccountLockedUntil(0);
             internal.getInvalidLoginTs().clear();
 
-            log.info("changing password");
+            log.info("Changing login password");
 
             internal.setPasswordHash(PasswordUtils.hashPassword(newLoginPassword));
             addNotification(userData, "User's password has been changed");
@@ -456,7 +452,7 @@ public class LoginService {
 
     public String recallTotpKeyDetailsInfo(String shortTimeKey) {
 
-        ShortTimeKey stk = shortTimeKeyService.require(shortTimeKey, ShortTimeKey.Type.recall_otp_key);
+        ShortTimeKey stk = shortTimeKeyService.require(shortTimeKey, ShortTimeKey.Type.RECALL_TOTP_KEY);
 
         return db.withLoadedAccountByShortTimeKey(stk, account -> {
             UserData userData = account.getUserData();
@@ -478,7 +474,7 @@ public class LoginService {
 
     public ResponseEntity<InputStreamResource> recallTotpKeyDetailsQr(String shortTimeKey) {
 
-        ShortTimeKey stk = shortTimeKeyService.require(shortTimeKey, ShortTimeKey.Type.recall_otp_key);
+        ShortTimeKey stk = shortTimeKeyService.require(shortTimeKey, ShortTimeKey.Type.RECALL_TOTP_KEY);
 
         return db.withLoadedAccountByShortTimeKey(stk, account -> {
             return totpHelperService.getTotpUriQr(account.getUserData());

@@ -31,7 +31,7 @@ public class MessageService {
 
         new UserDataHelper(userData).verifyQuotaNotExceeded(params.getContent().length());
 
-        //set some sane limit
+        // set some sane limit
         if (userData.getMessages().size() > 100) {
             throw new InternalException("too many messages");
         }
@@ -46,7 +46,7 @@ public class MessageService {
 
         userData.getMessages().add(message);
 
-        log.info("msg has been added");
+        log.info("Message has been added");
 
         return message;
     }
@@ -102,7 +102,7 @@ public class MessageService {
 
         }
 
-        log.info("msg {} has been updated", message.getUuid());
+        log.info("Message uuid: {} has been updated", message.getUuid());
 
         return message;
     }
@@ -113,9 +113,8 @@ public class MessageService {
 
         verifyMessageHasNoEncryptedFiles(userData, message);
 
-        message.setContent(
-                buildMessageContent(message, userEncryptionKey,
-                                    getMessageContent(message, userEncryptionKey, msgPassword)));
+        message.setContent(buildMessageContent(message, userEncryptionKey,
+                                               getMessageContent(message, userEncryptionKey, msgPassword)));
         message.setEncryption(null);
 
         return message;
@@ -149,9 +148,9 @@ public class MessageService {
                              .count();
 
         if (total > 0) {
-            throw new ForbiddenException("Can't proceed because there is/are " + total
-                                                 +
-                                                 " encrypted files that belongs to that message. To continue you have to decrypt or delete them first.");
+            throw new ForbiddenException(
+                    "Can't proceed because there is/are " + total +
+                            " encrypted files that belongs to that message. To continue you have to decrypt or delete them first.");
         }
 
     }
