@@ -85,7 +85,6 @@ public class UserService {
         dto.setTriggerInternal(userData.getInternal().getTriggerInternal());
         dto.setAllowPasswordReset(userData.getInternal().isAllowPasswordReset());
         dto.setVerifyUnknownBrowsers(userData.getInternal().isVerifyUnknownBrowsers());
-
         dto.setCreationTime(userData.getInternal().getCreationTime());
         dto.setQuotaBytes(userData.getInternal().getQuotaBytes());
         dto.setScreenName(userData.getInternal().getScreenName());
@@ -112,17 +111,12 @@ public class UserService {
     }
 
     public void deleteUser(UserData userData, String loginPassword) {
-
         new UserDataHelper(userData).verifyLoginPasswordIsCorrect(loginPassword);
-
         db.removeUserByUuid(userData.getUser().getUuid());
-
     }
 
     private boolean needPayment(UserData userData) {
-
         UserPlan userPlan = userData.getInternal().getUserPlan();
-
         return userPlan.getPaidUntil() < System.currentTimeMillis();
     }
 
@@ -260,26 +254,24 @@ public class UserService {
 
     }
 
-    public List<String> sendTriggerAfterX(UserData userData, boolean sendEmailOnlyToUser) {
+    public List<String> sendUserVerificationAfterX(UserData userData, boolean sendEmailOnlyToUser) {
         return userEmailService.sendUserVerificationAfterX(userData, sendEmailOnlyToUser);
     }
 
-    public List<String> sendTriggerAfterY(UserData userData, boolean sendEmailOnlyToUser) {
+    public List<String> sendUserVerificationAfterY(UserData userData, boolean sendEmailOnlyToUser) {
         return userEmailService.sendUserVerificationAfterY(userData, sendEmailOnlyToUser);
     }
 
-    public List<String> sendTriggerAfterZ(UserData userData, boolean sendEmailOnlyToUser) {
+    public List<String> sendUserVerificationAfterZ(UserData userData, boolean sendEmailOnlyToUser) {
         return userEmailService.sendUserVerificationAfterZ(userData, sendEmailOnlyToUser);
     }
 
     public void unloadUser(UserData userData) {
-
         try {
             db.unloadUserByUuid(userData.getUser().getUuid());
         } catch (IOException e) {
             log.error("Exception when unloading User", e);
         }
-
     }
 
     public void enable2FA(UserData userData, String totpToken) {

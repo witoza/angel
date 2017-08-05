@@ -64,9 +64,8 @@ public class MessageController {
     public MessageDTO decrypt(UserData userData, @Valid @RequestBody EncryptedMsgDTO dto) {
 
         Message message = messageService.requireMessageByUuid(userData, dto.uuid);
-
         if (message.getEncryption() == null) {
-            throw new BadRequestException("expected encrypted message");
+            throw new BadRequestException("Expected encrypted message");
         }
 
         MessageDTO mdto = messageService.convertToDto(userData, message);
@@ -80,7 +79,6 @@ public class MessageController {
 
     @GetMapping(value = "/get_abstract")
     public List<MessageDTO> getAbstract(UserData userData) {
-
         return userData.getMessages()
                        .stream()
                        .map(message -> messageService.convertToDto(userData, message))
@@ -105,9 +103,7 @@ public class MessageController {
 
     @PostMapping(value = "/delete_msg")
     public void deleteMsg(UserData userData, @Valid @RequestBody UuidDTO dto) {
-
         messageService.deleteMessage(userData, dto.uuid);
-
     }
 
     @PostMapping(value = "/add_msg")
@@ -163,11 +159,13 @@ public class MessageController {
         @NotEmpty
         @Size(max = 100)
         String hint;
+
     }
 
     @Getter
     @Setter
     public static class AddMsgDTO {
+
         @NotNull
         @SafeHtml
         String content;
@@ -186,6 +184,7 @@ public class MessageController {
 
         @NotNull
         Type type;
+
     }
 
     @Getter

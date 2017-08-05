@@ -32,15 +32,15 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.1/ckeditor.js"></script>
 
 	<link rel="stylesheet" type="text/css"
-          href="//cdnjs.cloudflare.com/ajax/libs/video.js/5.19.2/alt/video-js-cdn.min.css"/> 
+          href="//cdnjs.cloudflare.com/ajax/libs/video.js/5.19.2/alt/video-js-cdn.min.css"/>
     <script src="//cdnjs.cloudflare.com/ajax/libs/video.js/5.19.2/video.min.js"></script>
-	
-	
+
+
 	<link rel="stylesheet" type="text/css" href="_provided/videojs-record/src/css/videojs.record.css?t=$$ts$$"/>
 	<script src="_provided/videojs-record/src/js/videojs.record.js?t=$$ts$$"></script>
-	
+
 	<script src="_provided/recordrtc/RecordRTC.js?t=$$ts$$"></script>
-	
+
     <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/moment-with-locales.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular-moment/1.0.0/angular-moment.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-sanitize.min.js"></script>
@@ -119,52 +119,6 @@
             </div>
 
             <div flex layout="column">
-                <div layout="row">
-                    <span flex></span>
-
-                    <div ng-if="!isPreview() && user != null">
-
-                        <md-button class="notifs-btn" ng-click="open_notifications();"
-                                   ng-controller="mainCtrl">
-                            <md-icon>notifications</md-icon>
-                            <span ng-if="user.unreadNotifs>0" class="notifs"><small>{{user.unreadNotifs}}</small></span>
-                        </md-button>
-
-                        <md-menu>
-
-                            <md-button class="btn_normal_text" ng-click="$mdOpenMenu($event)">
-                                <md-icon>account_circle</md-icon>
-                                {{user.screenName || user.username}}
-                                <md-icon>keyboard_arrow_down</md-icon>
-                            </md-button>
-                            <md-menu-content>
-
-                                <md-menu-item ng-if="isAdmin()">
-                                    <md-button ng-click="open_admin();" ng-controller="mainCtrl">
-                                        <md-icon>settings_applications</md-icon>
-                                        Configure
-                                    </md-button>
-                                </md-menu-item>
-
-                                <md-menu-item ng-if="!isAdmin()">
-                                    <md-button ng-click="open_account();" ng-controller="mainCtrl">
-                                        <md-icon>settings_applications</md-icon>
-                                        {{::i18n("%menu.account%")}}
-                                    </md-button>
-                                </md-menu-item>
-
-                                <md-menu-item>
-                                    <md-button ng-click="do_logout();" ng-controller="loginCtrl">
-                                        <md-icon>power_settings_new</md-icon>
-                                        {{::i18n("%menu.logout%")}}
-                                    </md-button>
-                                </md-menu-item>
-                            </md-menu-content>
-                        </md-menu>
-
-                    </div>
-                </div>
-
                 <div ng-controller="mainCtrl" ng-include="'menu_logged.html'"></div>
             </div>
 

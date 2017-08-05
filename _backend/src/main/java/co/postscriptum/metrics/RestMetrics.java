@@ -84,8 +84,7 @@ public class RestMetrics {
         long t1 = System.currentTimeMillis();
         StringBuilder sb = new StringBuilder("------ " + this.getClass().getSimpleName() + " ------\n\n");
 
-        sb.append(new JVMMetrics().dump()).append("\n")
-          .append("[http responses]\n");
+        sb.append("[http statuses]\n");
 
         httpCodes.forEach((httpCode, quantity) -> {
             sb.append(httpCode + "/" + HttpStatus.valueOf(httpCode).getReasonPhrase() + " = " + quantity)

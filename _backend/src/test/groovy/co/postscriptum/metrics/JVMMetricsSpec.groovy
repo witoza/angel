@@ -9,6 +9,7 @@ class JVMMetricsSpec extends Specification {
         JVMMetrics jvmMetrics = new JVMMetrics()
 
         expect:
+        println jvmMetrics.dump()
         jvmMetrics.dump().contains("active threads")
     }
 

@@ -72,7 +72,6 @@ public class RSAOAEPUtils {
 
     public static RSAOAEPEncrypted encrypt(byte[] plaintext, PublicKey key) {
         try {
-
             if (plaintext.length > 256) {
                 throw new IllegalArgumentException("RSA plaintext can't exceed 256 bytes");
             }
@@ -85,7 +84,6 @@ public class RSAOAEPUtils {
             return RSAOAEPEncrypted.builder()
                                    .ct(ct)
                                    .build();
-
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException("Can't encrypt RSA plaintext", e);
         }

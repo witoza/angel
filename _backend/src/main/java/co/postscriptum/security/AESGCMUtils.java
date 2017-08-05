@@ -28,10 +28,7 @@ public class AESGCMUtils {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     }
 
-    private static Cipher getAesGcmCipher() throws
-            NoSuchAlgorithmException,
-            NoSuchProviderException,
-            NoSuchPaddingException {
+    private static Cipher getAesGcmCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
         return Cipher.getInstance("AES/GCM/NoPadding", "BC");
     }
 

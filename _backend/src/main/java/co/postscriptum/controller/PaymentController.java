@@ -29,7 +29,7 @@ public class PaymentController {
                        @RequestParam("secret") String secret) {
 
         if (!secret.equalsIgnoreCase(configuration.getBitcoinPaymentSecret())) {
-            throw new BadRequestException("invalid payment secret");
+            throw new BadRequestException("Invalid payment secret");
         }
 
         bitcoinService.paymentReceived(uuid, transaction_hash, value);

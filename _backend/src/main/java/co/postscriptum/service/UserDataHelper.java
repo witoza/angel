@@ -21,13 +21,12 @@ public class UserDataHelper {
     private final UserData userData;
 
     public ReleaseItem requireReleaseItem(Message message, String releaseKey) {
-        return message
-                .getRelease()
-                .getItems()
-                .stream()
-                .filter(ri -> ri.getKey().equals(releaseKey))
-                .findFirst()
-                .orElseThrow(ExceptionBuilder.missingClass(ReleaseItem.class, "releaseKey=" + releaseKey));
+        return message.getRelease()
+                      .getItems()
+                      .stream()
+                      .filter(ri -> ri.getKey().equals(releaseKey))
+                      .findFirst()
+                      .orElseThrow(ExceptionBuilder.missingClass(ReleaseItem.class, "releaseKey=" + releaseKey));
     }
 
     public Message requireMessageByUuid(String uuid) {
@@ -99,8 +98,8 @@ public class UserDataHelper {
     }
 
     public void verifyLoginPasswordIsCorrect(String loginPassword) {
-        if (!PasswordUtils.checkPasswordHash(loginPassword, userData.getInternal())) {
-            throw new ForbiddenException("invalid password");
+        if (!PasswordUtils.checkPasswordHash(loginPassword, userData.getInternal().getPasswordHash())) {
+            throw new ForbiddenException("Invalid login password");
         }
     }
 

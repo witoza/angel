@@ -59,29 +59,27 @@ public class UserController {
 
     @PostMapping("/logout")
     public void logout(UserData userData, HttpServletRequest request, HttpServletResponse response) {
-
         if (AuthenticationHelper.getAuthentication() == null) {
             throw new BadRequestException("user already logged out");
         }
-
         userService.unloadUser(userData);
-
+        userEncryptionKeyService.setEncryptionKey(null);
         new SecurityContextLogoutHandler().logout(request, response, null);
     }
 
     @PostMapping("/send_x_notification")
     public List<String> sendTriggerAfterX(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendTriggerAfterX(userData, dto.getSendEmailOnlyToUser());
+        return userService.sendUserVerificationAfterX(userData, dto.getSendEmailOnlyToUser());
     }
 
     @PostMapping("/send_y_notification")
     public List<String> sendTriggerAfterY(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendTriggerAfterY(userData, dto.getSendEmailOnlyToUser());
+        return userService.sendUserVerificationAfterY(userData, dto.getSendEmailOnlyToUser());
     }
 
     @PostMapping("/send_z_notification")
     public List<String> sendTriggerAfterZ(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendTriggerAfterZ(userData, dto.getSendEmailOnlyToUser());
+        return userService.sendUserVerificationAfterZ(userData, dto.getSendEmailOnlyToUser());
     }
 
     @PostMapping("/generate_totp_secret")
@@ -122,9 +120,7 @@ public class UserController {
 
     @PostMapping("/set_aes_key")
     public void setAesKey(UserData userData, @Valid @RequestBody SetAesKeyDTO dto) {
-
         byte[] secretKey = userService.setEncryptionKey(userData, dto.passwd, dto.aes_key);
-
         userEncryptionKeyService.setEncryptionKey(secretKey);
     }
 
@@ -140,20 +136,16 @@ public class UserController {
 
     @PostMapping("/update_user")
     public UserDTO updateUser(UserData userData, @Valid @RequestBody UpdateUserDTO dto) {
-
         userService.updateUser(userData, dto);
-
         return userService.getUserDTO(userData, userEncryptionKeyService.getEncryptionKey());
     }
 
     @PostMapping("/change_passwd")
     public void changeLoginPassword(UserData userData, @Valid @RequestBody ChangePasswordDTO dto) {
-
         userService.changeLoginPassword(userData,
                                         userEncryptionKeyService.getEncryptionKey(),
                                         dto.passwd,
                                         dto.passwd_new);
-
     }
 
     @PostMapping("/request_for_storage")
@@ -162,9 +154,14 @@ public class UserController {
     }
 
     @PostMapping("/delete_user")
-    public void deleteUser(UserData userData, @Valid @RequestBody PasswordDTO dto, HttpServletRequest request) {
+    public void deleteUser(UserData userData,
+                           @Valid @RequestBody PasswordDTO dto,
+                           HttpServletRequest request,
+                           HttpServletResponse response) {
+
         userService.deleteUser(userData, dto.passwd);
-        new SecurityContextLogoutHandler().logout(request, null, null);
+        userEncryptionKeyService.setEncryptionKey(null);
+        new SecurityContextLogoutHandler().logout(request, response, null);
     }
 
     @Setter
@@ -203,8 +200,11 @@ public class UserController {
         String screenName;
 
         Boolean tosAccepted;
+
         Boolean allowPasswordReset;
+
         Boolean verifyUnknownBrowsers;
+
         Lang lang;
 
         @Email
@@ -212,6 +212,7 @@ public class UserController {
         String totpRecoveryEmail;
 
         Trigger trigger;
+
         TriggerInternal triggerInternal;
 
     }
@@ -233,6 +234,7 @@ public class UserController {
         @Max(500)
         @Min(1)
         Integer number_of_mb;
+
     }
 
 }

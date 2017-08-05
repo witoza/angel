@@ -51,17 +51,15 @@ public class FileController {
                           @RequestParam("file") MultipartFile multipartFile,
                           @RequestParam(name = "file_info[title]", required = false) String title) throws IOException {
 
-        log.info("uploading file, originalFilename={}, contentType={}, size={}, title={}",
+        log.info("Uploading file, originalFilename: {}, contentType: {}, size: {} b, title: {}",
                  multipartFile.getOriginalFilename(),
                  multipartFile.getContentType(),
                  multipartFile.getSize(),
                  title);
 
-        File file = fileService.upload(userData,
-                                       userEncryptionKeyService.requireEncryptionKey(),
-                                       multipartFile, title);
+        File uploaded = fileService.upload(userData, userEncryptionKeyService.requireEncryptionKey(), multipartFile, title);
 
-        return fileService.convertToDto(userData, file);
+        return fileService.convertToDto(userData, uploaded);
     }
 
     @PostMapping("/get_files")

@@ -33,7 +33,7 @@ public class AESKeyUtils {
 
     public static SecretKey toSecretKey(byte[] data) {
         if (data.length != 32) {
-            throw new IllegalArgumentException("AES key length=" + data.length + " is invalid");
+            throw new IllegalArgumentException("AES key length=" + data.length + " is invalid, expected 32 bytes");
         }
         return new SecretKeySpec(data, "AES");
     }

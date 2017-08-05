@@ -171,9 +171,9 @@ public class LoginController {
         try {
             loginService.resetPassword(dto.username);
         } catch (IllegalArgumentException | ForbiddenException e) {
-            log.warn("problem while resetting password: {}", Utils.exceptionInfo(e));
+            log.warn("Problem while resetting password: {}", Utils.exceptionInfo(e));
         } catch (Exception e) {
-            log.error("error while resetting password", e);
+            log.error("Error while resetting password", e);
         }
     }
 
@@ -243,6 +243,7 @@ public class LoginController {
 
         @Size(min = 32, max = 32)
         String loginToken;
+
     }
 
     @Getter
@@ -282,6 +283,7 @@ public class LoginController {
         @NotEmpty
         @Size(min = 3, max = 20)
         String passwd_new;
+
     }
 
 }

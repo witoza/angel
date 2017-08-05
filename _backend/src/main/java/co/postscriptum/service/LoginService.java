@@ -175,8 +175,7 @@ public class LoginService {
     private void verifyProvidedPassword(UserData userData, String password) {
         log.info("Verifying login password");
         UserInternal internal = userData.getInternal();
-
-        if (!PasswordUtils.checkPasswordHash(password, internal)) {
+        if (!PasswordUtils.checkPasswordHash(password, internal.getPasswordHash())) {
 
             internal.getInvalidLoginTs().add(System.currentTimeMillis());
             internal.getInvalidLoginTs().removeIf(ts -> System.currentTimeMillis() - ts > Utils.minutesToMillis(20));
@@ -368,8 +367,8 @@ public class LoginService {
 
             verifyIsActive(user);
 
-            if (!PasswordUtils.checkPasswordHash(password, userData.getInternal())) {
-                throw new ForbiddenException("invalid password");
+            if (!PasswordUtils.checkPasswordHash(password, userData.getInternal().getPasswordHash())) {
+                throw new ForbiddenException("Invalid login password");
             }
 
             ShortTimeKey stk = shortTimeKeyService.create(username, ShortTimeKey.Type.RECALL_TOTP_KEY);
