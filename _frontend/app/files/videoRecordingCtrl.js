@@ -254,13 +254,13 @@ angular
             };
 
             function videoQualityToBitRate(quality) {
-                if (quality == "High") {
+                if (quality === "High") {
                     return 1152000;
                 }
-                if (quality == "Medium") {
+                if (quality === "Medium") {
                     return 384000;
                 }
-                if (quality == "Low") {
+                if (quality === "Low") {
                     return 128000;
                 }
                 return -1;

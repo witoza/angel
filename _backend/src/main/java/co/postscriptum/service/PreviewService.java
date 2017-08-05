@@ -16,6 +16,7 @@ import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.MessageDTO;
 import co.postscriptum.security.AESGCMUtils;
 import co.postscriptum.security.AESKeyUtils;
+import co.postscriptum.security.UserEncryptionKeyService;
 import co.postscriptum.web.AuthenticationHelper;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -44,6 +45,8 @@ public class PreviewService {
 
     private final DB db;
 
+    private final UserEncryptionKeyService userEncryptionKeyService;
+
     //can be invoked from normal mode and from preview
     public ResponseEntity<InputStreamResource> download(PreviewController.DownloadFileDTO form) throws IOException {
 
@@ -69,7 +72,7 @@ public class PreviewService {
                 Message message = userDataHelper.requireMessageByUuid(form.getMsg_uuid());
 
                 if (!message.getAttachments().contains(file.getUuid())) {
-                    throw new BadRequestException("file does not belong to that message");
+                    throw new BadRequestException("File does not belong to that message");
                 }
 
                 ReleaseItemWithKey releaseItem = verifyCanPreviewMessage(fileAccount,
@@ -81,7 +84,7 @@ public class PreviewService {
                 encryptionKey = releaseItem.getEncryptionKey();
 
                 if (encryptionKey == null) {
-                    throw new BadRequestException("expected encrypted message");
+                    throw new BadRequestException("Expected encrypted message");
                 }
 
             } else {
@@ -89,10 +92,10 @@ public class PreviewService {
                 log.info("Edit mode download");
 
                 if (!AuthenticationHelper.isUserLogged(fileAccount.getUserData().getUser().getUsername())) {
-                    throw new ForbiddenException("file does not belong to the logged account");
+                    throw new ForbiddenException("File does not belong to the logged account");
                 }
 
-                encryptionKey = AuthenticationHelper.requireUserEncryptionKey();
+                encryptionKey = userEncryptionKeyService.requireEncryptionKey();
 
             }
 
@@ -153,15 +156,15 @@ public class PreviewService {
             releaseItem.setFirstTimeAccess(System.currentTimeMillis());
             releaseItem.setRecipient(StringUtils.join(message.getRecipients(), ", "));
 
-            SecretKey secretKey = AuthenticationHelper.getUserEncryptionKey()
-                                                      .orElseGet(() -> getEncryptionKey(userEncryptionKey));
+            SecretKey secretKey = userEncryptionKeyService.getEncryptionKey()
+                                                          .orElseGet(() -> getEncryptionKey(userEncryptionKey));
 
             return new ReleaseItemWithKey(releaseItem, secretKey);
 
         }
 
         if (message.getRelease() == null) {
-            throw new ForbiddenException("message hasn't been yet released");
+            throw new ForbiddenException("Message hasn't been yet released");
         }
 
         ReleaseItem releaseItem = userDataHelper.requireReleaseItem(message, releaseKey);
@@ -203,7 +206,7 @@ public class PreviewService {
             Message message = new UserDataHelper(userData).requireMessageByUuid(params.getMsg_uuid());
 
             if (message.getEncryption() == null) {
-                throw new BadRequestException("expected encrypted message");
+                throw new BadRequestException("Expected encrypted message");
             }
 
             ReleaseItemWithKey releaseItem = verifyCanPreviewMessage(account,
@@ -214,7 +217,7 @@ public class PreviewService {
 
             SecretKey encryptionKey = releaseItem.getEncryptionKey();
             if (encryptionKey == null) {
-                throw new BadRequestException("need to have encryption key to decrypt message");
+                throw new BadRequestException("Need to have encryption key to decrypt message");
             }
 
             MessageDTO mdto = BO2DTOConverter.toMessageDTO(message);

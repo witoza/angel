@@ -4,7 +4,7 @@ import spock.lang.Specification
 
 class UserServiceSpec extends Specification {
 
-    def "should guess screen name"() {
+    def "should guess screen name by email"() {
         expect:
         UserService.guessScreenName(email) == screenName
 

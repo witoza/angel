@@ -52,6 +52,7 @@ public class VerifiedUsers {
 
     public Cookie toCookie() {
         Cookie cookie = new Cookie(VERIFIED_USERS_COOKIE_NAME, toCookieValue());
+        cookie.setSecure(true);
         cookie.setMaxAge(10 * 365 * 24 * 60 * 60);
         return cookie;
     }

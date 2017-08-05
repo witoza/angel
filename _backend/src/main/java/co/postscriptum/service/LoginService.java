@@ -26,6 +26,7 @@ import co.postscriptum.security.PasswordUtils;
 import co.postscriptum.security.RSAOAEPUtils;
 import co.postscriptum.security.RequestMetadata;
 import co.postscriptum.security.TOTPHelperService;
+import co.postscriptum.security.UserEncryptionKeyService;
 import co.postscriptum.security.VerifiedUsers;
 import co.postscriptum.stk.ShortTimeKey;
 import co.postscriptum.stk.ShortTimeKeyService;
@@ -64,6 +65,8 @@ public class LoginService {
     private final I18N i18n;
 
     private final DB db;
+
+    private final UserEncryptionKeyService userEncryptionKeyService;
 
     private void addNotification(UserData userData, String message) {
         new UserDataHelper(userData).addNotification(message);
@@ -149,9 +152,10 @@ public class LoginService {
 
         }
 
-        return new MyAuthenticationToken(username, user.getRole(), encryptionKey,
-                                         new SimpleGrantedAuthority("ROLE_" + user.getRole().toString().toUpperCase()));
+        userEncryptionKeyService.setEncryptionKey(encryptionKey);
 
+        return new MyAuthenticationToken(username, user.getRole(),
+                                         new SimpleGrantedAuthority("ROLE_" + user.getRole().toString().toUpperCase()));
     }
 
     private void verifyTotpToken(UserData userData, String totpToken) {

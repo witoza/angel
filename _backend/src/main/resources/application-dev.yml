@@ -7,7 +7,7 @@ tomcat.ajp.port: 8009
 
 logging.config: classpath:log4j2-dev.xml
 emailProcessor.logEmails: true
-my.secret_config_file: c:/wito/app/key/ps_config.properties
+my.secret_config_file: c:/wito/app/key/ps_config-dev.properties
 my.host.url: http://localhost
 test.data.dir: c:/wito/postscriptum.co/test_users_files/
 my.hdfs.db_path: c:/wito/postscriptum.co/psdb

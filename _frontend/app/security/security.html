@@ -12,7 +12,8 @@
         <br/>
         Below you can find a summary of security measures taken to secure user's data.
         <br/>
-        Note that this software is open source, you can extract all the information below from reading the <a href="https://github.com/witoza/postscriptum.co">source code</a>.
+        Note that this software is open source, you can extract all the information below from reading the <a
+            href="https://github.com/witoza/postscriptum.co">source code</a>.
         <br/>
         If you want to introduce improvement or have any other questions, please contact us.
     </p>
@@ -32,12 +33,14 @@
 <p>
     <span class="md-headline">Login password</span>
     <br/>
-    Login password is verified by comparing value of <a href="https://en.wikipedia.org/wiki/Bcrypt">BCrypt</a> hash function from provided password and the BCrypt hash
-    stored in DB.
+    Login password is verified by comparing value of <a href="https://en.wikipedia.org/wiki/Bcrypt">BCrypt</a> hash
+    function from provided password and the BCrypt hash
+    stored in Database.
     <br/>
     <br/>
     When you try to log-in to your account from non-verified web-browser, you will be asked to provide
-    token which is sent to your email. Providing correct token and credentials will verify the web-browser for the future, so for the following login you will have to provide only
+    token which is sent to your email. Providing correct token and credentials will verify the web-browser for the
+    future, so for the following login you will have to provide only
     correct credentials.
 </p>
 
@@ -52,7 +55,7 @@
 <hr/>
 
 <p>
-    <span class="md-headline">Base data encryption</span>
+    <span class="md-headline">User Data encryption</span>
     <br/>
     During user signing-up process, random 256-bit <a
         href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES</a> Secret Key is generated (it
@@ -61,34 +64,32 @@
     (messages and files
     content) by <a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode">AES-GCM</a> mode.
     <br/>
-    <i>The Encryption Key</i> is stored in DB encrypted by ephemeral Secret Key which is derived (via <a
+    <i>The Encryption Key</i> is stored in Database encrypted by ephemeral Secret Key which is derived (via <a
         href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF2</a>) from user's login password and random salt during
     log-in.
     <br/>
-    <i>The Encryption Key</i> is decrypted (stored only in RAM) for the duration of user's session as it is required to
-    perform any
-    operations on user's data.
+    <i>The Encryption Key</i> is decrypted during the user log-in and stored encrypted in a Cookie for the duration of
+    user's session as it is required to perform most of the operations on user's data.
     <br/>
     <br/>
-    By default, copy of user's <i>Encryption Key</i> is encrypted by System Operator's <a
+    Copy of user's <i>Encryption Key</i> is encrypted by System Operator's <a
         href="https://en.wikipedia.org/wiki/RSA_(cryptosystem)">RSA</a> Public Key (the System acts as a <a
         href="https://en.wikipedia.org/wiki/Key_escrow">Key escrow</a>). It is needed as the System has to be able to
     access user's data during message release phase.
     <br/>
-    It is possible however to remove user's <i>Encryption Key</i> from User's profile (and System Operator's copy as
+    It is possible to remove user's <i>Encryption Key</i> from User's profile (and System Operator's copy as
     well)
-    should you decide
+    if you decide
     to deliver <i>The Encryption Key</i> by your own means to your recipients. This has a potential of improving
-    security as
-    nobody will be able to access your data, but can be a little cumbersome as you need to deliver the key by your own
+    security as The System won't be able to access your data, but can be a little cumbersome as you need to deliver the
+    key by your own
     and instruct the recipients what is that key for. You can reinsert the <i>Encryption Key</i> to your profile again
     after the removal to modify or delete some of your messages.
     <br/>
     If <i>The Encryption Key</i> is removed from user's profile, the message release process shall still take place as
     user's metadata (file
-    names, recipients addresses, message titles) is not encrypted, exactly for that reason. After message release, when
-    recipient clicks
-    on a link to display the message he/she will be prompted to enter correct <i>Encryption Key</i>.
+    names, recipients addresses, message titles) are not encrypted just for that reason. After message release, when
+    recipient clicks on a link to display the message he/she will be prompted to enter correct <i>Encryption Key</i>.
 </p>
 
 <hr/>
@@ -110,11 +111,11 @@
 <hr/>
 
 <p>
-    <span class="md-headline">Whole DB encryption</span>
+    <span class="md-headline">Database encryption</span>
     <br/>
     On top of the base encryption applied for each account, there is another layer of encryption which encrypts whole
-    database. The purpose of this is in case of DB leak, there is no metadata to be extracted from plaintext without
-    DB Encryption Key.
+    database. In case of Database leak there is no metadata to be extracted from plaintext without Database Encryption
+    Key.
 </p>
 
 <hr/>
@@ -123,7 +124,7 @@
     <span class="md-headline">Data storage</span>
     <br/>
     All of user's data is stored in <a href="https://aws.amazon.com/s3/">Amazon S3</a>. User's data is always stored
-    encrypted, and DB is encrypted as well.
+    encrypted, and Database is encrypted as well.
 </p>
 
 <hr/>
@@ -156,7 +157,7 @@
         semi-automated process as it requires System Operator's attention.
         <br/>
         <br/>
-        Operator's Private Key is not stored in DB, but offline secured by password.
+        Operator's Private Key is not stored in Database, but offline secured by password.
     </li>
 </ul>
 

@@ -8,6 +8,7 @@ import co.postscriptum.metrics.RestMetrics;
 import co.postscriptum.model.bo.User.Role;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.security.MyAuthenticationToken;
+import co.postscriptum.security.UserEncryptionKeyService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -37,6 +38,8 @@ public class IncomingRequestFilter extends GenericFilterBean {
     private final AtomicInteger numberOfInFlightTransactions = new AtomicInteger(0);
 
     private final RestMetrics restMetrics;
+
+    private final UserEncryptionKeyService userEncryptionKeyService;
 
     private final DB db;
 
@@ -96,7 +99,7 @@ public class IncomingRequestFilter extends GenericFilterBean {
                         MDC.put("reqType", "admin");
                     }
 
-                    log.info("> " + requestInfo + "; username=" + myAuthenticationToken.getName());
+                    log.info("> {}; username: {}", requestInfo, myAuthenticationToken.getName());
 
                     Account account = db.requireAccountByUsername(auth.getName());
                     try {
@@ -111,7 +114,7 @@ public class IncomingRequestFilter extends GenericFilterBean {
                     }
 
                 } else {
-                    log.info("> " + requestInfo + "; unauthed");
+                    log.info("> {}; unauthed", requestInfo);
                     chain.doFilter(request, response);
                 }
 
@@ -121,7 +124,10 @@ public class IncomingRequestFilter extends GenericFilterBean {
                 throw new InternalException("Our servers are experiencing issues, please come back later");
             } finally {
                 restMetrics.requestEnds(request, response);
-                log.info("< done in " + (System.currentTimeMillis() - startTime) + "ms, status=" + response.getStatus());
+
+                userEncryptionKeyService.persistEncryptionKey(request, response);
+
+                log.info("< done in {} ms, status: {}", System.currentTimeMillis() - startTime, response.getStatus());
             }
 
         } finally {

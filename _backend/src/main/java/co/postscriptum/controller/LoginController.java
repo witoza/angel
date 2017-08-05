@@ -80,6 +80,7 @@ public class LoginController {
             throw new InternalError("Can't register user", e);
         }
 
+
         verifiedUsers.updateCookie(response);
         generateNewCSRFToken(request, response);
     }

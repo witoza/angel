@@ -4,8 +4,8 @@ import co.postscriptum.controller.dto.UuidDTO;
 import co.postscriptum.model.bo.File;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.FileDTO;
+import co.postscriptum.security.UserEncryptionKeyService;
 import co.postscriptum.service.FileService;
-import co.postscriptum.web.AuthenticationHelper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,11 +36,13 @@ public class FileController {
 
     private final FileService fileService;
 
+    private final UserEncryptionKeyService userEncryptionKeyService;
+
     @GetMapping("/open")
     public ResponseEntity<InputStreamResource> open(UserData userData, @RequestParam(value = "file_uuid") String fileUuid)
             throws IOException {
         return fileService.openFile(userData,
-                                    AuthenticationHelper.requireUserEncryptionKey(),
+                                    userEncryptionKeyService.requireEncryptionKey(),
                                     FilenameUtils.removeExtension(fileUuid));
     }
 
@@ -56,7 +58,7 @@ public class FileController {
                  title);
 
         File file = fileService.upload(userData,
-                                       AuthenticationHelper.requireUserEncryptionKey(),
+                                       userEncryptionKeyService.requireEncryptionKey(),
                                        multipartFile, title);
 
         return fileService.convertToDto(userData, file);
@@ -64,7 +66,6 @@ public class FileController {
 
     @PostMapping("/get_files")
     public List<FileDTO> getFiles(UserData userData) {
-
         return userData.getFiles()
                        .stream()
                        .map(file -> fileService.convertToDto(userData, file))
@@ -73,25 +74,21 @@ public class FileController {
 
     @PostMapping("/delete_file")
     public void deleteFile(UserData userData, @Valid @RequestBody UuidDTO dto) throws IOException {
-
         fileService.deleteFile(userData, dto.uuid);
-
     }
 
     @PostMapping("/decrypt")
     public void decrypt(UserData userData, @Valid @RequestBody DeEncryptDTO dto) throws IOException {
-
         fileService.decrypt(userData,
-                            AuthenticationHelper.requireUserEncryptionKey(),
-                            dto.msg_uuid, dto.file_uuid, dto.encryption_passwd);
-
+                            userEncryptionKeyService.requireEncryptionKey(),
+                            dto.msg_uuid,
+                            dto.file_uuid,
+                            dto.encryption_passwd);
     }
 
     @PostMapping("/encrypt")
     public void encrypt(UserData userData, @Valid @RequestBody DeEncryptDTO dto) throws IOException {
-
         fileService.encrypt(userData, dto.msg_uuid, dto.file_uuid, dto.encryption_passwd);
-
     }
 
     @Getter

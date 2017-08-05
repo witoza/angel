@@ -33,7 +33,7 @@ public class TOTPHelperService {
         try {
             return QRGenerator.getQR(getTotpUri(userData));
         } catch (Exception e) {
-            throw new InternalException("exception occurred while generating QR code with TOTP details", e);
+            throw new InternalException("Exception occurred while generating QR code with TOTP details", e);
         }
     }
 

@@ -10,12 +10,14 @@ import co.postscriptum.model.bo.Trigger;
 import co.postscriptum.model.bo.TriggerInternal;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.UserDTO;
+import co.postscriptum.security.UserEncryptionKeyService;
 import co.postscriptum.service.UserService;
 import co.postscriptum.web.AuthenticationHelper;
 import com.google.zxing.WriterException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.io.InputStreamResource;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -42,17 +45,20 @@ import java.util.Map;
 @RestController
 @RequestMapping("/user")
 @AllArgsConstructor
+@Slf4j
 public class UserController {
 
     private final UserService userService;
 
+    private final UserEncryptionKeyService userEncryptionKeyService;
+
     @GetMapping("/current")
     public UserDTO current(UserData userData) {
-        return userService.getUserDTO(userData, AuthenticationHelper.getUserEncryptionKey());
+        return userService.getUserDTO(userData, userEncryptionKeyService.getEncryptionKey());
     }
 
     @PostMapping("/logout")
-    public void logout(UserData userData, HttpServletRequest request) {
+    public void logout(UserData userData, HttpServletRequest request, HttpServletResponse response) {
 
         if (AuthenticationHelper.getAuthentication() == null) {
             throw new BadRequestException("user already logged out");
@@ -60,7 +66,7 @@ public class UserController {
 
         userService.unloadUser(userData);
 
-        new SecurityContextLogoutHandler().logout(request, null, null);
+        new SecurityContextLogoutHandler().logout(request, response, null);
     }
 
     @PostMapping("/send_x_notification")
@@ -107,9 +113,9 @@ public class UserController {
     @PostMapping("/get_aes_key")
     public Map<String, String> getAesKey() {
 
-        String aesKey = AuthenticationHelper.getUserEncryptionKey()
-                                            .map(key -> Utils.base32encode(key.getEncoded()))
-                                            .orElse(null);
+        String aesKey = userEncryptionKeyService.getEncryptionKey()
+                                                .map(key -> Utils.base32encode(key.getEncoded()))
+                                                .orElse(null);
 
         return Collections.singletonMap("aes_key", aesKey);
     }
@@ -119,8 +125,7 @@ public class UserController {
 
         byte[] secretKey = userService.setEncryptionKey(userData, dto.passwd, dto.aes_key);
 
-        AuthenticationHelper.setUserEncryptionKey(secretKey);
-
+        userEncryptionKeyService.setEncryptionKey(secretKey);
     }
 
     @PostMapping("/enable_2fa")
@@ -138,14 +143,14 @@ public class UserController {
 
         userService.updateUser(userData, dto);
 
-        return userService.getUserDTO(userData, AuthenticationHelper.getUserEncryptionKey());
+        return userService.getUserDTO(userData, userEncryptionKeyService.getEncryptionKey());
     }
 
     @PostMapping("/change_passwd")
     public void changeLoginPassword(UserData userData, @Valid @RequestBody ChangePasswordDTO dto) {
 
         userService.changeLoginPassword(userData,
-                                        AuthenticationHelper.getUserEncryptionKey(),
+                                        userEncryptionKeyService.getEncryptionKey(),
                                         dto.passwd,
                                         dto.passwd_new);
 
@@ -153,18 +158,13 @@ public class UserController {
 
     @PostMapping("/request_for_storage")
     public void requestForStorage(UserData userData, @Valid @RequestBody RequestForStorageDTO dto) {
-
         userService.requestForStorage(userData, dto.number_of_mb);
-
     }
 
     @PostMapping("/delete_user")
     public void deleteUser(UserData userData, @Valid @RequestBody PasswordDTO dto, HttpServletRequest request) {
-
         userService.deleteUser(userData, dto.passwd);
-
         new SecurityContextLogoutHandler().logout(request, null, null);
-
     }
 
     @Setter

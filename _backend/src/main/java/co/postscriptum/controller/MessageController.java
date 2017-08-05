@@ -7,8 +7,8 @@ import co.postscriptum.model.bo.Message;
 import co.postscriptum.model.bo.Message.Type;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.MessageDTO;
+import co.postscriptum.security.UserEncryptionKeyService;
 import co.postscriptum.service.MessageService;
-import co.postscriptum.web.AuthenticationHelper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.crypto.SecretKey;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -33,11 +34,13 @@ public class MessageController {
 
     private final MessageService messageService;
 
+    private final UserEncryptionKeyService userEncryptionKeyService;
+
     @PostMapping(value = "/remove_password")
     public MessageDTO removePassword(UserData userData, @Valid @RequestBody EncryptedMsgDTO dto) {
 
         Message message = messageService.removePassword(userData,
-                                                        AuthenticationHelper.requireUserEncryptionKey(),
+                                                        userEncryptionKeyService.requireEncryptionKey(),
                                                         dto.uuid,
                                                         dto.encryption_passwd);
 
@@ -48,7 +51,7 @@ public class MessageController {
     public MessageDTO setPassword(UserData userData, @Valid @RequestBody SetMsgPasswordDTO dto) {
 
         Message message = messageService.setPassword(userData,
-                                                     AuthenticationHelper.requireUserEncryptionKey(),
+                                                     userEncryptionKeyService.requireEncryptionKey(),
                                                      dto.uuid,
                                                      dto.encryption_passwd,
                                                      dto.encryption_passwd_new,
@@ -68,7 +71,9 @@ public class MessageController {
 
         MessageDTO mdto = messageService.convertToDto(userData, message);
 
-        mdto.setContent(messageService.getMessageContent(message, AuthenticationHelper.requireUserEncryptionKey(), dto.encryption_passwd));
+        mdto.setContent(messageService.getMessageContent(message,
+                                                         userEncryptionKeyService.requireEncryptionKey(),
+                                                         dto.encryption_passwd));
 
         return mdto;
     }
@@ -90,7 +95,9 @@ public class MessageController {
         MessageDTO mdto = messageService.convertToDto(userData, message);
 
         if (message.getEncryption() == null) {
-            mdto.setContent(messageService.getMessageContent(message, AuthenticationHelper.requireUserEncryptionKey(), null));
+            mdto.setContent(messageService.getMessageContent(message,
+                                                             userEncryptionKeyService.requireEncryptionKey(),
+                                                             null));
         }
 
         return mdto;
@@ -106,12 +113,14 @@ public class MessageController {
     @PostMapping(value = "/add_msg")
     public MessageDTO addMsg(UserData userData, @Valid @RequestBody AddMsgDTO dto) {
 
-        Message message = messageService.addMessage(userData, AuthenticationHelper.requireUserEncryptionKey(), dto);
+        SecretKey encryptionKey = userEncryptionKeyService.requireEncryptionKey();
+
+        Message message = messageService.addMessage(userData, encryptionKey, dto);
 
         MessageDTO mdto = messageService.convertToDto(userData, message);
 
         if (message.getEncryption() == null) {
-            mdto.setContent(messageService.getMessageContent(message, AuthenticationHelper.requireUserEncryptionKey(), null));
+            mdto.setContent(messageService.getMessageContent(message, encryptionKey, null));
         }
 
         return mdto;
@@ -120,11 +129,13 @@ public class MessageController {
     @PostMapping(value = "/update_msg")
     public MessageDTO updateMsg(UserData userData, @Valid @RequestBody UpdateMsgDTO dto) {
 
-        Message message = messageService.updateMessage(userData, AuthenticationHelper.requireUserEncryptionKey(), dto);
+        SecretKey encryptionKey = userEncryptionKeyService.requireEncryptionKey();
+
+        Message message = messageService.updateMessage(userData, encryptionKey, dto);
 
         MessageDTO mdto = messageService.convertToDto(userData, message);
 
-        mdto.setContent(messageService.getMessageContent(message, AuthenticationHelper.requireUserEncryptionKey(), dto.encryption_passwd));
+        mdto.setContent(messageService.getMessageContent(message, encryptionKey, dto.encryption_passwd));
 
         return mdto;
     }

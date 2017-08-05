@@ -20,11 +20,10 @@ public class OnDelivery implements EmailDelivery.OnDelivery {
                            DeliveryType deliveryType,
                            Map<String, Object> bounceCause) {
 
-        log.info("onDelivery callback: messageId={}, envelopeId={}, headers={}, deliveryType={}, bounceCause={}",
+        log.info("onDelivery callback: messageId: {}, envelopeId: {}, headers: {}, deliveryType: {}, bounceCause: {}",
                  messageId, envelopeId, headers, deliveryType, bounceCause);
 
         receivedMessagesId.add(messageId);
-
     }
 
 }
