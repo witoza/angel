@@ -37,7 +37,7 @@
         </md-menu>
     </div>
 
-    <div layout="row" layout-align="center" layout-align-gt-md="end" layout-wrap>
+    <div ng-if="!isAdmin()" layout="row" layout-align="center" layout-align-gt-md="end" layout-wrap >
         <md-button ng-class="current_page()=='/msgs' ? 'md-accent' : 'md-primary'" class="md-raised md-hue-2"
                    flex-gt-sm="15" ng-click="open_msgs()">
             <md-icon>mail</md-icon>
@@ -60,7 +60,7 @@
         </md-button>
     </div>
 
-    <div ng-if="!user.validAesKey">
+    <div ng-if="!isAdmin() && !user.validAesKey">
         <div layout="row" layout-align="center" layout-align-gt-md="end" layout-wrap>
             <h2 class="md-body-2">
                 {{::i18n("%aes_key_missing_title%")}}

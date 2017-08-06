@@ -89,13 +89,11 @@
 </div>
 
 <div ng-show="composing==true || editing==true">
-    <p></p>
     <div ng-if="editing==true">
 
-        <h2 class="md-toolbar-tools">
+        <div layout="row" layout-xs="column" layout-align="space-between center">
             <span class="md-headline">{{i18n("%msg.folder." + activeDir + "%")}} / {{::i18n("%msg.edit%")}}</span>
             <span flex></span>
-
             <div>
                 <md-button ng-click="set_default_view();">
                     <md-icon>arrow_back</md-icon>
@@ -126,74 +124,72 @@
                     </md-menu>
                 </span>
 
-                <span ng-if="!curr_msg.passwordEncryption || curr_msg.has_been_decrypted">
-                    <md-button ng-click="update_msg();">
-                         <md-icon>done</md-icon>
-                          {{::i18n("%btn.save%")}}
-                    </md-button>
+                <md-button ng-click="update_msg();" ng-if="!curr_msg.passwordEncryption || curr_msg.has_been_decrypted">
+                    <md-icon>done</md-icon>
+                    {{::i18n("%btn.save%")}}
+                </md-button>
 
-                    <md-menu>
-                        <md-button ng-click="$mdOpenMenu($event)">
-                              {{::i18n("%btn.more%")}}
-                              <md-icon>keyboard_arrow_down</md-icon>
-                        </md-button>
-                        <md-menu-content>
-                            <md-menu-item ng-if="activeDir == 'outbox'">
-                                <md-button ng-click="move_to_folder('drafts');">
-                                      <md-icon>create</md-icon>
-                                      {{::i18n("%btn.move_to%")}}
-                                      <b>{{::i18n("%msg.folder.drafts%")}}</b>
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item ng-if="activeDir == 'drafts'">
-                                <md-button ng-click="move_to_folder('outbox');">
-                                    <md-icon>mail</md-icon>
-                                    {{::i18n("%btn.move_to%")}}
-                                    <b>{{::i18n("%msg.folder.outbox%")}}</b>
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item
-                                    ng-show="!curr_msg.has_been_decrypted">
-                                <md-button ng-click="set_password($event);">
-                                    <md-icon>lock</md-icon>
-                                     {{::i18n("%btn.encrypt%")}}
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item
-                                    ng-show="curr_msg.has_been_decrypted">
-                                <md-button ng-click="set_password($event);">
-                                    <md-icon>lock</md-icon>
-                                     {{::i18n("%btn.change_passwd%")}}
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item>
-                                <md-button ng-click="do_preview(curr_msg);">
-                                    <md-icon>pageview</md-icon>
-                                     {{::i18n("%btn.preview%")}}
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-item>
-                                <md-button ng-click="open_set_lang($event);">
-                                    <md-icon>translate</md-icon>
-                                     {{::i18n("%msg.lang.btn%")}}
-                                </md-button>
-                            </md-menu-item>
-                            <md-menu-divider></md-menu-divider>
-                            <md-menu-item>
-                                <md-button ng-click="delete_msg();">
-                                   <md-icon>delete_forever</md-icon>
-                                    {{::i18n("%btn.remove%")}}
-                                </md-button>
-                            </md-menu-item>
-                        </md-menu-content>
-                    </md-menu>
-                </span>
+                <md-menu ng-if="!curr_msg.passwordEncryption || curr_msg.has_been_decrypted">
+                    <md-button ng-click="$mdOpenMenu($event)">
+                        {{::i18n("%btn.more%")}}
+                        <md-icon>keyboard_arrow_down</md-icon>
+                    </md-button>
+                    <md-menu-content>
+                        <md-menu-item ng-if="activeDir == 'outbox'">
+                            <md-button ng-click="move_to_folder('drafts');">
+                                <md-icon>create</md-icon>
+                                {{::i18n("%btn.move_to%")}}
+                                <b>{{::i18n("%msg.folder.drafts%")}}</b>
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item ng-if="activeDir == 'drafts'">
+                            <md-button ng-click="move_to_folder('outbox');">
+                                <md-icon>mail</md-icon>
+                                {{::i18n("%btn.move_to%")}}
+                                <b>{{::i18n("%msg.folder.outbox%")}}</b>
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item
+                                ng-show="!curr_msg.has_been_decrypted">
+                            <md-button ng-click="set_password($event);">
+                                <md-icon>lock</md-icon>
+                                {{::i18n("%btn.encrypt%")}}
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item
+                                ng-show="curr_msg.has_been_decrypted">
+                            <md-button ng-click="set_password($event);">
+                                <md-icon>lock</md-icon>
+                                {{::i18n("%btn.change_passwd%")}}
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button ng-click="do_preview(curr_msg);">
+                                <md-icon>pageview</md-icon>
+                                {{::i18n("%btn.preview%")}}
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-item>
+                            <md-button ng-click="open_set_lang($event);">
+                                <md-icon>translate</md-icon>
+                                {{::i18n("%msg.lang.btn%")}}
+                            </md-button>
+                        </md-menu-item>
+                        <md-menu-divider></md-menu-divider>
+                        <md-menu-item>
+                            <md-button ng-click="delete_msg();">
+                                <md-icon>delete_forever</md-icon>
+                                {{::i18n("%btn.remove%")}}
+                            </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
             </div>
-        </h2>
+        </div>
     </div>
 
     <div ng-if="composing==true" flex>
-        <h2 class="md-toolbar-tools">
+        <div layout="row" layout-xs="column" layout-align="space-between center">
             <span class="md-headline">{{i18n("%msg.folder." + activeDir + "%")}} / {{::i18n("%msg.new.btn%")}}</span>
             <span flex></span>
             <div>
@@ -206,7 +202,7 @@
                     {{::i18n("%btn.discard%")}}
                 </md-button>
             </div>
-        </h2>
+        </div>
     </div>
 
     <div layout="row">

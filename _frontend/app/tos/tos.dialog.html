@@ -9,25 +9,18 @@
     <form ng-submit="deleteUser.invoke()">
         <md-dialog-content>
             <div class="md-dialog-content">
-
                 <div ng-include="::i18n_file('tos/_tos.html')"/>
-
-                <div layout="row" layout-align="center center">
-                    <div ng-controller="loginCtrl">
-
-                        <md-button class="md-primary md-raised" ng-disabled="tos.loading"
-                                   ng-click="acceptTermsOfServices();">
-                            {{::i18n("%user_accepts_tos%")}}
-                        </md-button>
-                        <md-button class="md-warn md-raised" ng-disabled="tos.loading"
-                                   ng-click="declineTermsOfServices();">
-                            {{::i18n("%user_not_accepts_tos%")}}
-                        </md-button>
-                    </div>
+                <div layout-xs="column" layout="row" layout-align-gt-xs="center center" ng-controller="loginCtrl">
+                    <md-button class="md-primary md-raised" ng-disabled="tos.loading"
+                               ng-click="acceptTermsOfServices();">
+                        {{::i18n("%user_accepts_tos%")}}
+                    </md-button>
+                    <md-button class="md-warn md-raised" ng-disabled="tos.loading"
+                               ng-click="declineTermsOfServices();">
+                        {{::i18n("%user_not_accepts_tos%")}}
+                    </md-button>
                 </div>
-
             </div>
         </md-dialog-content>
-
     </form>
 </md-dialog>

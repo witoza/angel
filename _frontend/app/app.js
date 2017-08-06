@@ -888,7 +888,7 @@ angular
                     },
                     decrypt: {
                         caption: "This message is encrypted, enter the password to open it",
-                        success: "The message has been decrypted",
+                        success: "Message has been decrypted",
                         fail: "Message decryption failed: <b>{0}</b>",
                     },
                     validation: {
