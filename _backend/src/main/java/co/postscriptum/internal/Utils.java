@@ -43,8 +43,11 @@ import java.util.stream.Collectors;
 public class Utils {
 
     private static final EmailValidator EMAIL_VALIDATOR = EmailValidator.getInstance();
+
     private static final ObjectMapper OBJECT_MAPPER = getObjectMapper();
+
     private static final Base64 BASE64 = new Base64();
+
     private static final Base32 BASE32 = new Base32();
 
     private static ObjectMapper getObjectMapper() {
@@ -192,6 +195,9 @@ public class Utils {
     }
 
     public static Optional<String> getCookieValue(HttpServletRequest request, String cookieName) {
+        if (request.getCookies() == null) {
+            return Optional.empty();
+        }
         return Arrays.stream(request.getCookies())
                      .filter(cookie -> StringUtils.equals(cookieName, cookie.getName()))
                      .map(Cookie::getValue)

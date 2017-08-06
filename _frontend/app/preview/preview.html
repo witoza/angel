@@ -2,8 +2,8 @@
     <div ng-show="curr_msg != null">
         <center ng-show="user != null && MyUtils.isEmpty(releaseKey)">
             <md-toolbar>
-                <div flex layout="row" layout-xs="column" layout-align="space-between center" layout-padding>
-                    <span>{{::i18n("%prev.internal_title%")}}</span>
+                <div flex layout="row" layout-xs="column" layout-align="space-between center">
+                    <span>&nbsp;{{::i18n("%prev.internal_title%")}}</span>
                     <div>
                         <md-button class="md-accent md-raised" ng-click="close_preview()">
                             {{::i18n("%btn.close%")}}
