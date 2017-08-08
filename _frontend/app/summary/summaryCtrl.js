@@ -21,6 +21,12 @@ angular
                 $window.open('/#!/preview?user_uuid=' + encodeURIComponent($rootScope.user.uuid) + "&msg_uuid=" + encodeURIComponent(msg.uuid), '_blank');
             };
 
+            $scope.do_edit = function (msg) {
+                console.log("do_edit");
+                $rootScope.to_open = msg;
+                $rootScope.open_page("/msgs");
+            };
+
             function validate_recipients(folder) {
                 folder.forEach(function (msg) {
                     msg.recipients_isEmpty = msg.recipients.length == 0;
@@ -35,7 +41,7 @@ angular
                     .then(function (data) {
                         console.log("Got all msgs");
 
-                        var msgs = {
+                        let msgs = {
                             outbox: [],
                             drafts: []
                         };

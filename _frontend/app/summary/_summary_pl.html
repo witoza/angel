@@ -40,7 +40,8 @@
                 <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> po {{trigger.x}}
                     {{trigger_tu}}
                 </li>
-                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" + triggerInternal.yemails).join(",")}}</b>
+                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" +
+                    triggerInternal.yemails).join(",")}}</b>
                     po
                     {{trigger.x + trigger.y}} {{trigger_tu}}
                 </li>
@@ -61,54 +62,63 @@
         </md-button>
     </div>
 
-    <div layout-xs="column" layout="row" layout-align="center center">
-        <div flex>
-            <ol>
-                <li ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'">
-                    <md-button ng-click="do_preview(msg);" class="notifs-btn">
-                        <md-icon>mail</md-icon>
-                    </md-button>
-                    <b>{{MyUtils.title(msg.title)}}</b>, do: {{::MyUtils.recipients(msg.recipients)}}
+    <ol>
+        <li ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'">
 
-                    <span ng-show="msg.recipients_isEmpty">
-                        <br/>
-                        <i class="fa fa-fw fa-exclamation"></i>
-                        Ta wiadomość nie zostanie wysłana poniewarz pole 'Do' nie zostało wypełnione.
-                    </span>
+            <md-menu>
+                <md-button ng-click="$mdOpenMenu($event)" class="notifs-btn">
+                    <md-icon>mail</md-icon>
+                </md-button>
+                <md-menu-content>
+                    <md-menu-item>
+                        <md-button ng-click="do_preview(msg);">
+                            <md-icon>pageview</md-icon>
+                            {{::i18n("%btn.preview%")}}
+                        </md-button>
+                    </md-menu-item>
+                    <md-menu-item>
+                        <md-button ng-click="do_edit(msg);">
+                            <md-icon>edit</md-icon>
+                            Modyfikuj
+                        </md-button>
+                    </md-menu-item>
+                </md-menu-content>
+            </md-menu>
 
-                    <span ng-if="msg.lang == 'en'">
-                        <img src="gb-flag.jpg">
-                    </span>
+            <b>{{MyUtils.title(msg.title)}}</b>, do: {{::MyUtils.recipients(msg.recipients)}}
 
-                    <span ng-if="msg.lang == 'pl'">
-                        <img src="p-flag.png">
-                    </span>
+            <span ng-show="msg.recipients_isEmpty">
+                <br/>
+                <i class="fa fa-fw fa-exclamation"></i>
+                Ta wiadomość nie zostanie wysłana poniewarz pole 'Do' nie zostało wypełnione.
+            </span>
 
-                    <span ng-repeat="file in msg.files">
-                        <br/>
-                        <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
-                    </span>
+            <span ng-if="msg.lang == 'en'">
+                <img src="gb-flag.jpg">
+            </span>
 
-                    <span ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
-                        <br/>
-                        <i class="fa fa-fw fa-exclamation"></i>
-                        W liście adresatów użyty jest nieprawidłowy adres email: <b>{{msg.recipients_isValidAddresses}}</b>
-                    </span>
+            <span ng-if="msg.lang == 'pl'">
+                <img src="p-flag.png">
+            </span>
 
-                    <span ng-show="msg.passwordEncryption">
-                        <br/>
-                        <i class="fa fa-fw fa-lock"></i>
-                        Ta wiadomość jest zaszyfrowana, upewnij się że adresaci znają hasło do podanej wskazówki: <i>{{msg.passwordEncryption.hint}}</i>
-                    </span>
-                </li>
-            </ol>
+            <span ng-repeat="file in msg.files">
+                <br/>
+                <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
+            </span>
 
-        </div>
-        <md-button class="notifs-btn" ng-click="createNewMessage()">
-            <md-icon>mail</md-icon>
-            <md-tooltip md-delay="100">Modyfikuj wiadomości</md-tooltip>
-        </md-button>
-    </div>
+            <span ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
+                <br/>
+                <i class="fa fa-fw fa-exclamation"></i>
+                W liście adresatów użyty jest nieprawidłowy adres email: <b>{{msg.recipients_isValidAddresses}}</b>
+            </span>
+
+            <span ng-show="msg.passwordEncryption">
+                <br/>
+                <i class="fa fa-fw fa-lock"></i>
+                Ta wiadomość jest zaszyfrowana, upewnij się że adresaci znają hasło do podanej wskazówki: <i>{{msg.passwordEncryption.hint}}</i>
+            </span>
+        </li>
+    </ol>
 
     <div ng-show="!user.validAesKey">
         <p class="md-body-1">
