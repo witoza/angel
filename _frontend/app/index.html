@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
 
     <link rel="stylesheet" type="text/css"
-          href="//cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.css"/>
+          href="//cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.min.css"/>
 
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -27,21 +27,24 @@
     <script src='//cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js'></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-aria.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-animate.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.min.js"></script>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.1/ckeditor.js"></script>
 
-	<link rel="stylesheet" type="text/css"
+    <link rel="stylesheet" type="text/css"
           href="//cdnjs.cloudflare.com/ajax/libs/video.js/5.19.2/alt/video-js-cdn.min.css"/>
     <script src="//cdnjs.cloudflare.com/ajax/libs/video.js/5.19.2/video.min.js"></script>
 
 
-	<link rel="stylesheet" type="text/css" href="_provided/videojs-record/src/css/videojs.record.css?t=$$ts$$"/>
-	<script src="_provided/videojs-record/src/js/videojs.record.js?t=$$ts$$"></script>
+    <link rel="stylesheet" type="text/css" href="_provided/videojs-record/src/css/videojs.record.min.css?t=$$ts$$"/>
+    <script src="_provided/videojs-record/src/js/videojs.record.min.js?t=$$ts$$"></script>
 
-	<script src="_provided/recordrtc/RecordRTC.js?t=$$ts$$"></script>
+    <script src="_provided/recordrtc/RecordRTC.min.js?t=$$ts$$"></script>
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/moment-with-locales.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/moment.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/locale/pl.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.0/locale/en-gb.js"></script>
+
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular-moment/1.0.0/angular-moment.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-sanitize.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-cookies.min.js"></script>
@@ -51,12 +54,12 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/ngStorage/0.3.11/ngStorage.min.js"></script>
 
     <link rel="stylesheet" type="text/css"
-          href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"/>
+          href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 
     <link rel="stylesheet" type="text/css" href="custom.css?t=$$ts$$"/>
 
     <script src="dist/vendor.bundle.js?t=$$ts$$"></script>
-	<script src="dist/app.bundle.js?t=$$ts$$"></script>
+    <script src="dist/app.bundle.js?t=$$ts$$"></script>
 
 </head>
 
@@ -69,10 +72,17 @@
 </span>
 
 <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
     ga('create', 'UA-91480481-1', 'auto');
     ga('send', 'pageview');
@@ -160,13 +170,15 @@
 
         <div layout-xs="column" layout="row" class="md-body-2" ng-controller="mainCtrl" layout-align="center">
             <div layout="row" layout-padding layout-align="center">
-            <div>
+                <div>
                     <small>
                         &copy; 2017 <a href="https://postscriptum.co">postscriptum.co</a>
                         <br/>
-                        build at: {{gitInfo.git.commit.time | asDate}} from commit id: <a href="https://github.com/witoza/postscriptum.co/commit/{{ gitInfo.git.commit.id }}">{{ gitInfo.git.commit.id }}</a>, env: {{gitInfo.env}}
+                        build at: {{gitInfo.git.commit.time | asDate}} from commit id: <a
+                            href="https://github.com/witoza/postscriptum.co/commit/{{ gitInfo.git.commit.id }}">{{
+                        gitInfo.git.commit.id }}</a>, env: {{gitInfo.env}}
                     </small>
-            </div>
+                </div>
             </div>
             <span flex></span>
             <div layout="row" layout-padding layout-align="center">
