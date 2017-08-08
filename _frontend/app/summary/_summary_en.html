@@ -35,16 +35,18 @@
     <div layout-xs="column" layout="row" layout-align="center center">
         <div flex>
             <p>Verification messages will be sent to:</p>
-            <p style="padding-left: 15px;padding-right: 15px">
-                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> after {{trigger.x}}
-                {{trigger_tu}} <br/>
-                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" + triggerInternal.yemails).join(", ")}}</b>
-                after
-                {{trigger.x + trigger.y}} {{trigger_tu}} <br/>
-                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" + triggerInternal.yemails + ";" +
+            <ul style="list-style-type:none">
+                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> after {{trigger.x}}
+                    {{trigger_tu}}
+                </li>
+                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" + triggerInternal.yemails).join(",")}}</b>
+                    after
+                    {{trigger.x + trigger.y}} {{trigger_tu}}
+                </li>
+                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" + triggerInternal.yemails + ";" +
                     triggerInternal.zemails).join(", ")}}</b> after {{trigger.x + trigger.y + trigger.z}} {{trigger_tu}}
-                <br/>
-            </p>
+                </li>
+            </ul>
             <p>
                 from the date of your last activity in the system. Eventually <b>after {{trigger.x + trigger.y +
                 trigger.z + trigger.w}} {{trigger_tu}} </b> (at the present moment it is
@@ -60,16 +62,14 @@
 
     <div layout-xs="column" layout="row" layout-align="center center">
         <div flex>
+            <ol>
+                <li ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'">
 
-            <div ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'" style="padding-left: 15px;padding-right: 15px">
-                <p class="trunc_m md-body-1">
-                    <i class="fa fa-fw fa-envelope-o"></i>
+                    <md-button ng-click="do_preview(msg);" class="notifs-btn">
+                        <md-icon>mail</md-icon>
+                    </md-button>
 
-
-                    <a href ng-click="do_preview(msg);">
-                        <b>{{MyUtils.title(msg.title)}}</b>
-                    </a>
-                    To: {{::MyUtils.recipients(msg.recipients)}}
+                    <b>{{MyUtils.title(msg.title)}}</b>, to: {{::MyUtils.recipients(msg.recipients)}}
 
                     <span ng-show="msg.recipients_isEmpty">
                         <br/>
@@ -80,16 +80,15 @@
                     <span ng-if="msg.lang == 'en'">
                         <img src="gb-flag.jpg">
                     </span>
+
                     <span ng-if="msg.lang == 'pl'">
                         <img src="p-flag.png">
                     </span>
 
-
-                        <span ng-repeat="file in msg.files">
-                            <br/>
-                            <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
-                        </span>
-
+                    <span ng-repeat="file in msg.files">
+                        <br/>
+                        <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
+                    </span>
 
                     <span ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
                         <br/>
@@ -100,11 +99,10 @@
                     <span ng-show="msg.passwordEncryption">
                         <br/>
                         <i class="fa fa-fw fa-lock"></i>
-                        The message is encrypted, make sure the recipients know the password to the given hint: <b>{{msg.passwordEncryption.hint}}</b>
+                        The message is encrypted. Make sure the recipients know the password to the given hint: <i>{{msg.passwordEncryption.hint}}</i>
                     </span>
-                </p>
-            </div>
-
+                </li>
+            </ol>
         </div>
         <md-button class="notifs-btn" ng-click="createNewMessage()">
             <md-icon>mail</md-icon>
@@ -129,7 +127,8 @@
         <hr/>
         <p class="md-body-1">
             <i class="fa fa-fw fa-info"></i>
-            You have <b>{{msgs['drafts'].length}}</b> messages in the folder <i>Messages/{{::i18n("%msg.folder.drafts%")}}</i>
+            You have <b>{{msgs['drafts'].length}}</b> messages in the folder
+            <i>Messages/{{::i18n("%msg.folder.drafts%")}}</i>
             which <b>won't</b> be send out. If you want them to also be sent out move them to the folder <i>Messages/{{::i18n("%msg.folder.outbox%")}}</i>.
         </p>
     </div>

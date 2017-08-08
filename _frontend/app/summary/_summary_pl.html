@@ -30,21 +30,24 @@
     </center>
 </div>
 
+
 <div class="md-body-1" ng-show="user.trigger.enabled && msgs['outbox'].length>0">
 
     <div layout-xs="column" layout="row" layout-align="center center">
         <div flex>
             <p>Wiadomości weryfikacyjne zostaną wysłane do: </p>
-            <p class="no_margins" style="padding-left: 15px;padding-right: 15px">
-                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> po {{trigger.x}} {{trigger_tu}}
-                <br/>
-                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" + triggerInternal.yemails).join(", ")}}</b>
-                po
-                {{trigger.x + trigger.y}} {{trigger_tu}} <br/>
-                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" + triggerInternal.yemails +";"+
+            <ul style="list-style-type:none">
+                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> po {{trigger.x}}
+                    {{trigger_tu}}
+                </li>
+                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" + triggerInternal.yemails).join(",")}}</b>
+                    po
+                    {{trigger.x + trigger.y}} {{trigger_tu}}
+                </li>
+                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" + triggerInternal.yemails +";"+
                     triggerInternal.zemails).join(", ")}}</b> po {{trigger.z + trigger.y + trigger.z}} {{trigger_tu}}
-                <br/>
-            </p>
+                </li>
+            </ul>
             <p>
                 od daty ostatniej Twojej aktywności w systemie. Ostatecznie, <b>po upływie {{trigger.x + trigger.y +
                 trigger.z + trigger.w}} {{trigger_tu}}</b> (na chwilę obecną jest to <b>{{moment(trigger.last_access).add(trigger.x
@@ -60,15 +63,12 @@
 
     <div layout-xs="column" layout="row" layout-align="center center">
         <div flex>
-
-            <div ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'" style="padding-left: 15px;padding-right: 15px">
-                <p class="trunc_m md-body-1">
-                    <i class="fa fa-fw fa-envelope-o"></i>
-                    <i ng-show="msg.files.length > 0" class="fa fa-fw fa-paperclip"></i>
-                    <a href ng-click="do_preview(msg);">
-                        <b>{{MyUtils.title(msg.title)}}</b>
-                    </a>
-                    Do: {{::MyUtils.recipients(msg.recipients)}}
+            <ol>
+                <li ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'">
+                    <md-button ng-click="do_preview(msg);" class="notifs-btn">
+                        <md-icon>mail</md-icon>
+                    </md-button>
+                    <b>{{MyUtils.title(msg.title)}}</b>, do: {{::MyUtils.recipients(msg.recipients)}}
 
                     <span ng-show="msg.recipients_isEmpty">
                         <br/>
@@ -79,8 +79,14 @@
                     <span ng-if="msg.lang == 'en'">
                         <img src="gb-flag.jpg">
                     </span>
+
                     <span ng-if="msg.lang == 'pl'">
                         <img src="p-flag.png">
+                    </span>
+
+                    <span ng-repeat="file in msg.files">
+                        <br/>
+                        <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
                     </span>
 
                     <span ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
@@ -92,10 +98,10 @@
                     <span ng-show="msg.passwordEncryption">
                         <br/>
                         <i class="fa fa-fw fa-lock"></i>
-                        Ta wiadomość jest zaszyfrowana, upewnij się że adresaci znają hasło do podanej wskazówki: <b>{{msg.passwordEncryption.hint}}</b>
+                        Ta wiadomość jest zaszyfrowana, upewnij się że adresaci znają hasło do podanej wskazówki: <i>{{msg.passwordEncryption.hint}}</i>
                     </span>
-                </p>
-            </div>
+                </li>
+            </ol>
 
         </div>
         <md-button class="notifs-btn" ng-click="createNewMessage()">
