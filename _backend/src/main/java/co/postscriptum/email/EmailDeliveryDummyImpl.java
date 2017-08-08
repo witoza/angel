@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Component
 public class EmailDeliveryDummyImpl implements EmailDeliveryDummy {
 
-    private List<DeliveredEmail> deliveredEmails = new CopyOnWriteArrayList<>();
+    private final List<DeliveredEmail> deliveredEmails = new CopyOnWriteArrayList<>();
 
     private int delayTimeMs = 3000;
 

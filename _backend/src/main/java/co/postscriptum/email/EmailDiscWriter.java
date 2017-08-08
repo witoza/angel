@@ -94,8 +94,11 @@ public class EmailDiscWriter {
     private static class EnvelopeEnqueuedInfo {
 
         private long creationTime = System.currentTimeMillis();
+
         private String reqId;
+
         private String principal;
+
         private Envelope envelope;
 
     }
@@ -105,6 +108,7 @@ public class EmailDiscWriter {
     private static class EnvelopeSentInfo {
 
         private long creationTime = System.currentTimeMillis();
+
         private String messageId;
 
     }
@@ -114,7 +118,9 @@ public class EmailDiscWriter {
     private static class EmailDeliveredInfo {
 
         private long creationTime = System.currentTimeMillis();
+
         private DeliveryType deliveryType;
+
         private Map<String, Object> bounceCause;
 
     }

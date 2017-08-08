@@ -11,22 +11,28 @@ import java.util.List;
 @Data
 public class MessageDTO {
 
-    String uuid;
+    private String uuid;
 
-    long creationTime;
-    long updateTime;
+    private long creationTime;
 
-    Type type;
-    Lang lang;
+    private long updateTime;
 
-    String title;
-    List<String> recipients;
+    private Type type;
 
-    List<String> attachments;
-    List<FileDTO> files;
+    private Lang lang;
 
-    String content;
-    ReleaseItem releaseItem;
-    PasswordEncryption passwordEncryption;
+    private String title;
+
+    private List<String> recipients;
+
+    private List<String> attachments;
+
+    private List<FileDTO> files;
+
+    private String content;
+
+    private ReleaseItem releaseItem;
+
+    private PasswordEncryption passwordEncryption;
 
 }

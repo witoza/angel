@@ -1,14 +1,14 @@
 package co.postscriptum.security;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class AESGCMEncryptedByPassword {
 
-    private final byte[] passwordSalt;
+    private byte[] passwordSalt;
 
-    private final AESGCMEncrypted encrypted;
+    private AESGCMEncrypted encrypted;
 
 }

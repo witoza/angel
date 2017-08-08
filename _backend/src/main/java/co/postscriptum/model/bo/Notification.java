@@ -7,9 +7,12 @@ import lombok.Data;
 @Builder
 public class Notification {
 
-    private final String uuid;
-    private final long createdTime;
-    private final String msg;
+    private String uuid;
+
+    private long createdTime;
+
+    private String msg;
+
     private boolean read;
 
 }

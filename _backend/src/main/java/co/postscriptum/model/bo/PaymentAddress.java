@@ -7,10 +7,10 @@ import lombok.Data;
 @Builder
 public class PaymentAddress {
 
-    String uuid;
+    private String uuid;
 
-    String btcAddress;
+    private String btcAddress;
 
-    long assignedTime;
+    private long assignedTime;
 
 }

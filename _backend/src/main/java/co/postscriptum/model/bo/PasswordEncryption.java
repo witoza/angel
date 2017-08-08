@@ -8,7 +8,9 @@ import lombok.Data;
 public class PasswordEncryption {
 
     private final String hint;
+
     private final byte[] salt;
+
     private byte[] iv;
 
 }

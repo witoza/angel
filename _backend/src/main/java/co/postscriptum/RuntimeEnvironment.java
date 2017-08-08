@@ -7,11 +7,10 @@ public enum RuntimeEnvironment {
     PROD;
 
     public String getDomain() {
-        if (this == RuntimeEnvironment.PROD) {
+        if (this == PROD) {
             return "postscriptum.co";
-        } else {
-            return this.toString().toLowerCase() + ".postscriptum.co";
         }
+        return this.toString().toLowerCase() + ".postscriptum.co";
     }
 
 }

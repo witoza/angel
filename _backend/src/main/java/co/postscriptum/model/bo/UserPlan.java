@@ -2,21 +2,26 @@ package co.postscriptum.model.bo;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
 
 import java.util.List;
 
 @Data
 public class UserPlan {
 
-    List<Payment> payments;
-    long paidUntil;
+    private List<Payment> payments;
+    private long paidUntil;
 
-    @Data
+    @Value
     @Builder
     public static class Payment {
-        private final long time;
-        private final String details;
-        private final String amount;
+
+        private long time;
+
+        private String details;
+
+        private String amount;
+
     }
 
 }

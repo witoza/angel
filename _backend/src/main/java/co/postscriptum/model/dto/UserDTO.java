@@ -10,31 +10,46 @@ import lombok.Data;
 @Data
 public class UserDTO {
 
-    String uuid;
+    private String uuid;
 
-    boolean active;
-    long creationTime;
-    boolean tosAccepted;
-    long quotaBytes;
-    String username;
-    String screenName;
-    Lang lang;
-    Role role;
-    Trigger trigger;
-    TriggerInternal triggerInternal;
+    private boolean active;
 
-    boolean allowPasswordReset;
-    boolean verifyUnknownBrowsers;
+    private long creationTime;
 
-    long usedSpaceBytes;
-    boolean validAesKey;
-    long unreadNotifs;
-    boolean needPayment;
+    private boolean tosAccepted;
 
-    String totpUri;
-    boolean enableTotp;
-    String totpRecoveryEmail;
+    private long quotaBytes;
 
-    UserPlan userPlan;
+    private String username;
+
+    private String screenName;
+
+    private Lang lang;
+
+    private Role role;
+
+    private Trigger trigger;
+
+    private TriggerInternal triggerInternal;
+
+    private boolean allowPasswordReset;
+
+    private boolean verifyUnknownBrowsers;
+
+    private long usedSpaceBytes;
+
+    private boolean validAesKey;
+
+    private long unreadNotifs;
+
+    private boolean needPayment;
+
+    private String totpUri;
+
+    private boolean enableTotp;
+
+    private String totpRecoveryEmail;
+
+    private UserPlan userPlan;
 
 }

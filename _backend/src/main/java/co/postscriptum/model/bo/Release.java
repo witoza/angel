@@ -1,15 +1,16 @@
 package co.postscriptum.model.bo;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.util.List;
 
-@Data
+@Value
 @Builder
 public class Release {
 
-    private final long releaseTime;
-    private final List<ReleaseItem> items;
+    private long releaseTime;
+
+    private List<ReleaseItem> items;
 
 }

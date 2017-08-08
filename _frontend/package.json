@@ -11,15 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "angular": "1.6.4",
-    "angular-animate": "1.6.4",
-    "angular-aria": "1.6.4",
-    "angular-cookies": "1.6.4",
+    "angular": "1.6.5",
+    "angular-animate": "1.6.5",
+    "angular-aria": "1.6.5",
+    "angular-cookies": "1.6.5",
     "angular-material": "1.1.4",
     "angular-moment": "1.0.1",
     "angular-recaptcha": "4.1.0",
-    "angular-route": "1.6.4",
-    "angular-sanitize": "1.6.4",
+    "angular-route": "1.6.5",
+    "angular-sanitize": "1.6.5",
     "angular-scroll": "1.0.2",
     "angular-zxcvbn": "3.2.2",
     "ckeditor": "4.7.1",
@@ -41,10 +41,10 @@
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
     "gulp-minify-css": "^1.2.4",
-    "gulp-token-replace": "^1.0.3",
+    "gulp-token-replace": "^1.0.4",
     "ng-annotate-webpack-plugin": "^0.2.1-pre",
-    "run-sequence": "^2.0.0",
-    "webpack": "^3.1.0",
-    "webpack-dev-server": "^2.5.1"
+    "run-sequence": "^2.1.0",
+    "webpack": "^3.5.1",
+    "webpack-dev-server": "^2.7.0"
   }
 }

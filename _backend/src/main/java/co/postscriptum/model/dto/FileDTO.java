@@ -7,17 +7,24 @@ import java.util.List;
 @Data
 public class FileDTO {
 
-    String uuid;
-    String name;
-    String ext;
-    MessageDTO belongsTo;
-    String mime;
-    long uploadTime;
-    long size;
-    String sha1;
+    private String uuid;
 
-    List<MessageDTO> messages;
+    private String name;
 
-    boolean passwordEncrypted;
+    private String ext;
+
+    private MessageDTO belongsTo;
+
+    private String mime;
+
+    private long uploadTime;
+
+    private long size;
+
+    private String sha1;
+
+    private List<MessageDTO> messages;
+
+    private boolean passwordEncrypted;
 
 }

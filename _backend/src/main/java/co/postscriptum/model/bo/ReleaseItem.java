@@ -8,20 +8,31 @@ import java.util.List;
 @Data
 public class ReleaseItem {
 
-    String key;
-    String recipient;
-    String envelopeId;
-    AESGCMEncrypted userEncryptionKeyEncodedByRecipientKey;
-    long firstTimeAccess;
-    List<Reminder> reminders;
+    private String key;
+
+    private String recipient;
+
+    private String envelopeId;
+
+    private AESGCMEncrypted userEncryptionKeyEncodedByRecipientKey;
+
+    private long firstTimeAccess;
+
+    private List<Reminder> reminders;
 
     @Data
     public static class Reminder {
-        String uuid;
-        long createdTime;
-        long resolvedTime;
-        String input;
-        boolean resolved;
+
+        private String uuid;
+
+        private long createdTime;
+
+        private long resolvedTime;
+
+        private String input;
+
+        private boolean resolved;
+
     }
 
 }

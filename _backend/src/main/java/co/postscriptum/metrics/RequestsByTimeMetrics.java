@@ -9,11 +9,11 @@ import java.util.LinkedList;
 
 public class RequestsByTimeMetrics {
 
-    private LinkedList<DataHolder> last60Minute = new LinkedList<>();
+    private final LinkedList<DataHolder> last60Minute = new LinkedList<>();
 
-    private LinkedList<DataHolder> last24Hours = new LinkedList<>();
+    private final LinkedList<DataHolder> last24Hours = new LinkedList<>();
 
-    private LinkedList<DataHolder> last30Days = new LinkedList<>();
+    private final LinkedList<DataHolder> last30Days = new LinkedList<>();
 
     @Synchronized
     public void newRequest() {

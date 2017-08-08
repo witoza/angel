@@ -21,7 +21,7 @@ public class UserEncryptionKeyService {
 
     private static final String SET_ENCRYPTION_KEY = UserEncryptionKeyService.class.getSimpleName() + ".SetEncryptionKey";
 
-    private SecretKey cookieEncryptionKey = AESKeyUtils.generateRandomKey();
+    private final SecretKey cookieEncryptionKey = AESKeyUtils.generateRandomKey();
 
     public Optional<SecretKey> getEncryptionKey(HttpServletRequest httpServletRequest) {
         return loadEncryptionKey(httpServletRequest)

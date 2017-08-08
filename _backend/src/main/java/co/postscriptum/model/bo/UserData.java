@@ -7,12 +7,16 @@ import java.util.List;
 @Data
 public class UserData {
 
-    User user;
-    UserInternal internal;
+    private User user;
 
-    List<Message> messages;
-    List<File> files;
-    List<Notification> notifications;
-    List<RequiredAction> requiredActions;
+    private UserInternal internal;
+
+    private List<Message> messages;
+
+    private List<File> files;
+
+    private List<Notification> notifications;
+
+    private List<RequiredAction> requiredActions;
 
 }

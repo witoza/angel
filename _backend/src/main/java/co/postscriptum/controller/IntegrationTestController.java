@@ -17,11 +17,11 @@ public class IntegrationTestController {
     private final DB db;
 
     @GetMapping("/expireUser")
-    public void expireUser(@RequestParam("username") String username) {
+    public void expireUser(@RequestParam("userUuid") String userUuid) {
 
-        log.info("expire user: {}", username);
+        log.info("Expire user.uuid: {}", userUuid);
 
-        db.withLoadedAccountByUsername(username, account -> {
+        db.withLoadedAccountByUuid(userUuid, account -> {
             account.getUserData().getInternal().getUserPlan().setPaidUntil(0);
         });
 

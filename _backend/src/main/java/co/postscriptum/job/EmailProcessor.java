@@ -41,11 +41,11 @@ public class EmailProcessor extends AbstractJob {
     @Autowired
     private EmailSender emailSender;
 
-    private List<Envelope> queued = new CopyOnWriteArrayList<>();
+    private final List<Envelope> queued = new CopyOnWriteArrayList<>();
 
-    private List<Envelope> durableSent = new CopyOnWriteArrayList<>();
+    private final List<Envelope> durableSent = new CopyOnWriteArrayList<>();
 
-    private EmailDelivery.OnDelivery handler = new EmailDelivery.OnDelivery() {
+    private final EmailDelivery.OnDelivery handler = new EmailDelivery.OnDelivery() {
 
         @Override
         public void onDelivery(String messageId,

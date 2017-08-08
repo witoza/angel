@@ -1,19 +1,19 @@
 package co.postscriptum.security;
 
 import co.postscriptum.internal.Utils;
-import lombok.Getter;
+import lombok.Value;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
-@Getter
+@Value
 public class RequestMetadata {
 
-    private final long timestamp;
+    private long timestamp;
 
-    private final String userAgent;
+    private String userAgent;
 
-    private final String remoteIp;
+    private String remoteIp;
 
     public RequestMetadata(HttpServletRequest request) {
         this.timestamp = System.currentTimeMillis();
@@ -27,7 +27,6 @@ public class RequestMetadata {
                                    "timestamp: " + Utils.format(Utils.fromTimestamp(timestamp)),
                                    "ip address: " + remoteIp,
                                    "user-agent: " + userAgent));
-
     }
 
 }

@@ -5,10 +5,12 @@ import lombok.Data;
 @Data
 public class TriggerInternal {
 
-    String resetKey;
+    private String resetKey;
 
-    String xemails;
-    String yemails;
-    String zemails;
+    private String xemails;
+
+    private String yemails;
+
+    private String zemails;
 
 }

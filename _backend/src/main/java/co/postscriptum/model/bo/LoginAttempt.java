@@ -1,14 +1,16 @@
 package co.postscriptum.model.bo;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class LoginAttempt {
 
-    private final String ip;
-    private final String type;
-    private final long time;
+    private String ip;
+
+    private String type;
+
+    private long time;
 
 }

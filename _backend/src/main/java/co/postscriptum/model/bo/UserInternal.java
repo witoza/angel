@@ -9,31 +9,39 @@ import java.util.List;
 @Data
 public class UserInternal {
 
-    UserPlan userPlan;
-    Lang lang;
+    private Lang lang;
 
-    List<Long> invalidLoginTs;
+    private List<Long> invalidLoginTs;
 
-    long accountLockedUntil;
+    private long accountLockedUntil;
 
-    long creationTime;
-    String screenName;
-    long quotaBytes;
+    private long creationTime;
 
-    String passwordHash;
-    boolean enableTotp;
+    private String screenName;
 
-    boolean allowPasswordReset;
-    boolean verifyUnknownBrowsers;
+    private long quotaBytes;
 
-    byte[] totpSecret;
-    String totpRecoveryEmail;
+    private String passwordHash;
 
-    List<LoginAttempt> loginHistory;
+    private boolean enableTotp;
 
-    // user only
-    TriggerInternal triggerInternal;
-    AESGCMEncryptedByPassword encryptionKey;
-    RSAOAEPEncrypted encryptionKeyEncryptedByAdminPublicKey;
+    private boolean allowPasswordReset;
+
+    private boolean verifyUnknownBrowsers;
+
+    private byte[] totpSecret;
+
+    private String totpRecoveryEmail;
+
+    private List<LoginAttempt> loginHistory;
+
+    // user only, for admin those are null
+    private UserPlan userPlan;
+
+    private TriggerInternal triggerInternal;
+
+    private AESGCMEncryptedByPassword encryptionKey;
+
+    private RSAOAEPEncrypted encryptionKeyEncryptedByAdminPublicKey;
 
 }

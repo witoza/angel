@@ -8,14 +8,21 @@ import java.util.Map;
 @Data
 public class RequiredAction {
 
-    String uuid;
-    Type type;
-    long createdTime;
-    String userUuid;
-    String userUsername;
-    Map<String, Object> details;
-    Status status;
-    List<Resolution> resolutions;
+    private String uuid;
+
+    private Type type;
+
+    private long createdTime;
+
+    private String userUuid;
+
+    private String userUsername;
+
+    private Map<String, Object> details;
+
+    private Status status;
+
+    private List<Resolution> resolutions;
 
     public enum Status {
         resolved,
@@ -33,9 +40,13 @@ public class RequiredAction {
 
     @Data
     public static class Resolution {
-        long createdTime;
-        String userInput;
-        String msg;
+
+        private long createdTime;
+
+        private String userInput;
+
+        private String msg;
+
     }
 
 }
