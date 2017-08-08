@@ -207,7 +207,7 @@ public class LoginController {
     public static class UsernamePasswordDTO extends UsernameDTO {
 
         @NotEmpty
-        @Size(min = 3, max = 20)
+        @Size(min = 3, max = 30)
         public String passwd;
 
     }
@@ -281,7 +281,7 @@ public class LoginController {
         String secret;
 
         @NotEmpty
-        @Size(min = 3, max = 20)
+        @Size(min = 3, max = 30)
         String passwd_new;
 
     }

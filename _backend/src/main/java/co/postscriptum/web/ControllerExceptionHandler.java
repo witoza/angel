@@ -31,10 +31,10 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorEnvelope> handleException(HttpServletRequest request, Exception thrown) {
 
+        log.warn("Handling exception: {}", Utils.exceptionInfo(thrown));
+
         // force json
         request.removeAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
-
-        log.warn("Handling exception: {}", Utils.exceptionInfo(thrown));
 
         restMetrics.reportException(request, thrown);
 
@@ -53,13 +53,14 @@ public class ControllerExceptionHandler {
             return new ErrorEnvelope(HttpStatus.FORBIDDEN.value(), thrown.getMessage());
         }
         if (thrown instanceof MethodArgumentNotValidException) {
+            String message = thrown.getMessage();
+            if (message.contains("default message [passwd]")) {
+                return new ErrorEnvelope(HttpStatus.BAD_REQUEST.value(), "Password must be at least 3 characters long");
+            }
             return new ErrorEnvelope(HttpStatus.BAD_REQUEST.value(), "Invalid input data");
         }
-        if (thrown instanceof IOException ||
-                thrown instanceof InternalException) {
-
+        if (thrown instanceof IOException || thrown instanceof InternalException) {
             log.info("Full stack trace", thrown);
-
             return new ErrorEnvelope(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal problem occurred, we have been notified about the issue");
         }
         return new ErrorEnvelope(HttpStatus.BAD_REQUEST.value(), "Bad request");
