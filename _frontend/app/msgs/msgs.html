@@ -17,10 +17,14 @@
 
                 <md-list>
                     <md-list-item ng-click="open_dir('outbox');" ng-class="{selected_li: activeDir=='outbox'}">
-                        <p>{{::i18n("%msg.folder.outbox%")}} [<b>{{msgs['outbox'].length}}</b>]</p>
+                        <span>{{::i18n("%msg.folder.outbox%")}}</span>
+                        <span flex></span>
+                        <span><b>{{msgs['outbox'].length}}</b></span>
                     </md-list-item>
                     <md-list-item ng-click="open_dir('drafts');" ng-class="{selected_li: activeDir=='drafts'}">
-                        <p>{{::i18n("%msg.folder.drafts%")}} [<b>{{msgs['drafts'].length}}</b>]</p>
+                        <span>{{::i18n("%msg.folder.drafts%")}}</span>
+                        <span flex></span>
+                        <span><b>{{msgs['drafts'].length}}</b></span>
                     </md-list-item>
                 </md-list>
 

@@ -41,7 +41,7 @@
                     {{trigger_tu}}
                 </li>
                 <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" +
-                    triggerInternal.yemails).join(",")}}</b>
+                    triggerInternal.yemails).join(", ")}}</b>
                     po
                     {{trigger.x + trigger.y}} {{trigger_tu}}
                 </li>
@@ -49,12 +49,12 @@
                     triggerInternal.zemails).join(", ")}}</b> po {{trigger.z + trigger.y + trigger.z}} {{trigger_tu}}
                 </li>
             </ul>
-            <p>
+            <span>
                 od daty ostatniej Twojej aktywności w systemie. Ostatecznie, <b>po upływie {{trigger.x + trigger.y +
                 trigger.z + trigger.w}} {{trigger_tu}}</b> (na chwilę obecną jest to <b>{{moment(trigger.last_access).add(trigger.x
                 +
                 trigger.y + trigger.z + trigger.w, trigger.timeUnit) | asDate}}</b>) wyślemy następujące wiadomości:
-            </p>
+            </span>
         </div>
         <md-button class="notifs-btn" ng-click="configureTrigger()">
             <md-icon>settings</md-icon>
@@ -62,7 +62,7 @@
         </md-button>
     </div>
 
-    <ol>
+    <ul style="list-style-type:none">
         <li ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'">
 
             <md-menu>
@@ -72,14 +72,12 @@
                 <md-menu-content>
                     <md-menu-item>
                         <md-button ng-click="do_preview(msg);">
-                            <md-icon>pageview</md-icon>
                             {{::i18n("%btn.preview%")}}
                         </md-button>
                     </md-menu-item>
                     <md-menu-item>
                         <md-button ng-click="do_edit(msg);">
-                            <md-icon>edit</md-icon>
-                            Modyfikuj
+                            Edycja
                         </md-button>
                     </md-menu-item>
                 </md-menu-content>
@@ -87,38 +85,35 @@
 
             <b>{{MyUtils.title(msg.title)}}</b>, do: {{::MyUtils.recipients(msg.recipients)}}
 
-            <span ng-show="msg.recipients_isEmpty">
-                <br/>
-                <i class="fa fa-fw fa-exclamation"></i>
-                Ta wiadomość nie zostanie wysłana poniewarz pole 'Do' nie zostało wypełnione.
-            </span>
-
-            <span ng-if="msg.lang == 'en'">
-                <img src="gb-flag.jpg">
-            </span>
-
-            <span ng-if="msg.lang == 'pl'">
-                <img src="p-flag.png">
-            </span>
-
-            <span ng-repeat="file in msg.files">
-                <br/>
-                <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
-            </span>
-
-            <span ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
-                <br/>
-                <i class="fa fa-fw fa-exclamation"></i>
-                W liście adresatów użyty jest nieprawidłowy adres email: <b>{{msg.recipients_isValidAddresses}}</b>
-            </span>
-
-            <span ng-show="msg.passwordEncryption">
-                <br/>
-                <i class="fa fa-fw fa-lock"></i>
-                Ta wiadomość jest zaszyfrowana, upewnij się że adresaci znają hasło do podanej wskazówki: <i>{{msg.passwordEncryption.hint}}</i>
-            </span>
+            <ul style="list-style-type:none">
+                <li ng-show="msg.recipients_isEmpty">
+                    <i class="fa fa-fw fa-exclamation"></i>
+                    Ta wiadomość nie zostanie wysłana poniewarz pole 'Do' nie zostało wypełnione.
+                </li>
+                <li ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
+                    <i class="fa fa-fw fa-exclamation"></i>
+                    W liście adresatów użyty jest nieprawidłowy adres email: <b>{{msg.recipients_isValidAddresses}}</b>
+                </li>
+                <li ng-show="msg.lang != null">
+                    <div layout="row" layout-align="none center">
+                        <span>Język powiadomień o wiadomości: {{msg.lang.toUpperCase();}}&nbsp;</span>
+                        <img src="gb-flag.jpg" ng-if="msg.lang == 'en'">
+                        <img src="p-flag.png" ng-if="msg.lang == 'pl'">
+                    </div>
+                </li>
+                <li ng-show="msg.files.length > 0">
+                     <span ng-repeat="file in msg.files">
+                        <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
+                         <br/>
+                    </span>
+                </li>
+                <li ng-show="msg.passwordEncryption">
+                    <i class="fa fa-fw fa-lock"></i>
+                    Ta wiadomość jest zaszyfrowana, upewnij się że adresaci znają hasło do podanej wskazówki: <i>{{msg.passwordEncryption.hint}}</i>
+                </li>
+            </ul>
         </li>
-    </ol>
+    </ul>
 
     <div ng-show="!user.validAesKey">
         <p class="md-body-1">

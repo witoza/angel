@@ -10,7 +10,6 @@
                 Create new message
             </md-button>
         </div>
-
     </center>
 </div>
 
@@ -32,36 +31,48 @@
 
 <div class="md-body-1" ng-show="user.trigger.enabled && msgs['outbox'].length>0">
 
-    <div layout-xs="column" layout="row" layout-align="center center">
-        <div flex>
-            <p>Verification messages will be sent to:</p>
-            <ul style="list-style-type:none">
-                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> after {{trigger.x}}
+    <p>Verification messages will be sent to:</p>
+
+    <ul style="list-style-type:none">
+        <li layout="row">
+            <md-menu>
+                <md-button ng-click="$mdOpenMenu($event)" class="notifs-btn">
+                    <md-icon>settings</md-icon>
+                </md-button>
+                <md-menu-content>
+                    <md-menu-item>
+                        <md-button ng-click="configureTrigger();">
+                            Modify trigger
+                        </md-button>
+                    </md-menu-item>
+                </md-menu-content>
+            </md-menu>
+            <span>&nbsp;&nbsp;</span>
+            <span>
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> after {{trigger.x}}
                     {{trigger_tu}}
-                </li>
-                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" +
-                    triggerInternal.yemails).join(",")}}</b>
+                <br/>
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" +
+                    triggerInternal.yemails).join(", ")}}</b>
                     after
                     {{trigger.x + trigger.y}} {{trigger_tu}}
-                </li>
-                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" + triggerInternal.yemails + ";" +
-                    triggerInternal.zemails).join(", ")}}</b> after {{trigger.x + trigger.y + trigger.z}} {{trigger_tu}}
-                </li>
-            </ul>
-            <p>
-                from the date of your last activity in the system. Eventually <b>after {{trigger.x + trigger.y +
-                trigger.z + trigger.w}} {{trigger_tu}} </b> (at the present moment it is
-                {{moment(trigger.last_access).add(trigger.x + trigger.y + trigger.z + trigger.w, trigger.timeUnit) |
-                asDate}}) following messages will be send out:
-            </p>
-        </div>
-        <md-button class="notifs-btn" ng-click="configureTrigger()">
-            <md-icon>settings</md-icon>
-            <md-tooltip md-delay="100">Modify Trigger</md-tooltip>
-        </md-button>
-    </div>
+                <br/>
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" + triggerInternal.yemails + ";"
+                    +
+                    triggerInternal.zemails).join(", ")}}</b> after {{trigger.x + trigger.y + trigger.z}}
+                    {{trigger_tu}}
+            </span>
+        </li>
+    </ul>
 
-    <ol>
+    <span>
+        from the date of your last activity in the system. Eventually <b>after {{trigger.x + trigger.y +
+        trigger.z + trigger.w}} {{trigger_tu}} </b> (at the present moment it is
+        {{moment(trigger.last_access).add(trigger.x + trigger.y + trigger.z + trigger.w, trigger.timeUnit) |
+        asDate}}) following messages will be send out:
+    </span>
+
+    <ul style="list-style-type:none">
         <li ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'">
 
             <md-menu>
@@ -71,14 +82,12 @@
                 <md-menu-content>
                     <md-menu-item>
                         <md-button ng-click="do_preview(msg);">
-                            <md-icon>pageview</md-icon>
-                            {{::i18n("%btn.preview%")}}
+                            {{::i18n("%btn.preview%")}} message
                         </md-button>
                     </md-menu-item>
                     <md-menu-item>
                         <md-button ng-click="do_edit(msg);">
-                            <md-icon>edit</md-icon>
-                            Edit
+                            Edit message
                         </md-button>
                     </md-menu-item>
                 </md-menu-content>
@@ -86,38 +95,35 @@
 
             <b>{{MyUtils.title(msg.title)}}</b>, to: {{::MyUtils.recipients(msg.recipients)}}
 
-            <span ng-show="msg.recipients_isEmpty">
-                <br/>
-                <i class="fa fa-fw fa-exclamation"></i>
-                This message will not be send out as the recipients are not defined.
-            </span>
-
-            <span ng-if="msg.lang == 'en'">
-                <img src="gb-flag.jpg">
-            </span>
-
-            <span ng-if="msg.lang == 'pl'">
-                <img src="p-flag.png">
-            </span>
-
-            <span ng-repeat="file in msg.files">
-                <br/>
-                <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
-            </span>
-
-            <span ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
-                <br/>
-                <i class="fa fa-fw fa-exclamation"></i>
-                There is an invalid email address in the 'To' filed: <b>{{msg.recipients_isValidAddresses}}</b>
-            </span>
-
-            <span ng-show="msg.passwordEncryption">
-                <br/>
-                <i class="fa fa-fw fa-lock"></i>
-                The message is encrypted. Make sure the recipients know the password to the given hint: <i>{{msg.passwordEncryption.hint}}</i>
-            </span>
+            <ul style="list-style-type:none">
+                <li ng-show="msg.recipients_isEmpty">
+                    <i class="fa fa-fw fa-exclamation"></i>
+                    This message will not be send out as the recipients are not defined.
+                </li>
+                <li ng-show="msg.type=='outbox' && !msg.recipients_isEmpty && msg.recipients_isValidAddresses.length > 0">
+                    <i class="fa fa-fw fa-exclamation"></i>
+                    There is an invalid email address in the 'To' filed: <b>{{msg.recipients_isValidAddresses}}</b>
+                </li>
+                <li ng-show="msg.lang != null">
+                    <div layout="row" layout-align="none center">
+                        <span>Message notification language: {{msg.lang.toUpperCase();}}&nbsp;</span>
+                        <img src="gb-flag.jpg" ng-if="msg.lang == 'en'">
+                        <img src="p-flag.png" ng-if="msg.lang == 'pl'">
+                    </div>
+                </li>
+                <li ng-show="msg.files.length > 0">
+                     <span ng-repeat="file in msg.files">
+                        <i class="fa fa-fw fa-paperclip"></i>{{file.name}}
+                         <br/>
+                    </span>
+                </li>
+                <li ng-show="msg.passwordEncryption">
+                    <i class="fa fa-fw fa-lock"></i>
+                    The message is encrypted. Make sure the recipients know the password to the given hint: <i>{{msg.passwordEncryption.hint}}</i>
+                </li>
+            </ul>
         </li>
-    </ol>
+    </ul>
 
     <div ng-show="!user.validAesKey">
         <p class="md-body-1">

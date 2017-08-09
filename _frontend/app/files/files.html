@@ -22,11 +22,15 @@
 
             <md-list>
                 <md-list-item ng-click="open_dir('file_misc');" ng-class="{selected_li: activeDir=='file_misc'}">
-                    <p>{{::i18n("%file.folder.file_misc%")}} [<b>{{files['file_misc'].length}}</b>]</p>
+                    <span>{{::i18n("%file.folder.file_misc%")}}</span>
+                    <span flex></span>
+                    <span><b>{{files['file_misc'].length}}</b></span>
                 </md-list-item>
                 <md-list-item ng-click="open_dir('file_encrypted');" ng-if="files['file_encrypted'].length > 0"
                               ng-class="{selected_li: activeDir=='file_encrypted'}">
-                    <p>{{::i18n("%file.folder.file_encrypted%")}} [<b>{{files['file_encrypted'].length}}</b>]</p>
+                    <span>{{::i18n("%file.folder.file_encrypted%")}}</span>
+                    <span flex></span>
+                    <span><b>{{files['file_encrypted'].length}}</b></span>
                 </md-list-item>
             </md-list>
 
