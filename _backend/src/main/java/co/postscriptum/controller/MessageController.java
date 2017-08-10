@@ -41,7 +41,7 @@ public class MessageController {
 
         Message message = messageService.removePassword(userData,
                                                         userEncryptionKeyService.requireEncryptionKey(),
-                                                        dto.uuid,
+                                                        dto.getUuid(),
                                                         dto.encryption_passwd);
 
         return messageService.convertToDto(userData, message);
@@ -52,7 +52,7 @@ public class MessageController {
 
         Message message = messageService.setPassword(userData,
                                                      userEncryptionKeyService.requireEncryptionKey(),
-                                                     dto.uuid,
+                                                     dto.getUuid(),
                                                      dto.encryption_passwd,
                                                      dto.encryption_passwd_new,
                                                      dto.hint);
@@ -63,16 +63,14 @@ public class MessageController {
     @PostMapping(value = "/decrypt")
     public MessageDTO decrypt(UserData userData, @Valid @RequestBody EncryptedMsgDTO dto) {
 
-        Message message = messageService.requireMessageByUuid(userData, dto.uuid);
+        Message message = userData.requireMessageByUuid(dto.getUuid());
         if (message.getEncryption() == null) {
             throw new BadRequestException("Expected encrypted message");
         }
 
         MessageDTO mdto = messageService.convertToDto(userData, message);
 
-        mdto.setContent(messageService.getMessageContent(message,
-                                                         userEncryptionKeyService.requireEncryptionKey(),
-                                                         dto.encryption_passwd));
+        mdto.setContent(message.getContent(userEncryptionKeyService.requireEncryptionKey(), dto.encryption_passwd));
 
         return mdto;
     }
@@ -88,14 +86,12 @@ public class MessageController {
     @PostMapping(value = "/load_msg")
     public MessageDTO loadMsg(UserData userData, @Valid @RequestBody UuidDTO dto) {
 
-        Message message = messageService.requireMessageByUuid(userData, dto.uuid);
+        Message message = userData.requireMessageByUuid(dto.getUuid());
 
         MessageDTO mdto = messageService.convertToDto(userData, message);
 
         if (message.getEncryption() == null) {
-            mdto.setContent(messageService.getMessageContent(message,
-                                                             userEncryptionKeyService.requireEncryptionKey(),
-                                                             null));
+            mdto.setContent(message.getContent(userEncryptionKeyService.requireEncryptionKey(), null));
         }
 
         return mdto;
@@ -103,7 +99,7 @@ public class MessageController {
 
     @PostMapping(value = "/delete_msg")
     public void deleteMsg(UserData userData, @Valid @RequestBody UuidDTO dto) {
-        messageService.deleteMessage(userData, dto.uuid);
+        messageService.deleteMessage(userData, dto.getUuid());
     }
 
     @PostMapping(value = "/add_msg")
@@ -111,13 +107,17 @@ public class MessageController {
 
         SecretKey encryptionKey = userEncryptionKeyService.requireEncryptionKey();
 
-        Message message = messageService.addMessage(userData, encryptionKey, dto);
+        Message message = messageService.addMessage(userData,
+                                                    encryptionKey,
+                                                    dto.getType(),
+                                                    dto.getRecipients(),
+                                                    dto.getAttachments(),
+                                                    dto.getTitle(),
+                                                    dto.getContent());
 
         MessageDTO mdto = messageService.convertToDto(userData, message);
 
-        if (message.getEncryption() == null) {
-            mdto.setContent(messageService.getMessageContent(message, encryptionKey, null));
-        }
+        mdto.setContent(message.getContent(encryptionKey, null));
 
         return mdto;
     }
@@ -131,7 +131,7 @@ public class MessageController {
 
         MessageDTO mdto = messageService.convertToDto(userData, message);
 
-        mdto.setContent(messageService.getMessageContent(message, encryptionKey, dto.encryption_passwd));
+        mdto.setContent(message.getContent(encryptionKey, dto.encryption_passwd));
 
         return mdto;
     }
@@ -150,15 +150,15 @@ public class MessageController {
     private static class SetMsgPasswordDTO extends UuidDTO {
 
         @Size(max = 20)
-        String encryption_passwd;
+        protected String encryption_passwd;
 
         @NotEmpty
         @Size(max = 20)
-        String encryption_passwd_new;
+        protected String encryption_passwd_new;
 
         @NotEmpty
         @Size(max = 100)
-        String hint;
+        protected String hint;
 
     }
 
@@ -168,22 +168,22 @@ public class MessageController {
 
         @NotNull
         @SafeHtml
-        String content;
+        protected String content;
 
         @NotNull
         @Size(max = 50)
-        String title;
+        protected String title;
 
         @NotNull
         @Size(max = 20)
-        List<String> recipients;
+        protected List<String> recipients;
 
         @NotNull
         @Size(max = 20)
-        List<String> attachments;
+        protected List<String> attachments;
 
         @NotNull
-        Type type;
+        protected Type type;
 
     }
 
@@ -192,23 +192,23 @@ public class MessageController {
     public static class UpdateMsgDTO extends UuidDTO {
 
         @SafeHtml
-        String content;
+        protected String content;
 
         @Size(max = 50)
-        String title;
+        protected String title;
 
         @Size(max = 20)
-        List<String> recipients;
+        protected List<String> recipients;
 
         @Size(max = 20)
-        List<String> attachments;
+        protected List<String> attachments;
 
-        Type type;
+        protected Type type;
 
         @Size(max = 20)
-        String encryption_passwd;
+        protected String encryption_passwd;
 
-        Lang lang;
+        protected Lang lang;
 
     }
 

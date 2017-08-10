@@ -2,16 +2,15 @@ package co.postscriptum.security;
 
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.UserData;
+import com.google.common.base.Splitter;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class VerifiedUsers {
 
@@ -23,13 +22,9 @@ public class VerifiedUsers {
 
     public VerifiedUsers(HttpServletRequest request, String salt) {
         this.salt = salt;
-        this.verified = new ArrayList<>(
-                Arrays.stream(
-                        Utils.getCookieValue(request, VERIFIED_USERS_COOKIE_NAME)
-                             .orElse("")
-                             .split("\\|"))
-                      .filter(vu -> vu.length() > 10)
-                      .collect(Collectors.toList()));
+        this.verified = Utils.getCookieValue(request, VERIFIED_USERS_COOKIE_NAME)
+                             .map(cookieValue -> Splitter.on('|').splitToList(cookieValue))
+                             .orElse(Collections.emptyList());
     }
 
     private String userHash(UserData userData) {

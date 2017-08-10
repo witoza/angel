@@ -1,5 +1,6 @@
 package co.postscriptum.model.bo;
 
+import co.postscriptum.exception.BadRequestException;
 import lombok.Data;
 
 import java.util.List;
@@ -23,6 +24,19 @@ public class RequiredAction {
     private Status status;
 
     private List<Resolution> resolutions;
+
+    public Resolution resolve(String userInput, String msg) {
+        if (status == Status.resolved) {
+            throw new BadRequestException("Already resolved");
+        }
+        Resolution resolution = new Resolution();
+        resolution.setCreatedTime(System.currentTimeMillis());
+        resolution.setUserInput(userInput);
+        resolution.setMsg(msg);
+        resolutions.add(resolution);
+        status = Status.resolved;
+        return resolution;
+    }
 
     public enum Status {
         resolved,

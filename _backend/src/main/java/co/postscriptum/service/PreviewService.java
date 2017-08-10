@@ -5,8 +5,6 @@ import co.postscriptum.db.Account;
 import co.postscriptum.db.DB;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
-import co.postscriptum.internal.FileEncryptionService;
-import co.postscriptum.internal.MessageContentUtils;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.BO2DTOConverter;
 import co.postscriptum.model.bo.File;
@@ -18,21 +16,18 @@ import co.postscriptum.security.AESGCMUtils;
 import co.postscriptum.security.AESKeyUtils;
 import co.postscriptum.security.UserEncryptionKeyService;
 import co.postscriptum.web.AuthenticationHelper;
+import com.google.common.collect.ImmutableMap;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -41,14 +36,14 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class PreviewService {
 
-    private final FileEncryptionService fileEncryptionService;
+    private final FileService fileService;
 
     private final DB db;
 
     private final UserEncryptionKeyService userEncryptionKeyService;
 
-    //can be invoked from normal mode and from preview
-    public ResponseEntity<InputStreamResource> download(PreviewController.DownloadFileDTO form) throws IOException {
+    // can be invoked from normal mode and from preview
+    public Pair<File, InputStream> download(PreviewController.DownloadFileDTO form) throws IOException {
 
         Account fileAccount = db.requireAccountByUuid(form.getUser_uuid());
         try {
@@ -57,9 +52,7 @@ public class PreviewService {
 
             UserData userData = fileAccount.getUserData();
 
-            UserDataHelper userDataHelper = new UserDataHelper(userData);
-
-            File file = userDataHelper.requireFileByUuid(form.getFile_uuid());
+            File file = userData.requireFileByUuid(form.getFile_uuid());
 
             log.info("Downloading file name: {}, uuid: {}", file.getName(), file.getUuid());
 
@@ -69,13 +62,13 @@ public class PreviewService {
 
                 log.info("Preview mode download");
 
-                Message message = userDataHelper.requireMessageByUuid(form.getMsg_uuid());
+                Message message = userData.requireMessageByUuid(form.getMsg_uuid());
 
                 if (!message.getAttachments().contains(file.getUuid())) {
                     throw new BadRequestException("File does not belong to that message");
                 }
 
-                ReleaseItemWithKey releaseItem = verifyCanPreviewMessage(fileAccount,
+                ReleaseItemWithKey releaseItem = verifyCanPreviewMessage(userData,
                                                                          message,
                                                                          form.getReleaseKey(),
                                                                          form.getEncryptionKey(),
@@ -99,28 +92,7 @@ public class PreviewService {
 
             }
 
-            InputStream cfin = fileEncryptionService.getDecryptedFileStream(file,
-                                                                            userData.getUser(),
-                                                                            encryptionKey,
-                                                                            form.getEncryptionPassword());
-
-
-            String fileName = file.getName();
-
-            String extension = FilenameUtils.getExtension(file.getName());
-            if (StringUtils.isEmpty(extension)) {
-                if (file.getMime().equals("video/webm")) {
-                    fileName = fileName + ".webm";
-                } else {
-                    log.warn("Possible issue with download file content type");
-                }
-            }
-
-            return ResponseEntity
-                    .ok()
-                    .header(HttpHeaders.CONTENT_TYPE, file.getMime())
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                    .body(new InputStreamResource(cfin));
+            return Pair.of(file, fileService.getFileContent(userData, file, encryptionKey, form.getEncryptionPassword()));
 
         } finally {
             fileAccount.unlock();
@@ -135,20 +107,18 @@ public class PreviewService {
         try {
             return AESKeyUtils.toSecretKey(Utils.base32decode(aesKey));
         } catch (Exception e) {
-            log.warn("Provided data is not a proper AES key: {}", Utils.exceptionInfo(e));
+            log.warn("Provided data is not a proper AES key: {}", Utils.basicExceptionInfo(e));
         }
         return null;
     }
 
-    private ReleaseItemWithKey verifyCanPreviewMessage(Account messageAccount,
+    private ReleaseItemWithKey verifyCanPreviewMessage(UserData userData,
                                                        Message message,
                                                        String releaseKey,
                                                        String userEncryptionKey,
                                                        String recipientKey) {
 
-        UserDataHelper userDataHelper = new UserDataHelper(messageAccount.getUserData());
-
-        if (AuthenticationHelper.isUserLogged(messageAccount.getUserData().getUser().getUsername())) {
+        if (AuthenticationHelper.isUserLogged(userData.getUser().getUsername())) {
 
             log.info("Logged account is the owner of the message");
 
@@ -167,13 +137,10 @@ public class PreviewService {
             throw new ForbiddenException("Message hasn't been yet released");
         }
 
-        ReleaseItem releaseItem = userDataHelper.requireReleaseItem(message, releaseKey);
-
+        ReleaseItem releaseItem = message.requireReleaseItem(releaseKey);
         if (releaseItem.getFirstTimeAccess() == 0) {
             releaseItem.setFirstTimeAccess(System.currentTimeMillis());
-
-            userDataHelper.addNotification(
-                    "Message '" + message.getTitle() + "' has been first time accessed by " + releaseItem.getRecipient());
+            userData.addNotification("Message '" + message.getTitle() + "' has been first time accessed by " + releaseItem.getRecipient());
         }
 
         if (releaseItem.getUserEncryptionKeyEncodedByRecipientKey() == null) {
@@ -203,13 +170,13 @@ public class PreviewService {
 
             UserData userData = account.getUserData();
 
-            Message message = new UserDataHelper(userData).requireMessageByUuid(params.getMsg_uuid());
+            Message message = userData.requireMessageByUuid(params.getMsg_uuid());
 
             if (message.getEncryption() == null) {
                 throw new BadRequestException("Expected encrypted message");
             }
 
-            ReleaseItemWithKey releaseItem = verifyCanPreviewMessage(account,
+            ReleaseItemWithKey releaseItem = verifyCanPreviewMessage(userData,
                                                                      message,
                                                                      params.getReleaseKey(),
                                                                      params.getEncryptionKey(),
@@ -223,7 +190,7 @@ public class PreviewService {
             MessageDTO mdto = BO2DTOConverter.toMessageDTO(message);
             mdto.setReleaseItem(releaseItem.releaseItem);
             try {
-                mdto.setContent(MessageContentUtils.getMessageContent(message, encryptionKey, params.getEncryptionPassword()));
+                mdto.setContent(message.getContent(encryptionKey, params.getEncryptionPassword()));
             } catch (Exception e) {
                 throw new ForbiddenException("Invalid password", e);
             }
@@ -235,18 +202,15 @@ public class PreviewService {
 
     }
 
-    private byte[] decryptFirstLayer(Message message, SecretKey encryptionKey) {
-        return AESGCMUtils.decrypt(encryptionKey, message.getContent(), MessageContentUtils.aads(message));
-    }
-
     public Map<String, Object> requireMessage(PreviewController.PreviewBaseDTO params) {
 
         return db.withLoadedAccountByUuid(params.getUser_uuid(), account -> {
             UserData userData = account.getUserData();
 
-            Message message = new UserDataHelper(userData).requireMessageByUuid(params.getMsg_uuid());
+            Message message = userData.requireMessageByUuid(params.getMsg_uuid());
 
-            ReleaseItemWithKey releaseItem = verifyCanPreviewMessage(account, message,
+            ReleaseItemWithKey releaseItem = verifyCanPreviewMessage(userData,
+                                                                     message,
                                                                      params.getReleaseKey(),
                                                                      params.getEncryptionKey(),
                                                                      params.getRecipientKey());
@@ -260,12 +224,10 @@ public class PreviewService {
 
                 byte[] raw = null;
                 try {
-
-                    raw = decryptFirstLayer(message, releaseItem.getEncryptionKey());
+                    raw = message.decryptFirstLayerContent(releaseItem.getEncryptionKey());
                     encryptionKeyValid = true;
-
                 } catch (Exception e) {
-                    log.warn("Invalid EncryptionKey: {}", Utils.exceptionInfo(e));
+                    log.warn("Invalid EncryptionKey: {}", Utils.basicExceptionInfo(e));
                 }
 
                 // 'content' should be set only when message not password protected
@@ -276,12 +238,11 @@ public class PreviewService {
 
             }
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("msg", mdto);
-            data.put("invalid_aes_key", !encryptionKeyValid);
-            data.put("from", userData.getInternal().getScreenName() + " (" + userData.getUser().getUsername() + ")");
-            data.put("lang", ObjectUtils.firstNonNull(message.getLang(), userData.getInternal().getLang()));
-            return data;
+            return ImmutableMap.of(
+                    "msg", mdto,
+                    "invalid_aes_key", !encryptionKeyValid,
+                    "from", userData.getInternal().getScreenName() + " (" + userData.getUser().getUsername() + ")",
+                    "lang", ObjectUtils.firstNonNull(message.getLang(), userData.getInternal().getLang()));
         });
 
     }

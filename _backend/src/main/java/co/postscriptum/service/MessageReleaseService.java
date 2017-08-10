@@ -2,13 +2,11 @@ package co.postscriptum.service;
 
 import co.postscriptum.email.Envelope;
 import co.postscriptum.email.EnvelopeType;
-import co.postscriptum.internal.I18N;
 import co.postscriptum.internal.ReleasedMessagesDetails;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.job.EmailProcessor;
 import co.postscriptum.model.bo.Lang;
 import co.postscriptum.model.bo.Message;
-import co.postscriptum.model.bo.Release;
 import co.postscriptum.model.bo.ReleaseItem;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.security.AESGCMUtils;
@@ -19,9 +17,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,55 +34,75 @@ public class MessageReleaseService {
 
     private final EmailProcessor emailProcessor;
 
-    public static ReleaseItem createReleaseItem(Message message, String recipient) {
-        if (message.getRelease() == null) {
-            message.setRelease(Release.builder()
-                                      .releaseTime(System.currentTimeMillis())
-                                      .items(new ArrayList<>())
-                                      .build());
+    public ReleasedMessagesDetails releaseMessages(UserData userData, Optional<SecretKey> userEncryptionKeyOpt) {
+
+        log.info("Releasing outbox messages for user.uuid: {}, hasUserEncryptionKey: {}",
+                 userData.getUser().getUuid(),
+                 userEncryptionKeyOpt.isPresent());
+
+        ReleasedMessagesDetails details = new ReleasedMessagesDetails();
+
+        List<Message> outboxMessages = getOutboxMessages(userData);
+        if (outboxMessages.isEmpty()) {
+            log.info("Nothing to send in outbox");
+            return details;
         }
 
-        ReleaseItem releaseItem = new ReleaseItem();
-        releaseItem.setKey(Utils.randKey("RK"));
-        releaseItem.setReminders(new ArrayList<>());
-        releaseItem.setRecipient(recipient);
+        outboxMessages.forEach(message -> {
+            details.add(releaseMessage(userData, message, userEncryptionKeyOpt));
+        });
 
-        message.getRelease().getItems().add(releaseItem);
 
-        return releaseItem;
+        return details;
     }
 
-    public String toHumanReadable(Lang lang, ReleasedMessagesDetails releaseDetails) {
+    public void sendToOwnerReleasedMessageSummary(UserData userData, ReleasedMessagesDetails details) {
+        log.info("Sending email to user.uuid: {} about released messages", userData.getUser().getUuid());
+
+        Map<String, Object> context = new HashMap<>();
+        context.put("release_msgs_report", toHumanReadable(details, userData.getInternal().getLang()));
+
+        emailProcessor.enqueue(envelopeCreatorService.create(EnvelopeType.RELEASE_SUMMARY,
+                                                             userData,
+                                                             userData.getUser().getUsername(),
+                                                             "sent_messages_summary",
+                                                             context));
+    }
+
+    public String toHumanReadable(ReleasedMessagesDetails releaseDetails, Lang lang) {
         if (releaseDetails.getDetails().isEmpty()) {
             return "Nothing to send in Outbox";
         }
 
-        String i18n_message = i18n.translate(lang, "%sent_messages_summary.message%");
+        String i18nValidRecipient = i18n.translate(lang, "%sent_messages_summary.message_about_to_send%");
+
+        String i18nInvalidRecipient = i18n.translate(lang, "%sent_messages_summary.message_cant_sent%");
+
+        String i18nMessageTitle = i18n.translate(lang, "%sent_messages_summary.message%");
 
         StringBuilder sb = new StringBuilder();
 
-        releaseDetails.getDetails().forEach(pair -> {
-            String messageTitle = pair.getKey();
-            Map<String, String> recipientsStatus = pair.getValue();
+        releaseDetails.getDetails().forEach(releasedMessage -> {
+            sb.append(i18nMessageTitle + " '" + releasedMessage.getMessageTitle() + "':");
 
-            sb.append(i18n_message + " '" + messageTitle + "':");
-
-            if (recipientsStatus.isEmpty()) {
+            if (releasedMessage.getSentToRecipients().isEmpty() && releasedMessage.getInvalidRecipients().isEmpty()) {
                 sb.append("\nNo recipients");
             }
 
-            recipientsStatus.forEach((recipient, status) -> {
-                sb.append("\n - " + recipient + ": ").append(i18n.translate(lang, status));
+            releasedMessage.getSentToRecipients().forEach(recipient -> {
+                sb.append("\n - " + recipient + ": " + i18nValidRecipient);
             });
 
-            sb.append("\n\n");
+            releasedMessage.getInvalidRecipients().forEach(recipient -> {
+                sb.append("\n - " + recipient + ": " + i18nInvalidRecipient);
+            });
 
         });
 
         return sb.toString();
     }
 
-    private Map<String, String> releaseMessage(UserData userData, Message message, Optional<SecretKey> userEncryptionKeyOpt) {
+    private ReleasedMessagesDetails.ReleasedMessage releaseMessage(UserData userData, Message message, Optional<SecretKey> userEncryptionKeyOpt) {
 
         log.info("Releasing message.uuid: {} to recipients: {}", message.getUuid(), message.getRecipients());
 
@@ -96,20 +112,20 @@ public class MessageReleaseService {
 
         Lang lang = ObjectUtils.firstNonNull(message.getLang(), userData.getInternal().getLang());
 
-        Map<String, String> recipientsStatus = new LinkedHashMap<>();
+        ReleasedMessagesDetails.ReleasedMessage releasedMessage = new ReleasedMessagesDetails.ReleasedMessage(message.getTitle());
 
         for (String originalRecipient : message.getRecipients()) {
 
             String recipient = originalRecipient.trim();
 
             if (!Utils.isValidEmail(recipient)) {
-                recipientsStatus.put(recipient, "%sent_messages_summary.message_cant_sent%");
+                releasedMessage.getInvalidRecipients().add(recipient);
                 continue;
             }
 
             log.info("Valid recipient: {}", recipient);
 
-            ReleaseItem release = createReleaseItem(message, recipient);
+            ReleaseItem release = message.addReleaseItem(recipient);
 
             Map<String, Object> context = new HashMap<>();
             context.put("msg", message);
@@ -136,30 +152,11 @@ public class MessageReleaseService {
 
             emailProcessor.enqueue(messageEnvelope);
 
-            recipientsStatus.put(recipient, "%sent_messages_summary.message_about_to_send%");
+            releasedMessage.getSentToRecipients().add(recipient);
+
         }
 
-        return recipientsStatus;
-    }
-
-    public ReleasedMessagesDetails releaseMessages(UserData userData, Optional<SecretKey> userEncryptionKeyOpt) {
-
-        log.info("Releasing outbox messages for user.uuid: {}, hasUserEncryptionKey: {}",
-                 userData.getUser().getUuid(), userEncryptionKeyOpt.isPresent());
-
-        ReleasedMessagesDetails details = new ReleasedMessagesDetails();
-
-        List<Message> outboxMessages = getOutboxMessages(userData);
-        if (outboxMessages.isEmpty()) {
-            log.info("Nothing to send in outbox");
-            return details;
-        }
-
-        for (Message message : outboxMessages) {
-            details.add(message, releaseMessage(userData, message, userEncryptionKeyOpt));
-        }
-
-        return details;
+        return releasedMessage;
     }
 
     private List<Message> getOutboxMessages(UserData userData) {
@@ -167,20 +164,6 @@ public class MessageReleaseService {
                        .stream()
                        .filter(m -> m.getType() == Message.Type.outbox)
                        .collect(Collectors.toList());
-    }
-
-    public void sendToOwnerReleasedMessageSummary(UserData userData, ReleasedMessagesDetails details) {
-
-        log.info("Sending email to user.uuid: {} about released messages", userData.getUser().getUuid());
-
-        Map<String, Object> context = new HashMap<>();
-        context.put("release_msgs_report", toHumanReadable(userData.getInternal().getLang(), details));
-
-        emailProcessor.enqueue(envelopeCreatorService.create(EnvelopeType.RELEASE_SUMMARY,
-                                                             userData,
-                                                             userData.getUser().getUsername(),
-                                                             "sent_messages_summary",
-                                                             context));
     }
 
 }

@@ -1,4 +1,4 @@
-package co.postscriptum.internal;
+package co.postscriptum.service;
 
 import co.postscriptum.model.bo.Lang;
 import com.github.mustachejava.DefaultMustacheFactory;

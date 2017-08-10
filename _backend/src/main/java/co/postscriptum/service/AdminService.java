@@ -4,7 +4,6 @@ import co.postscriptum.db.Account;
 import co.postscriptum.db.DB;
 import co.postscriptum.email.UserEmailService;
 import co.postscriptum.exception.BadRequestException;
-import co.postscriptum.exception.ExceptionBuilder;
 import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.Params;
 import co.postscriptum.internal.ReleasedMessagesDetails;
@@ -31,9 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -48,12 +45,40 @@ public class AdminService {
 
     private final ShortTimeKeyService shortTimeKeyService;
 
-    public List<RequiredAction> getRequiredAction(UserData userData, Status status) {
-        return userData.getRequiredActions()
-                       .stream()
-                       .filter(ra -> ra.getStatus() == status)
-                       .collect(Collectors.toList());
+    public Optional<RSAOAEPEncrypted> getUserEncryptionKeyEncryptedByAdminPublicKey(String userUuid) {
+        log.info("Get user.uuid: {} encrypted EncryptionKey", userUuid);
 
+        return Optional.ofNullable(db.withLoadedAccountByUuid(userUuid, account -> {
+            return account.getUserData().getInternal().getEncryptionKeyEncryptedByAdminPublicKey();
+        }));
+    }
+
+    public void removeIssue(UserData userData, String issueUuid) {
+        log.info("Removing issue.uuid: {}", issueUuid);
+
+        userData.requireRequiredActionByUuid(issueUuid);
+
+        userData.getRequiredActions()
+                .removeIf(ar -> ar.getUuid().equals(issueUuid));
+
+    }
+
+    public Resolution rejectIssue(UserData userData, String issueUuid, String input) {
+
+        RequiredAction requiredAction = userData.requireRequiredActionByUuid(issueUuid);
+
+        verifyNotResolved(requiredAction);
+
+        return requiredAction.resolve(input, "issue manually rejected");
+    }
+
+    public Resolution resolveIssue(UserData userData, String issueUuid, String input, String userEncryptionKeyBase64) {
+
+        RequiredAction requiredAction = userData.requireRequiredActionByUuid(issueUuid);
+
+        verifyNotResolved(requiredAction);
+
+        return requiredAction.resolve(input, resolveIssueImpl(input, toSecretKey(userEncryptionKeyBase64), requiredAction));
     }
 
     private String resolveIssueImpl(String adminInput, SecretKey userEncryptionKey, RequiredAction item) {
@@ -96,7 +121,7 @@ public class AdminService {
             }
 
             if (returnMessage != null) {
-                new UserDataHelper(userData).addNotification(returnMessage);
+                userData.addNotification(returnMessage);
             }
 
             return returnMessage;
@@ -127,7 +152,7 @@ public class AdminService {
 
         userData.getUser().getTrigger().setReleasedTime(System.currentTimeMillis());
 
-        return "User messages have been released:\n" + messageReleaseService.toHumanReadable(internal.getLang(), details);
+        return "User messages have been released:\n" + messageReleaseService.toHumanReadable(details, internal.getLang());
     }
 
     private void cmdAccountCanBeRemoved(Account account) {
@@ -139,28 +164,16 @@ public class AdminService {
             throw new BadRequestException("Admin input is required");
         }
 
-        String releaseItemKey = params.require(AccountRemoverJob.RELEASE_ITEM_KEY);
-        String remainderUuid = params.require(AccountRemoverJob.REMAINDER_UUID);
-
-        Message message = new UserDataHelper(userData)
-                .requireMessageByUuid(params.require(AccountRemoverJob.RELEASE_ITEM_MESSAGE_UUID));
-
+        Message message = userData.requireMessageByUuid(params.require(AccountRemoverJob.RELEASE_ITEM_MESSAGE_UUID));
         if (message.getRelease() == null) {
             return "There is no Release on the message, user must have resurrected";
         }
 
-        ReleaseItem releaseItem = new UserDataHelper(userData).requireReleaseItem(message, releaseItemKey);
+        ReleaseItem releaseItem = message.requireReleaseItem(params.require(AccountRemoverJob.RELEASE_ITEM_KEY));
 
-        Reminder remainder = releaseItem
-                .getReminders()
-                .stream()
-                .filter(r -> r.getUuid().equals(remainderUuid))
-                .findFirst()
-                .orElseThrow(ExceptionBuilder.missingClass(Reminder.class, "uuid=" + remainderUuid));
+        Reminder remainder = releaseItem.requireReminder(params.require(AccountRemoverJob.REMAINDER_UUID));
 
-        remainder.setResolvedTime(System.currentTimeMillis());
-        remainder.setResolved(true);
-        remainder.setInput(adminInput);
+        remainder.resolve(adminInput);
 
         return "Recipient " + releaseItem.getRecipient() + " has been manually contacted: " + adminInput;
     }
@@ -197,34 +210,11 @@ public class AdminService {
         return "Storage size increase of " + numberOfMb + " MB has been granted";
     }
 
+
     private void verifyNotResolved(RequiredAction requiredAction) {
         if (requiredAction.getStatus() == Status.resolved) {
-            throw new BadRequestException("issue has already been resolved");
+            throw new BadRequestException("Issue has already been resolved");
         }
-    }
-
-    public void removeIssue(UserData userData, String issueUuid) {
-        log.info("Removing issue.uuid: {}", issueUuid);
-
-        requireRequiredActionByUuid(userData, issueUuid);
-
-        userData.getRequiredActions()
-                .removeIf(ar -> ar.getUuid().equals(issueUuid));
-
-    }
-
-    public String getUserEncryptedEncryptionKey(String userUuid) {
-        log.info("Get user.uuid: {} encrypted EncryptionKey", userUuid);
-
-        RSAOAEPEncrypted encrypted = db.withLoadedAccountByUuid(userUuid, account -> {
-            return account.getUserData().getInternal().getEncryptionKeyEncryptedByAdminPublicKey();
-        });
-
-        if (encrypted == null) {
-            return "";
-        }
-
-        return Utils.base64encode(encrypted.getCt());
     }
 
     private SecretKey toSecretKey(String userEncryptionKeyBase64) {
@@ -236,47 +226,6 @@ public class AdminService {
         } catch (Exception e) {
             throw new BadRequestException("The user encryption key is invalid", e);
         }
-    }
-
-    public Resolution rejectIssue(UserData userData, String issueUuid, String input) {
-
-        RequiredAction requiredAction = requireRequiredActionByUuid(userData, issueUuid);
-
-        verifyNotResolved(requiredAction);
-
-        Resolution resolution = new Resolution();
-        resolution.setCreatedTime(System.currentTimeMillis());
-        resolution.setUserInput(input);
-        resolution.setMsg("issue manually rejected");
-
-        requiredAction.getResolutions().add(resolution);
-        requiredAction.setStatus(Status.resolved);
-        return resolution;
-    }
-
-    public Resolution resolveIssue(UserData userData, String issueUuid, String input, String userEncryptionKeyBase64) {
-
-        RequiredAction requiredAction = requireRequiredActionByUuid(userData, issueUuid);
-
-        verifyNotResolved(requiredAction);
-
-        Resolution resolution = new Resolution();
-        resolution.setCreatedTime(System.currentTimeMillis());
-        resolution.setUserInput(input);
-        resolution.setMsg(resolveIssueImpl(input, toSecretKey(userEncryptionKeyBase64), requiredAction));
-
-        requiredAction.getResolutions().add(resolution);
-        requiredAction.setStatus(Status.resolved);
-        return resolution;
-    }
-
-    private RequiredAction requireRequiredActionByUuid(UserData userData, String actionUuid) {
-
-        return userData.getRequiredActions()
-                       .stream()
-                       .filter(ra -> ra.getUuid().equals(actionUuid))
-                       .findFirst()
-                       .orElseThrow(ExceptionBuilder.missingClass(RequiredAction.class, "uuid=" + actionUuid));
     }
 
 }

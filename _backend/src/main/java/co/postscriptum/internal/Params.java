@@ -1,6 +1,6 @@
 package co.postscriptum.internal;
 
-import co.postscriptum.exception.BadRequestException;
+import co.postscriptum.exception.InternalException;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +27,7 @@ public class Params {
     public <T> T require(String name) {
         T value = get(name);
         if (value == null) {
-            throw new BadRequestException(String.format("missing required param '%s'", name));
+            throw new InternalException(String.format("missing required param '%s'", name));
         }
         return value;
     }

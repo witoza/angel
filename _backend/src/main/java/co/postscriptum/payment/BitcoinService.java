@@ -7,13 +7,11 @@ import co.postscriptum.model.bo.PaymentAddress;
 import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.bo.UserPlan;
-import co.postscriptum.service.UserDataHelper;
 import lombok.AllArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 @Component
@@ -45,20 +43,15 @@ public class BitcoinService {
             String msg = "Payment of " + value + " Satoshi has been sent to BTC address " +
                     userData.getUser().getPaymentAddress().getBtcAddress() + " in transaction " + transactionHash;
 
-            UserPlan userPlan = userData.getInternal().getUserPlan();
-            if (userPlan.getPayments() == null) {
-                userPlan.setPayments(new ArrayList<>());
-            }
-            userPlan.getPayments().add(UserPlan.Payment.builder()
-                                                       .time(System.currentTimeMillis())
-                                                       .amount(value + " Satoshi")
-                                                       .details(msg)
-                                                       .build());
+            userData.getInternal().getUserPlan().addPayment(
+                    UserPlan.Payment.builder()
+                                    .time(System.currentTimeMillis())
+                                    .amount(value + " Satoshi")
+                                    .details(msg)
+                                    .build());
 
-            userPlan.setPaidUntil(System.currentTimeMillis() + Utils.daysInMs(356));
             userData.getUser().setPaymentAddress(null);
-
-            new UserDataHelper(userData).addNotification(msg + ".\nYour account has been extended for another year.");
+            userData.addNotification(msg + ".\nYour account has been extended for another year.");
 
         });
 

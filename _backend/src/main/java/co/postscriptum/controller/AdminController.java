@@ -2,6 +2,7 @@ package co.postscriptum.controller;
 
 import co.postscriptum.controller.dto.UuidDTO;
 import co.postscriptum.db.DB;
+import co.postscriptum.internal.Utils;
 import co.postscriptum.metrics.ComponentMetrics;
 import co.postscriptum.metrics.EmailDeliveryMetrics;
 import co.postscriptum.metrics.JVMMetrics;
@@ -28,6 +29,7 @@ import javax.validation.constraints.Size;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin")
@@ -46,27 +48,35 @@ public class AdminController {
 
     @PostMapping("/with_status")
     public List<RequiredAction> withStatus(UserData userData, @Valid @RequestBody StatusDTO dto) {
-        return adminService.getRequiredAction(userData, dto.status);
+        return userData.getRequiredActions()
+                       .stream()
+                       .filter(ra -> ra.getStatus() == dto.getStatus())
+                       .collect(Collectors.toList());
     }
 
     @PostMapping("/get_user_encrypted_encryption_key")
     public Map<String, String> getUserEncryptedEncryptionKey(@Valid @RequestBody UuidDTO dto) {
-        return Collections.singletonMap("data", adminService.getUserEncryptedEncryptionKey(dto.uuid));
+
+        String encryptionKey = adminService.getUserEncryptionKeyEncryptedByAdminPublicKey(dto.getUuid())
+                                           .map(encrypted -> Utils.base64encode(encrypted.getCt()))
+                                           .orElse("");
+
+        return Collections.singletonMap("data", encryptionKey);
     }
 
     @PostMapping("/issue_reject")
     public Resolution rejectIssue(UserData userData, @Valid @RequestBody RejectIssueDTO dto) {
-        return adminService.rejectIssue(userData, dto.uuid, dto.input);
+        return adminService.rejectIssue(userData, dto.getUuid(), dto.input);
     }
 
     @PostMapping("/issue_remove")
     public void removeIssue(UserData userData, @Valid @RequestBody UuidDTO dto) {
-        adminService.removeIssue(userData, dto.uuid);
+        adminService.removeIssue(userData, dto.getUuid());
     }
 
     @PostMapping("/issue_resolve")
     public Resolution resolveIssue(UserData userData, @Valid @RequestBody ResolveIssueDTO dto) {
-        return adminService.resolveIssue(userData, dto.uuid, dto.input, dto.userEncryptionKeyBase64);
+        return adminService.resolveIssue(userData, dto.getUuid(), dto.input, dto.userEncryptionKeyBase64);
     }
 
     @GetMapping(value = "/metrics", produces = "text/plain")
@@ -89,7 +99,7 @@ public class AdminController {
     public static class StatusDTO {
 
         @NotNull
-        Status status;
+        protected Status status;
 
     }
 
@@ -98,7 +108,7 @@ public class AdminController {
     public static class RejectIssueDTO extends UuidDTO {
 
         @Size(max = 100)
-        String input;
+        protected String input;
 
     }
 
@@ -107,7 +117,7 @@ public class AdminController {
     public static class ResolveIssueDTO extends RejectIssueDTO {
 
         @Size(max = 60)
-        String userEncryptionKeyBase64;
+        protected String userEncryptionKeyBase64;
 
     }
 

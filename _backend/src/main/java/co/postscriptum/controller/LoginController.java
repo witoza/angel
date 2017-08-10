@@ -12,6 +12,7 @@ import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.service.CaptchaService;
 import co.postscriptum.service.LoginService;
 import co.postscriptum.web.AuthenticationHelper;
+import co.postscriptum.web.ResponseEntityUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -67,7 +68,7 @@ public class LoginController {
 
         try {
             Authentication authentication = loginService.register(dto.shortTimeKey,
-                                                                  dto.passwd,
+                                                                  dto.getPasswd(),
                                                                   dto.lang,
                                                                   new RequestMetadata(request),
                                                                   verifiedUsers);
@@ -79,7 +80,6 @@ public class LoginController {
         } catch (Exception e) {
             throw new InternalError("Can't register user", e);
         }
-
 
         verifiedUsers.updateCookie(response);
         generateNewCSRFToken(request, response);
@@ -141,7 +141,7 @@ public class LoginController {
     @GetMapping("/recall_totp_details_qr")
     public ResponseEntity<InputStreamResource> recallTotpDetailsQr(@RequestParam("key") String key) {
         try {
-            return loginService.recallTotpKeyDetailsQr(key);
+            return ResponseEntityUtils.asPng(loginService.recallTotpKeyDetailsQr(key));
         } catch (Exception e) {
             throw new ForbiddenException("Invalid parameters", e);
         }
@@ -171,7 +171,7 @@ public class LoginController {
         try {
             loginService.resetPassword(dto.username);
         } catch (IllegalArgumentException | ForbiddenException e) {
-            log.warn("Problem while resetting password: {}", Utils.exceptionInfo(e));
+            log.warn("Problem while resetting password: {}", Utils.basicExceptionInfo(e));
         } catch (Exception e) {
             log.error("Error while resetting password", e);
         }
@@ -198,7 +198,7 @@ public class LoginController {
         @Email
         @NotEmpty
         @Size(max = 50)
-        public String username;
+        protected String username;
 
     }
 
@@ -208,7 +208,7 @@ public class LoginController {
 
         @NotEmpty
         @Size(min = 3, max = 30)
-        public String passwd;
+        protected String passwd;
 
     }
 
@@ -217,7 +217,7 @@ public class LoginController {
     public static class PreregisterDTO extends UsernameDTO {
 
         @NotNull
-        Lang lang;
+        protected Lang lang;
 
     }
 
@@ -227,10 +227,10 @@ public class LoginController {
 
         @NotEmpty
         @Size(min = 32, max = 32)
-        String shortTimeKey;
+        protected String shortTimeKey;
 
         @NotNull
-        Lang lang;
+        protected Lang lang;
 
     }
 
@@ -239,10 +239,10 @@ public class LoginController {
     public static class LoginDTO extends UsernamePasswordDTO {
 
         @Size(min = 6, max = 6)
-        String totpToken;
+        protected String totpToken;
 
         @Size(min = 32, max = 32)
-        String loginToken;
+        protected String loginToken;
 
     }
 
@@ -253,18 +253,18 @@ public class LoginController {
         @NotEmpty
         @Email
         @Size(max = 50)
-        String from;
+        protected String from;
 
         @NotEmpty
         @Size(max = 50)
-        String title;
+        protected String title;
 
         @NotEmpty
         @Size(max = 1000)
-        String content;
+        protected String content;
 
         @Size(max = 1024)
-        String myRecaptchaResponse;
+        protected String myRecaptchaResponse;
 
     }
 
@@ -274,15 +274,15 @@ public class LoginController {
 
         @NotEmpty
         @Size(min = 32, max = 32)
-        String reset_passwd_key;
+        protected String reset_passwd_key;
 
         @NotEmpty
         @Size(max = 80)
-        String secret;
+        protected String secret;
 
         @NotEmpty
         @Size(min = 3, max = 30)
-        String passwd_new;
+        protected String passwd_new;
 
     }
 

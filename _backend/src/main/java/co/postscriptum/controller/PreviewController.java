@@ -1,10 +1,13 @@
 package co.postscriptum.controller;
 
+import co.postscriptum.model.bo.File;
 import co.postscriptum.model.dto.MessageDTO;
 import co.postscriptum.service.PreviewService;
+import co.postscriptum.web.ResponseEntityUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 @RestController
@@ -28,7 +32,12 @@ public class PreviewController {
 
     @PostMapping("/download")
     public ResponseEntity<InputStreamResource> download(@Valid @ModelAttribute DownloadFileDTO dto) throws IOException {
-        return previewService.download(dto);
+
+        Pair<File, InputStream> fileContent = previewService.download(dto);
+
+        return ResponseEntityUtils.asAttachment(fileContent.getRight(),
+                                                fileContent.getLeft().getMime(),
+                                                fileContent.getKey().getFilename());
     }
 
     @PostMapping("/decrypt")
@@ -46,23 +55,23 @@ public class PreviewController {
     public static class PreviewBaseDTO {
 
         @Size(max = 80)
-        String encryptionKey;
+        protected String encryptionKey;
 
         @Size(max = 60)
-        String recipientKey;
+        protected String recipientKey;
 
         @Size(max = 60)
-        String releaseKey;
+        protected String releaseKey;
 
         @Size(max = 20)
-        String encryptionPassword;
+        protected String encryptionPassword;
 
         @NotEmpty
         @Size(min = 30, max = 50)
-        String user_uuid;
+        protected String user_uuid;
 
         @Size(max = 34)
-        String msg_uuid;
+        protected String msg_uuid;
 
     }
 
@@ -72,7 +81,7 @@ public class PreviewController {
 
         @NotEmpty
         @Size(min = 34, max = 35)
-        String file_uuid;
+        protected String file_uuid;
 
     }
 

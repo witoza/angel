@@ -28,6 +28,7 @@ public enum EnvelopeType {
 
     // should user get report about success/fail of sending that message
     private final boolean reportSuccess;
+
     private final boolean reportFailure;
 
     EnvelopeType(boolean durable, boolean reportSuccess, boolean reportFailure) {

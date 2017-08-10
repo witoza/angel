@@ -78,4 +78,28 @@ public class Account {
         return userData;
     }
 
+    public void loadUserData(UserData fromUserData) {
+        if (isLoaded()) {
+            throw new InternalException("Can't load to loaded user");
+        }
+        userData.setInternal(fromUserData.getInternal());
+        userData.setMessages(fromUserData.getMessages());
+        userData.setFiles(fromUserData.getFiles());
+        userData.setNotifications(fromUserData.getNotifications());
+        userData.setRequiredActions(fromUserData.getRequiredActions());
+        setLoaded(true);
+    }
+
+    public void unloadUserData() {
+        if (!isLoaded()) {
+            throw new InternalException("Can't unload from unloaded user");
+        }
+        userData.setInternal(null);
+        userData.setMessages(null);
+        userData.setFiles(null);
+        userData.setNotifications(null);
+        userData.setRequiredActions(null);
+        setLoaded(false);
+    }
+
 }

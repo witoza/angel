@@ -2,7 +2,7 @@ package co.postscriptum.service
 
 import co.postscriptum.email.Envelope
 import co.postscriptum.email.EnvelopeType
-import co.postscriptum.internal.I18N
+import co.postscriptum.internal.ReleasedMessagesDetails
 import co.postscriptum.job.EmailProcessor
 import co.postscriptum.model.bo.DataFactory
 import co.postscriptum.model.bo.Lang
@@ -25,6 +25,10 @@ class MessageReleaseServiceSpec extends Specification {
     MessageReleaseService messageReleaseService
 
     def setup() {
+        i18n.translate(Lang.en, _ as String) >> { arguments ->
+            return "i18nd(" + arguments[1] + ")"
+        }
+
         i18n.translate(Lang.en, _ as String, _ as Map) >> { arguments ->
             return "i18nd(" + arguments[1] + ")"
         }
@@ -75,27 +79,22 @@ class MessageReleaseServiceSpec extends Specification {
         details = messageReleaseService.releaseMessages(userData, Optional.empty())
 
         then:
-        details.getDetails().size() == 1
-        details.getDetails()[0].key == 'title'
-        details.getDetails()[0].value == [:]
+        validateReleasedMessagesDetails(details, message.getTitle(), [], [])
 
         when: /invalid recipient/
         message.setRecipients(["bademail@@dd"])
         details = messageReleaseService.releaseMessages(userData, Optional.empty())
 
         then:
-        details.getDetails().size() == 1
-        details.getDetails()[0].key == 'title'
-        details.getDetails()[0].value == ['bademail@@dd': '%sent_messages_summary.message_cant_sent%']
+        validateReleasedMessagesDetails(details, message.getTitle(), [], ['bademail@@dd'])
 
         when: /valid recipient, no EncryptionKey/
         message.setRecipients(["test@test.com"])
         details = messageReleaseService.releaseMessages(userData, Optional.empty())
 
         then:
-        details.getDetails().size() == 1
-        details.getDetails()[0].key == 'title'
-        details.getDetails()[0].value == ['test@test.com': '%sent_messages_summary.message_about_to_send%']
+        validateReleasedMessagesDetails(details, message.getTitle(), ['test@test.com'], [])
+
         1 * emailProcessor.enqueue(_ as Envelope)
 
         when: /valid recipient, with EncryptionKey/
@@ -103,14 +102,35 @@ class MessageReleaseServiceSpec extends Specification {
         details = messageReleaseService.releaseMessages(userData, Optional.of(AESKeyUtils.generateRandomKey()))
 
         then:
-        details.getDetails().size() == 1
-        details.getDetails()[0].key == 'title'
-        details.getDetails()[0].value == ['test@test.com': '%sent_messages_summary.message_about_to_send%']
+        validateReleasedMessagesDetails(details, message.getTitle(), ['test@test.com'], [])
         1 * emailProcessor.enqueue({ envelope ->
             assert envelope.recipient == "test@test.com"
             assert envelope.type == EnvelopeType.RELEASE_ITEM
             envelope
         })
+    }
+
+    def 'should toHumanReadable'() {
+        given:
+        ReleasedMessagesDetails.ReleasedMessage releasedMessage = new ReleasedMessagesDetails.ReleasedMessage("msg1")
+        releasedMessage.getSentToRecipients().add("sen@to.pl")
+        releasedMessage.getInvalidRecipients().add("invali@email.pl")
+
+        ReleasedMessagesDetails details = new ReleasedMessagesDetails()
+        details.add(releasedMessage)
+
+        expect:
+        messageReleaseService.toHumanReadable(details, Lang.en) == """i18nd(%sent_messages_summary.message%) 'msg1':
+ - sen@to.pl: i18nd(%sent_messages_summary.message_about_to_send%)
+ - invali@email.pl: i18nd(%sent_messages_summary.message_cant_sent%)"""
+    }
+
+    def validateReleasedMessagesDetails(ReleasedMessagesDetails details, String messageTitle, List<String> sentToRecipients, List<String> invalidRecipients) {
+        assert details.getDetails().size() == 1
+        assert details.getDetails()[0].getMessageTitle() == messageTitle
+        assert details.getDetails()[0].getSentToRecipients() == sentToRecipients
+        assert details.getDetails()[0].getInvalidRecipients() == invalidRecipients
+        true
     }
 
 }

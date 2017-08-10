@@ -43,19 +43,6 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
         log.info("Connected to AWS SQS");
     }
 
-    private Map<String, String> fromHeaderData(String data) {
-        try {
-            String json = new String(Utils.base64decode(data), StandardCharsets.UTF_8);
-            try (Reader fr = new StringReader(json)) {
-                return Utils.fromJson(fr, new TypeReference<Map<String, String>>() {
-                });
-            }
-        } catch (Exception e) {
-            log.error("Can't convert ENVELOPE_HEADER_DATA to Map");
-            return new HashMap<>();
-        }
-    }
-
     @Override
     public void process(OnDelivery onDelivery) {
 
@@ -96,6 +83,19 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
 
         } while (result.getMessages().size() > 0);
 
+    }
+
+    private Map<String, String> fromHeaderData(String data) {
+        try {
+            String json = new String(Utils.base64decode(data), StandardCharsets.UTF_8);
+            try (Reader fr = new StringReader(json)) {
+                return Utils.fromJson(fr, new TypeReference<Map<String, String>>() {
+                });
+            }
+        } catch (Exception e) {
+            log.error("Can't convert ENVELOPE_HEADER_DATA to Map", e);
+            return new HashMap<>();
+        }
     }
 
     private DeliveryType getDeliveryType(Map<String, Object> Message) {

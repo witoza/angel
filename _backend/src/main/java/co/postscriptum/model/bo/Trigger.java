@@ -27,13 +27,11 @@ public class Trigger {
     private long releasedTime;
 
     public enum Stage {
-
         BEFORE_X,
         AFTER_X_BEFORE_Y,
         AFTER_Y_BEFORE_Z,
         AFTER_Z_BEFORE_RELEASE,
         RELEASED,
-
     }
 
 }

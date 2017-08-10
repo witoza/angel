@@ -1,21 +1,32 @@
 package co.postscriptum.internal;
 
-import co.postscriptum.model.bo.Message;
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+@Getter
 public class ReleasedMessagesDetails {
 
-    private final List<Pair<String, Map<String, String>>> details = new ArrayList<>();
+    private final long releasedTime = System.currentTimeMillis();
+    private final List<ReleasedMessage> details = new ArrayList<>();
 
-    public void add(Message message, Map<String, String> recipientDetails) {
-        details.add(Pair.of(message.getTitle(), recipientDetails));
+    public void add(ReleasedMessage releasedMessage) {
+        details.add(releasedMessage);
     }
 
-    public List<Pair<String, Map<String, String>>> getDetails() {
-        return details;
+    @Value
+    @AllArgsConstructor
+    public static class ReleasedMessage {
+
+        private final String messageTitle;
+
+        private final List<String> invalidRecipients = new ArrayList<>();
+
+        private final List<String> sentToRecipients = new ArrayList<>();
+
     }
+
 }

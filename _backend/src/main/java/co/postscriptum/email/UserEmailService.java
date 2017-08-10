@@ -120,7 +120,6 @@ public class UserEmailService {
                            context);
     }
 
-
     public String sendToOwnerTooManyInvalidLoginAttempts(UserData userData) {
         return sendEmailToUser(EnvelopeType.USER_INVALID_3_LOGINS_ACCOUNT_LOCKED, userData, "too_many_invalid_logins");
     }
@@ -139,10 +138,10 @@ public class UserEmailService {
     public String sendToOwnerTOTPTokenDetails(UserData userData, ShortTimeKey stk) {
         String recoveryEmail = userData.getInternal().getTotpRecoveryEmail();
         if (StringUtils.isEmpty(recoveryEmail)) {
-            throw new BadRequestException("token recovery email is not defined");
+            throw new BadRequestException("Token recovery email is not defined");
         }
         if (!Utils.isValidEmail(recoveryEmail)) {
-            throw new BadRequestException("token recovery email is not valid");
+            throw new BadRequestException("Token recovery email is not valid");
         }
 
         Map<String, Object> context = new HashMap<>();
@@ -150,7 +149,6 @@ public class UserEmailService {
         context.put("shortTimeKey", stk.getKey());
 
         return sendEmailTo(EnvelopeType.USER_TOTP_DETAILS, userData, recoveryEmail, "sent_totp_details", context);
-
     }
 
     private String sendEmailToUser(EnvelopeType envelopeType, UserData userData, String templateKey) {

@@ -12,10 +12,8 @@ import co.postscriptum.model.bo.RequiredAction.Type;
 import co.postscriptum.model.bo.Trigger;
 import co.postscriptum.model.bo.TriggerInternal;
 import co.postscriptum.model.bo.User;
-import co.postscriptum.model.bo.User.Role;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.bo.UserInternal;
-import co.postscriptum.model.bo.UserPlan;
 import co.postscriptum.model.dto.UserDTO;
 import co.postscriptum.payment.BitcoinService;
 import co.postscriptum.security.AESGCMUtils;
@@ -26,11 +24,10 @@ import co.postscriptum.security.TOTPHelperService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -89,9 +86,9 @@ public class UserService {
         dto.setQuotaBytes(userData.getInternal().getQuotaBytes());
         dto.setScreenName(userData.getInternal().getScreenName());
 
-        if (userData.getUser().getRole() == Role.user) {
+        if (!userData.isUserAdmin()) {
 
-            dto.setUsedSpaceBytes(new UserDataHelper(userData).getUserUsedSpaceBytes());
+            dto.setUsedSpaceBytes(userData.getUserUsedSpaceBytes());
             dto.setValidAesKey(userEncryptionKey.isPresent());
             dto.setNeedPayment(needPayment(userData));
 
@@ -111,18 +108,17 @@ public class UserService {
     }
 
     public void deleteUser(UserData userData, String loginPassword) {
-        new UserDataHelper(userData).verifyLoginPasswordIsCorrect(loginPassword);
+        userData.verifyLoginPasswordIsCorrect(loginPassword);
         db.removeUserByUuid(userData.getUser().getUuid());
     }
 
     private boolean needPayment(UserData userData) {
-        UserPlan userPlan = userData.getInternal().getUserPlan();
-        return userPlan.getPaidUntil() < System.currentTimeMillis();
+        return userData.getInternal().getUserPlan().needPayment();
     }
 
     public void requestForStorage(UserData userData, int numberOfMb) {
 
-        new UserDataHelper(userData).addNotification("User issued request for storage increase of " + numberOfMb + " MB");
+        userData.addNotification("User issued request for storage increase of " + numberOfMb + " MB");
 
         RequiredAction ra = DataFactory.newRequiredAction(userData, Type.USER_STORAGE_INCREASE_REQUEST);
         ra.getDetails().put("numberOfMb", "" + numberOfMb);
@@ -133,16 +129,15 @@ public class UserService {
 
     public void changeLoginPassword(UserData userData, Optional<SecretKey> userEncryptionKey, String loginPassword, String newLoginPassword) {
 
-        new UserDataHelper(userData).verifyLoginPasswordIsCorrect(loginPassword);
+        userData.verifyLoginPasswordIsCorrect(loginPassword);
 
         UserInternal userInternal = userData.getInternal();
 
-        if (!new UserDataHelper(userData).isUserAdmin()) {
-            userEncryptionKey
-                    .ifPresent(encryptionKey -> {
-                        log.info("User encryption key is present, encrypting it by a new login password");
-                        userInternal.setEncryptionKey(AESGCMUtils.encryptByPassword(newLoginPassword, encryptionKey.getEncoded()));
-                    });
+        if (!userData.isUserAdmin()) {
+            userEncryptionKey.ifPresent(encryptionKey -> {
+                log.info("User encryption key is present, encrypting it by a new login password");
+                userInternal.setEncryptionKey(AESGCMUtils.encryptByPassword(newLoginPassword, encryptionKey.getEncoded()));
+            });
 
         }
 
@@ -227,7 +222,7 @@ public class UserService {
 
     public byte[] setEncryptionKey(UserData userData, String loginPassword, String encryptionKeyToSet) {
 
-        new UserDataHelper(userData).verifyLoginPasswordIsCorrect(loginPassword);
+        userData.verifyLoginPasswordIsCorrect(loginPassword);
 
         UserInternal internal = userData.getInternal();
 
@@ -298,7 +293,7 @@ public class UserService {
         disable2FA(userData);
     }
 
-    public ResponseEntity<InputStreamResource> getTotpUriQr(UserData userData) {
+    public BufferedImage getTotpUriQr(UserData userData) {
         return totpHelperService.getTotpUriQr(userData);
     }
 

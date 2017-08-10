@@ -10,6 +10,6 @@ public class PasswordDTO {
 
     @NotEmpty
     @Size(min = 3, max = 20)
-    public String passwd;
+    protected String passwd;
 
 }

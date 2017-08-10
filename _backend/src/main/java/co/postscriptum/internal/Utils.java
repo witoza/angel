@@ -1,5 +1,7 @@
 package co.postscriptum.internal;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,6 +14,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.google.common.base.Splitter;
+import lombok.NonNull;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +30,6 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -56,9 +59,12 @@ public class Utils {
         testModule.addDeserializer(byte[].class, new ByteArrayToBase64Deserializer());
 
         ObjectMapper mapper = new ObjectMapper();
+
         mapper.findAndRegisterModules();
         mapper.registerModule(testModule);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         return mapper;
     }
 
@@ -86,7 +92,7 @@ public class Utils {
         return new String(content, StandardCharsets.UTF_8);
     }
 
-    public static String toJson(Object obj) {
+    public static String toJson(@NonNull Object obj) {
         try {
             return OBJECT_MAPPER.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
@@ -128,12 +134,13 @@ public class Utils {
     }
 
     public static List<String> extractValidEmails(String... args) {
-
-        return Arrays.stream(StringUtils.join(args, ";").split(";|,"))
-                     .map(String::trim)
-                     .filter(Utils::isValidEmail)
-                     .distinct()
-                     .collect(Collectors.toList());
+        return Splitter.onPattern(";|,")
+                       .trimResults()
+                       .splitToList(StringUtils.join(args, ";"))
+                       .stream()
+                       .distinct()
+                       .filter(Utils::isValidEmail)
+                       .collect(Collectors.toList());
     }
 
     public static <T> Optional<T> getLast(List<T> list) {
@@ -156,10 +163,6 @@ public class Utils {
         return new ISO8601DateFormat().format(out);
     }
 
-    public static <T> ArrayList<T> asArrayList(T... args) {
-        return new ArrayList<>(Arrays.asList(args));
-    }
-
     public static String urlEncode(String data) {
         try {
             return URLEncoder.encode(data, StandardCharsets.UTF_8.name());
@@ -174,10 +177,10 @@ public class Utils {
         }
     }
 
-    public static String exceptionInfo(Throwable e) {
+    public static String basicExceptionInfo(Throwable e) {
         StringBuilder sb = new StringBuilder();
         while (e != null) {
-            sb.append(MessageFormat.format("{0}: {1}", e.getClass().getSimpleName(), e.getMessage()));
+            sb.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage());
             if (e.getCause() != null) {
                 sb.append(", cause:\n");
             }
@@ -208,14 +211,13 @@ public class Utils {
         return minutes * 60 * 1000;
     }
 
-    public static long daysInMs(long days) {
+    public static long daysToMillis(long days) {
         return minutesToMillis(days * 24 * 60);
     }
 
     public static String asSafeText(String data) {
         return Jsoup.parse(data).text();
     }
-
 
     private static class ByteArrayToBase64Serializer extends JsonSerializer<byte[]> {
 

@@ -12,6 +12,10 @@ import java.util.UUID;
 @Slf4j
 public class BitcoinAddressGeneratorDummyImpl implements BitcoinAddressGenerator {
 
+    private static String uuid() {
+        return UUID.randomUUID().toString();
+    }
+
     @Override
     public PaymentAddress generateNewAddress() {
         log.info("Generating dummy Payment Address");
@@ -19,10 +23,6 @@ public class BitcoinAddressGeneratorDummyImpl implements BitcoinAddressGenerator
                              .uuid(uuid())
                              .btcAddress("BTC-" + uuid())
                              .build();
-    }
-
-    private static String uuid() {
-        return UUID.randomUUID().toString();
     }
 
 }

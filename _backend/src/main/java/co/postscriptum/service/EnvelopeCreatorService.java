@@ -2,7 +2,6 @@ package co.postscriptum.service;
 
 import co.postscriptum.email.Envelope;
 import co.postscriptum.email.EnvelopeType;
-import co.postscriptum.internal.I18N;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.Lang;
 import co.postscriptum.model.bo.User;

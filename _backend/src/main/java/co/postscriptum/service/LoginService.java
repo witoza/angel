@@ -7,16 +7,13 @@ import co.postscriptum.email.UserEmailService;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.exception.InternalException;
-import co.postscriptum.internal.I18N;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.DataFactory;
 import co.postscriptum.model.bo.Lang;
-import co.postscriptum.model.bo.LoginAttempt;
 import co.postscriptum.model.bo.RequiredAction.Type;
 import co.postscriptum.model.bo.Trigger;
 import co.postscriptum.model.bo.Trigger.Stage;
 import co.postscriptum.model.bo.User;
-import co.postscriptum.model.bo.User.Role;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.bo.UserInternal;
 import co.postscriptum.security.AESGCMUtils;
@@ -33,15 +30,13 @@ import co.postscriptum.stk.ShortTimeKeyService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -68,10 +63,6 @@ public class LoginService {
 
     private final UserEncryptionKeyService userEncryptionKeyService;
 
-    private void addNotification(UserData userData, String message) {
-        new UserDataHelper(userData).addNotification(message);
-    }
-
     private void verifyIsActive(User user) {
         if (!user.isActive()) {
             throw new ForbiddenException("User " + user.getUsername() + " is not active");
@@ -91,9 +82,8 @@ public class LoginService {
                 message.setRelease(null);
             });
 
-            addNotification(userData,
-                            "User has logged in after his messages had been released.\n" +
-                                    "All message releases have just been invalidated, recipients can no longer display them.");
+            userData.addNotification("User has logged in after his messages had been released.\n" +
+                                             "All message releases have just been invalidated, recipients can no longer display them.");
         }
     }
 
@@ -109,7 +99,7 @@ public class LoginService {
 
         String username = user.getUsername();
 
-        log.info("Authing: {}", username);
+        log.info("Authenticating: {}", username);
 
         verifyIsActive(user);
         verifyAccountNotLocked(userData);
@@ -142,10 +132,9 @@ public class LoginService {
         verifyTotpToken(userData, totpToken);
 
         byte[] encryptionKey = null;
-        if (user.getRole() == Role.user) {
+        if (!userData.isUserAdmin()) {
 
             resurrectUser(userData);
-
             if (internal.getEncryptionKey() != null) {
                 encryptionKey = AESGCMUtils.decryptByPassword(password, internal.getEncryptionKey());
             }
@@ -183,8 +172,7 @@ public class LoginService {
 
                 userEmailService.sendToOwnerTooManyInvalidLoginAttempts(userData);
 
-                addNotification(userData,
-                                "You provided invalid password 3 times in a row in the last 30 minutes, your account has been locked for 5 minutes");
+                userData.addNotification("You provided invalid password 3 times in a row in the last 30 minutes, your account has been locked for 5 minutes");
 
                 log.warn("locking out user account for 5 minutes");
                 internal.setAccountLockedUntil(System.currentTimeMillis() + Utils.minutesToMillis(5));
@@ -205,20 +193,6 @@ public class LoginService {
         }
     }
 
-    private void addLoginAttempt(Account account, RequestMetadata metadata, String type) {
-
-        List<LoginAttempt> loginHistory = account.getUserData().getInternal().getLoginHistory();
-
-        loginHistory.add(LoginAttempt.builder()
-                                     .time(System.currentTimeMillis())
-                                     .ip(metadata.getRemoteIp())
-                                     .type(type)
-                                     .build());
-
-        Utils.limit(loginHistory, 20);
-
-    }
-
     public void preregister(String username, Lang lang, RequestMetadata metadata) {
 
         Optional<Account> possibleAccount = db.getAccountByUsername(username);
@@ -229,7 +203,7 @@ public class LoginService {
 
                 userEmailService.sendToOwnerAccountAlreadyExists(account.getUserData());
 
-                addLoginAttempt(account, metadata, "someone tries to register user with your email address");
+                account.getUserData().addLoginAttempt(metadata, "someone tries to register user with your email address");
 
             });
 
@@ -274,17 +248,15 @@ public class LoginService {
         userInternal.getTriggerInternal().setXemails(username);
 
         UserData userData = DataFactory.newUserData(user, userInternal);
-        addNotification(userData, "Your account has been activated");
+        userData.addNotification("Your account has been activated");
 
         Account account = db.insertUser(userData);
 
         verifiedUsers.markAsVerified(userData);
 
-        addLoginAttempt(account, metadata, "user registered");
+        account.getUserData().addLoginAttempt(metadata, "user registered");
 
         return authenticate(metadata, userData, password, null, null, verifiedUsers);
-
-
     }
 
     public MyAuthenticationToken login(String username,
@@ -295,26 +267,16 @@ public class LoginService {
                                        VerifiedUsers verifiedUsers) {
 
         return db.withLoadedAccountByUsername(username, account -> {
-
             try {
-
-                MyAuthenticationToken authentication =
-                        authenticate(metadata, account.getUserData(), password, totpToken, verifyToken, verifiedUsers);
-
-                addLoginAttempt(account, metadata, "success");
-
+                MyAuthenticationToken authentication = authenticate(metadata, account.getUserData(), password, totpToken, verifyToken, verifiedUsers);
+                account.getUserData().addLoginAttempt(metadata, "success");
                 return authentication;
-
             } catch (ForbiddenException | BadRequestException e) {
-
-                addLoginAttempt(account, metadata, "failed: " + e.getMessage());
+                account.getUserData().addLoginAttempt(metadata, "failed: " + e.getMessage());
                 throw e;
-
             } catch (Exception e) {
-
-                addLoginAttempt(account, metadata, "internal error");
+                account.getUserData().addLoginAttempt(metadata, "internal error");
                 throw e;
-
             }
         });
 
@@ -359,17 +321,14 @@ public class LoginService {
 
     }
 
-    public String recallTotpKey(String username, String password) {
+    public String recallTotpKey(String username, String loginPassword) {
 
         return db.withLoadedAccountByUsername(username, account -> {
             UserData userData = account.getUserData();
-            User user = userData.getUser();
 
-            verifyIsActive(user);
+            verifyIsActive(userData.getUser());
 
-            if (!PasswordUtils.checkPasswordHash(password, userData.getInternal().getPasswordHash())) {
-                throw new ForbiddenException("Invalid login password");
-            }
+            userData.verifyLoginPasswordIsCorrect(loginPassword);
 
             ShortTimeKey stk = shortTimeKeyService.create(username, ShortTimeKey.Type.RECALL_TOTP_KEY);
 
@@ -377,7 +336,7 @@ public class LoginService {
 
             String recoveryEmail = userData.getInternal().getTotpRecoveryEmail();
 
-            addNotification(userData, "OTP key details has been sent to " + recoveryEmail);
+            userData.addNotification("OTP key details has been sent to " + recoveryEmail);
 
             return recoveryEmail;
         });
@@ -390,7 +349,7 @@ public class LoginService {
             UserData userData = account.getUserData();
 
             if (!userData.getInternal().isAllowPasswordReset()) {
-                throw new ForbiddenException("user didn't allow to reset password");
+                throw new ForbiddenException("User didn't allow to reset password");
             }
 
             verifyIsActive(userData.getUser());
@@ -420,7 +379,7 @@ public class LoginService {
             UserData userData = account.getUserData();
 
             if (!userData.getInternal().isAllowPasswordReset()) {
-                throw new ForbiddenException("user not allowed to reset password");
+                throw new ForbiddenException("User didn't allow to reset password");
             }
 
             verifyIsActive(userData.getUser());
@@ -433,17 +392,16 @@ public class LoginService {
             log.info("Changing login password");
 
             internal.setPasswordHash(PasswordUtils.hashPassword(newLoginPassword));
-            addNotification(userData, "User's password has been changed");
+            userData.addNotification("User's password has been changed");
 
             if (internal.getEncryptionKeyEncryptedByAdminPublicKey() != null) {
 
-                byte[] userEncryptionKey =
-                        AESGCMUtils.decrypt(AESKeyUtils.toSecretKey(Utils.base64decode(extraDataEncryptionKey)),
-                                            stk.getExtraData());
+                byte[] userEncryptionKey = AESGCMUtils.decrypt(
+                        AESKeyUtils.toSecretKey(Utils.base64decode(extraDataEncryptionKey)), stk.getExtraData());
 
                 internal.setEncryptionKey(AESGCMUtils.encryptByPassword(newLoginPassword, userEncryptionKey));
-                internal.setEncryptionKeyEncryptedByAdminPublicKey(RSAOAEPUtils.encrypt(userEncryptionKey,
-                                                                                        adminHelperService.getAdminPublicKey()));
+                internal.setEncryptionKeyEncryptedByAdminPublicKey(
+                        RSAOAEPUtils.encrypt(userEncryptionKey, adminHelperService.getAdminPublicKey()));
 
             }
 
@@ -475,7 +433,7 @@ public class LoginService {
 
     }
 
-    public ResponseEntity<InputStreamResource> recallTotpKeyDetailsQr(String shortTimeKey) {
+    public BufferedImage recallTotpKeyDetailsQr(String shortTimeKey) {
 
         ShortTimeKey stk = shortTimeKeyService.require(shortTimeKey, ShortTimeKey.Type.RECALL_TOTP_KEY);
 

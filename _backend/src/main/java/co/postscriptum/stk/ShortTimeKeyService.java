@@ -17,7 +17,7 @@ public class ShortTimeKeyService {
 
     public ShortTimeKey require(String key, ShortTimeKey.Type type) {
         return getByKey(key, type)
-                .orElseThrow(ExceptionBuilder.missingClass(ShortTimeKey.class, "key=" + key));
+                .orElseThrow(ExceptionBuilder.missingObject(ShortTimeKey.class, "key=" + key));
     }
 
     public Optional<ShortTimeKey> getByKey(String key, ShortTimeKey.Type type) {

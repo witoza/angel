@@ -3,7 +3,6 @@ package co.postscriptum.db;
 import co.postscriptum.RuntimeEnvironment;
 import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.MyConfiguration;
-import co.postscriptum.model.bo.User;
 import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.test_data.TestDataCreator;
 import co.postscriptum.test_data.TestUser;
@@ -63,13 +62,10 @@ public class DBDataInitializer {
     private void insertTestData() throws IOException {
         log.info("Inserting test data");
         for (TestUser testUser : testDataCreator.getTestUsers()) {
-
-            User testUserUser = testUser.createUser();
-
-            if (!db.hasAccountByUsername(testUserUser.getUsername())) {
-                db.insertUser(testUser.createUserData(testUserUser, adminHelperService.getAdminPublicKey()));
+            if (!db.hasAccountByUsername(testUser.getUsername())) {
+                db.insertUser(testUser.createUserData(adminHelperService.getAdminPublicKey()));
             } else {
-                log.info("Test user {} already exists", testUserUser.getUsername());
+                log.info("Test user {} already exists", testUser.getUsername());
             }
         }
     }

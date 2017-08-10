@@ -1,4 +1,4 @@
-package co.postscriptum.service
+package co.postscriptum.stk
 
 import co.postscriptum.stk.ShortTimeKey
 import co.postscriptum.stk.ShortTimeKeyService

@@ -2,10 +2,10 @@ package co.postscriptum.test_data
 
 import co.postscriptum.fs.FS
 import co.postscriptum.fs.HDFS
-import co.postscriptum.internal.FileEncryptionService
 import co.postscriptum.internal.Utils
-import co.postscriptum.model.bo.User
 import co.postscriptum.security.RSAOAEPUtils
+import co.postscriptum.service.FileService
+import co.postscriptum.service.MessageService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -28,13 +28,11 @@ class TestDataCreatorSpec extends Specification {
         when:
         for (TestUser testUser : testDataCreator.getTestUsers()) {
 
-            User user = testUser.createUser()
-
-            String json = Utils.toJson(testUser.createUserData(user, adminKeyPair.getPublic()))
+            String json = Utils.toJson(testUser.createUserData(adminKeyPair.getPublic()))
 
             println json
 
-            assert json.length() > 1
+            assert json.length() > 100
         }
 
         then:
@@ -46,13 +44,19 @@ class TestDataCreatorSpec extends Specification {
     static class TestConfiguration {
 
         @Bean
-        FileEncryptionService uploadsEncryptionService() {
-            return new FileEncryptionService()
+        FS fs() {
+            return new HDFS()
         }
 
         @Bean
-        FS fs() {
-            return new HDFS()
+        MessageService messageService() {
+            return new MessageService()
+        }
+
+
+        @Bean
+        FileService fileService() {
+            return new FileService(fs())
         }
 
         @Bean

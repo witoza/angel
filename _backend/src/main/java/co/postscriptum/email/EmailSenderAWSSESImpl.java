@@ -54,11 +54,27 @@ public class EmailSenderAWSSESImpl implements EmailSender {
                                                        .build();
 
         log.info("Connected to AWS SES");
-
     }
 
-    private String toHeaderData(Map<String, String> headers) {
-        return Utils.base64encode(Utils.toJson(headers).getBytes(StandardCharsets.UTF_8));
+    public String sendEmail(Envelope envelope) {
+
+        if (!Utils.isValidEmail(envelope.getRecipient())) {
+            throw new IllegalArgumentException("Recipient email address '" + envelope.getRecipient() + "' is invalid");
+        }
+
+        log.info("Sending email: envelopeId: {}, title: {}, recipient: {}",
+                 envelope.getEnvelopeId(),
+                 envelope.getTitle(),
+                 envelope.getRecipient());
+
+        RawMessage rawMessage = buildSimpleRawMessage(envelope);
+
+        SendRawEmailResult result = service.sendRawEmail(new SendRawEmailRequest(rawMessage));
+
+        String messageId = result.getMessageId();
+        log.info("Email has been sent: messageId: {}", messageId);
+
+        return messageId;
     }
 
     private RawMessage buildSimpleRawMessage(Envelope envelope) {
@@ -91,25 +107,8 @@ public class EmailSenderAWSSESImpl implements EmailSender {
         }
     }
 
-    public String sendEmail(Envelope envelope) {
-
-        if (!Utils.isValidEmail(envelope.getRecipient())) {
-            throw new IllegalArgumentException("Recipient email address '" + envelope.getRecipient() + "' is invalid");
-        }
-
-        log.info("Sending email: envelopeId: {}, title: {}, recipient: {}",
-                 envelope.getEnvelopeId(),
-                 envelope.getTitle(),
-                 envelope.getRecipient());
-
-        RawMessage rawMessage = buildSimpleRawMessage(envelope);
-
-        SendRawEmailResult result = service.sendRawEmail(new SendRawEmailRequest(rawMessage));
-
-        String messageId = result.getMessageId();
-        log.info("Email has been sent: messageId: {}", messageId);
-
-        return messageId;
+    private String toHeaderData(Map<String, String> headers) {
+        return Utils.base64encode(Utils.toJson(headers).getBytes(StandardCharsets.UTF_8));
     }
 
 }

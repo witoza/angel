@@ -109,13 +109,21 @@ public class RestMetrics {
     }
 
     private static class RequestInfo {
+
         String reqId;
+
         String method;
+
         long requestStartTm;
+
         long requestFinishTm;
+
         Exception exception;
+
         int httpStatusCode;
+
         String threadId;
+
     }
 
 }

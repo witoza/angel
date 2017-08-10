@@ -12,6 +12,6 @@ public class UuidDTO {
 
     @NotEmpty
     @Size(min = 30, max = 50)
-    public String uuid;
+    protected String uuid;
 
 }

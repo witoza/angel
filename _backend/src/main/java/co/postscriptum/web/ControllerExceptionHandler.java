@@ -31,7 +31,7 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorEnvelope> handleException(HttpServletRequest request, Exception thrown) {
 
-        log.warn("Handling exception: {}", Utils.exceptionInfo(thrown));
+        log.warn("Handling exception: {}", Utils.basicExceptionInfo(thrown));
 
         // force json
         request.removeAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE);
@@ -59,7 +59,7 @@ public class ControllerExceptionHandler {
             }
             return new ErrorEnvelope(HttpStatus.BAD_REQUEST.value(), "Invalid input data");
         }
-        if (thrown instanceof IOException || thrown instanceof InternalException) {
+        if (thrown instanceof IOException || thrown instanceof InternalException || thrown instanceof NullPointerException) {
             log.info("Full stack trace", thrown);
             return new ErrorEnvelope(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal problem occurred, we have been notified about the issue");
         }

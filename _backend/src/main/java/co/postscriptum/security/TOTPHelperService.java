@@ -8,10 +8,9 @@ import co.postscriptum.model.bo.UserData;
 import lombok.AllArgsConstructor;
 import org.apache.commons.codec.binary.Hex;
 import org.jboss.security.otp.TimeBasedOTPUtil;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.awt.image.BufferedImage;
 import java.security.GeneralSecurityException;
 
 @AllArgsConstructor
@@ -29,9 +28,9 @@ public class TOTPHelperService {
         }
     }
 
-    public ResponseEntity<InputStreamResource> getTotpUriQr(UserData userData) {
+    public BufferedImage getTotpUriQr(UserData userData) {
         try {
-            return QRGenerator.getQR(getTotpUri(userData));
+            return QRGenerator.createQr(getTotpUri(userData));
         } catch (Exception e) {
             throw new InternalException("Exception occurred while generating QR code with TOTP details", e);
         }

@@ -30,26 +30,6 @@ public class MethodUsageInfo {
         this.method = method;
     }
 
-    public void addRequest(Exception exception, int elapsedTime) {
-        total++;
-
-        if (exception != null) {
-            err++;
-            lastExceptions.add(exceptionToString(exception));
-            if (lastExceptions.size() > 3) {
-                lastExceptions.remove(0);
-            }
-        }
-
-        if (maxTm == -1 || maxTm < elapsedTime) {
-            maxTm = elapsedTime;
-        }
-
-        timeSamples[sampleId] = elapsedTime;
-        sampleId = (sampleId + 1) % timeSamples.length;
-
-    }
-
     private static String exceptionToString(Exception exception) {
         StringWriter sw = new StringWriter();
 
@@ -68,6 +48,26 @@ public class MethodUsageInfo {
         String reqId = MDC.get("reqId");
 
         return "date=" + date + ", reqId=" + reqId + ", stackTrace=" + stackTrace;
+    }
+
+    public void addRequest(Exception exception, int elapsedTime) {
+        total++;
+
+        if (exception != null) {
+            err++;
+            lastExceptions.add(exceptionToString(exception));
+            if (lastExceptions.size() > 3) {
+                lastExceptions.remove(0);
+            }
+        }
+
+        if (maxTm == -1 || maxTm < elapsedTime) {
+            maxTm = elapsedTime;
+        }
+
+        timeSamples[sampleId] = elapsedTime;
+        sampleId = (sampleId + 1) % timeSamples.length;
+
     }
 
     @Override

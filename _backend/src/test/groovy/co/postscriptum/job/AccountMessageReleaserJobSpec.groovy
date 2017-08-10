@@ -244,7 +244,7 @@ class AccountMessageReleaserJobSpec extends Specification {
             requiredAction.type == RequiredAction.Type.AUTOMATIC_RELEASE_MESSAGES_HAS_BEEN_DONE
                                                           } as RequiredAction)
         1 * job.messageReleaseService.releaseMessages(userData, Optional.empty()) >> releasedMessagesDetails
-        1 * job.messageReleaseService.toHumanReadable(userData.getInternal().getLang(), releasedMessagesDetails) >> "HumanReadable"
+        1 * job.messageReleaseService.toHumanReadable(releasedMessagesDetails, userData.getInternal().getLang()) >> "HumanReadable"
     }
 
     def millis(int minutes, int seconds) {

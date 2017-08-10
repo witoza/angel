@@ -1,9 +1,9 @@
 package co.postscriptum.controller;
 
 import co.postscriptum.controller.dto.UuidDTO;
+import co.postscriptum.exception.ExceptionBuilder;
 import co.postscriptum.model.bo.Notification;
 import co.postscriptum.model.bo.UserData;
-import co.postscriptum.service.NotificationService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,8 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 public class NotificationController {
 
-    private final NotificationService notificationService;
-
     @GetMapping("/all")
     public List<Notification> all(UserData userData) {
         return userData.getNotifications();
@@ -28,7 +26,12 @@ public class NotificationController {
 
     @PostMapping("/mark_as_read")
     public void markAsRead(UserData userData, @Valid @RequestBody UuidDTO dto) {
-        notificationService.markAsRead(userData, dto.uuid);
+        userData.getNotifications()
+                .stream()
+                .filter(n -> n.getUuid().equals(dto.getUuid()))
+                .findFirst()
+                .orElseThrow(ExceptionBuilder.missingObject(Notification.class, "uuid=" + dto.getUuid()))
+                .setRead(true);
     }
 
 }

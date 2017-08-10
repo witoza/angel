@@ -13,6 +13,7 @@ import co.postscriptum.model.dto.UserDTO;
 import co.postscriptum.security.UserEncryptionKeyService;
 import co.postscriptum.service.UserService;
 import co.postscriptum.web.AuthenticationHelper;
+import co.postscriptum.web.ResponseEntityUtils;
 import com.google.zxing.WriterException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -88,8 +89,8 @@ public class UserController {
     }
 
     @GetMapping("/totpQR")
-    public ResponseEntity<InputStreamResource> totpQr(UserData userData) {
-        return userService.getTotpUriQr(userData);
+    public ResponseEntity<InputStreamResource> totpQr(UserData userData) throws IOException, WriterException {
+        return ResponseEntityUtils.asPng(userService.getTotpUriQr(userData));
     }
 
     @PostMapping("/get_login_history")
@@ -98,9 +99,8 @@ public class UserController {
     }
 
     @GetMapping("/get_qr")
-    public ResponseEntity<InputStreamResource> getQr(@RequestParam("data") String data)
-            throws WriterException, IOException {
-        return QRGenerator.getQR(data);
+    public ResponseEntity<InputStreamResource> getQr(@RequestParam("data") String data) throws WriterException, IOException {
+        return ResponseEntityUtils.asPng(QRGenerator.createQr(data));
     }
 
     @PostMapping("/get_bitcoin_address")
@@ -120,7 +120,7 @@ public class UserController {
 
     @PostMapping("/set_aes_key")
     public void setAesKey(UserData userData, @Valid @RequestBody SetAesKeyDTO dto) {
-        byte[] secretKey = userService.setEncryptionKey(userData, dto.passwd, dto.aes_key);
+        byte[] secretKey = userService.setEncryptionKey(userData, dto.getPasswd(), dto.aes_key);
         userEncryptionKeyService.setEncryptionKey(secretKey);
     }
 
@@ -144,7 +144,7 @@ public class UserController {
     public void changeLoginPassword(UserData userData, @Valid @RequestBody ChangePasswordDTO dto) {
         userService.changeLoginPassword(userData,
                                         userEncryptionKeyService.getEncryptionKey(),
-                                        dto.passwd,
+                                        dto.getPasswd(),
                                         dto.passwd_new);
     }
 
@@ -159,7 +159,7 @@ public class UserController {
                            HttpServletRequest request,
                            HttpServletResponse response) {
 
-        userService.deleteUser(userData, dto.passwd);
+        userService.deleteUser(userData, dto.getPasswd());
         userEncryptionKeyService.setEncryptionKey(null);
         new SecurityContextLogoutHandler().logout(request, response, null);
     }
@@ -169,7 +169,7 @@ public class UserController {
     public static class InvokeTriggerStageDTO {
 
         @NotNull
-        Boolean sendEmailOnlyToUser;
+        protected Boolean sendEmailOnlyToUser;
 
     }
 
@@ -178,7 +178,7 @@ public class UserController {
     public static class SetAesKeyDTO extends PasswordDTO {
 
         @Size(max = 80)
-        String aes_key;
+        protected String aes_key;
 
     }
 
@@ -188,7 +188,7 @@ public class UserController {
 
         @NotEmpty
         @Size(min = 6, max = 6)
-        String totpToken;
+        protected String totpToken;
 
     }
 
@@ -197,23 +197,23 @@ public class UserController {
     public static class UpdateUserDTO {
 
         @Size(max = 30)
-        String screenName;
+        protected String screenName;
 
-        Boolean tosAccepted;
+        protected Boolean tosAccepted;
 
-        Boolean allowPasswordReset;
+        protected Boolean allowPasswordReset;
 
-        Boolean verifyUnknownBrowsers;
+        protected Boolean verifyUnknownBrowsers;
 
-        Lang lang;
+        protected Lang lang;
 
         @Email
         @Size(max = 30)
-        String totpRecoveryEmail;
+        protected String totpRecoveryEmail;
 
-        Trigger trigger;
+        protected Trigger trigger;
 
-        TriggerInternal triggerInternal;
+        protected TriggerInternal triggerInternal;
 
     }
 
@@ -223,7 +223,7 @@ public class UserController {
 
         @NotEmpty
         @Size(min = 3, max = 20)
-        String passwd_new;
+        protected String passwd_new;
     }
 
     @Setter
@@ -233,7 +233,7 @@ public class UserController {
         @NotNull
         @Max(500)
         @Min(1)
-        Integer number_of_mb;
+        protected Integer number_of_mb;
 
     }
 

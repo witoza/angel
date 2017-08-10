@@ -52,9 +52,7 @@ public class UserEncryptionKeyService {
         return Utils.getCookieValue(httpServletRequest, ENCRYPTION_KEY_COOKIE)
                     .map(cookieValue -> {
                         try {
-                            String parts[] = cookieValue.split("\\|");
-                            return AESGCMUtils.decrypt(cookieEncryptionKey,
-                                                       new AESGCMEncrypted(Utils.base64decode(parts[0]), Utils.base64decode(parts[1])));
+                            return AESGCMUtils.decrypt(cookieEncryptionKey, AESGCMEncrypted.fromString(cookieValue));
                         } catch (Exception e) {
                             log.warn("Invalid cookie: {} value: {}", ENCRYPTION_KEY_COOKIE, cookieValue);
                             return null;
@@ -86,7 +84,7 @@ public class UserEncryptionKeyService {
             cookie.setMaxAge(0);
         } else {
             AESGCMEncrypted encrypted = AESGCMUtils.encrypt(cookieEncryptionKey, value);
-            cookie = new Cookie(ENCRYPTION_KEY_COOKIE, Utils.base64encode(encrypted.getCt()) + "|" + Utils.base64encode(encrypted.getIv()));
+            cookie = new Cookie(ENCRYPTION_KEY_COOKIE, encrypted.toString());
 
             // 1 day
             cookie.setMaxAge(24 * 60 * 60);

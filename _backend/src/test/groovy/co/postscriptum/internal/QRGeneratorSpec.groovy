@@ -6,7 +6,7 @@ class QRGeneratorSpec extends Specification {
 
     def 'should generate qr'() {
         expect:
-        QRGenerator.createQr("http://www.google.com").size() > 500
+        QRGenerator.createQr("http://www.google.com").getHeight() > 50
     }
 
 }

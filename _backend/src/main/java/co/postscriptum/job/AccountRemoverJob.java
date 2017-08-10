@@ -13,7 +13,6 @@ import co.postscriptum.model.bo.Trigger.Stage;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.service.AdminHelperService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,8 +32,6 @@ public class AccountRemoverJob extends AbstractAccountJob {
     public static final String RELEASE_ITEM_KEY = "releaseItem.key";
 
     public static final String REMAINDER_UUID = "remainder.uuid";
-
-    public static final String CAN_NOT_CONTACT_RECIPIENT = "can_not_contact_recipient";
 
     @Autowired
     private AdminHelperService adminHelperService;
@@ -113,18 +110,6 @@ public class AccountRemoverJob extends AbstractAccountJob {
         return LocalDateTime.now().isBefore(Utils.fromTimestamp(timestamp).plusMinutes(minutes));
     }
 
-    private boolean adminAbleToContactRecipient(ReleaseItem releaseItem) {
-        Optional<Reminder> lastReminder = Utils.getLast(releaseItem.getReminders());
-
-        if (lastReminder.isPresent()) {
-            if (StringUtils.equalsIgnoreCase(lastReminder.get().getInput(), CAN_NOT_CONTACT_RECIPIENT)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private boolean shouldNewReminderBeCreated(Optional<Reminder> lastReminder) {
 
         if (!lastReminder.isPresent()) {
@@ -148,7 +133,7 @@ public class AccountRemoverJob extends AbstractAccountJob {
             return false;
         }
 
-        if (!adminAbleToContactRecipient(releaseItem)) {
+        if (!releaseItem.adminAbleToContactRecipient()) {
             // recipient is not reachable, no reminder needed
             return false;
         }
@@ -184,7 +169,6 @@ public class AccountRemoverJob extends AbstractAccountJob {
             ra.getDetails().put("releaseItem.message.title", message.getTitle());
             ra.getDetails().put("releaseItem.recipient", releaseItem.getRecipient());
 
-
             adminHelperService.addAdminRequiredAction(ra);
 
         }).count();
@@ -193,7 +177,7 @@ public class AccountRemoverJob extends AbstractAccountJob {
 
     private boolean releaseItemIsReachableOrShouldBeAvailable(ReleaseItem releaseItem) {
         if (releaseItem.getFirstTimeAccess() == 0) {
-            return adminAbleToContactRecipient(releaseItem);
+            return releaseItem.adminAbleToContactRecipient();
         }
         // message has been opened
         return lessThanXMinutesAgo(releaseItem.getFirstTimeAccess(), releaseItemAvailableForAfterOpeningMins);

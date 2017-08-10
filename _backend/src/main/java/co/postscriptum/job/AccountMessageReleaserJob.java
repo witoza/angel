@@ -13,7 +13,6 @@ import co.postscriptum.model.bo.User;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.service.AdminHelperService;
 import co.postscriptum.service.MessageReleaseService;
-import co.postscriptum.service.UserDataHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -173,10 +172,7 @@ public class AccountMessageReleaserJob extends AbstractAccountJob {
 
         messageReleaseService.sendToOwnerReleasedMessageSummary(userData, details);
 
-        new UserDataHelper(userData).addNotification(
-                "User messages have been released:\n" + messageReleaseService.toHumanReadable(
-                        userData.getInternal().getLang(), details));
-
+        userData.addNotification("User messages have been released:\n" + messageReleaseService.toHumanReadable(details, userData.getInternal().getLang()));
         userData.getUser().getTrigger().setReleasedTime(System.currentTimeMillis());
 
         return details;

@@ -35,7 +35,7 @@ dependencies {
 
     compile "org.springframework.boot:spring-boot-starter"
     compile "org.jsoup:jsoup:1.10.3"
-    compile "com.google.guava:guava:22.0"
+    compile "com.google.guava:guava:23.0"
     compile "org.springframework.boot:spring-boot-starter-web"
     compile "org.springframework.boot:spring-boot-starter-security"
     compile "org.springframework.boot:spring-boot-starter-log4j2"

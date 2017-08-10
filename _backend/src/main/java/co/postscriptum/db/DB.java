@@ -244,47 +244,24 @@ public class DB {
     }
 
     public void loadAccount(Account account) {
-
         account.assertLockIsHeldByCurrentThread();
-
         account.setLastAccessTime(System.currentTimeMillis());
         if (account.isLoaded()) {
             return;
         }
-
         log.info("Loading model for user {}", account.getUserData().getUser().getUsername());
-
-        UserData userData = loadUserData(userDbPath(account.getUserData().getUser()));
-
-        account.getUserData().setInternal(userData.getInternal());
-        account.getUserData().setMessages(userData.getMessages());
-        account.getUserData().setFiles(userData.getFiles());
-        account.getUserData().setNotifications(userData.getNotifications());
-        account.getUserData().setRequiredActions(userData.getRequiredActions());
-
-        account.setLoaded(true);
+        account.loadUserData(loadUserData(userDbPath(account.getUserData().getUser())));
         log.info("User's account has been loaded");
     }
 
     public void unloadAccount(Account account) throws IOException {
-
         account.assertLockIsHeldByCurrentThread();
-
         if (!account.isLoaded()) {
             return;
         }
-
         log.info("Unloading user {}", account.getUserData().getUser().getUsername());
-
         persistUser(account.getUserData());
-
-        account.getUserData().setInternal(null);
-        account.getUserData().setMessages(null);
-        account.getUserData().setFiles(null);
-        account.getUserData().setNotifications(null);
-        account.getUserData().setRequiredActions(null);
-
-        account.setLoaded(false);
+        account.unloadUserData();
         log.info("User has been unloaded");
     }
 

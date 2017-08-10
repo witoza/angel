@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @AllArgsConstructor
 public class IncomingRequestFilter extends GenericFilterBean {
 
-    public static final int MAX_CONCURRENT_REQUESTS = 10;
+    private static final int MAX_CONCURRENT_REQUESTS = 10;
 
     private final AtomicInteger requestId = new AtomicInteger(0);
 

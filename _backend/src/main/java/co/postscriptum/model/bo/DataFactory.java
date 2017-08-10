@@ -80,7 +80,7 @@ public class DataFactory {
         UserInternal internal = newUserInternal(loginPassword);
 
         UserPlan userPlan = new UserPlan();
-        userPlan.setPaidUntil(System.currentTimeMillis() + Utils.daysInMs(30));
+        userPlan.setPaidUntil(System.currentTimeMillis() + Utils.daysToMillis(30));
         userPlan.setPayments(new ArrayList<>());
         userPlan.getPayments().add(Payment.builder()
                                           .time(System.currentTimeMillis())

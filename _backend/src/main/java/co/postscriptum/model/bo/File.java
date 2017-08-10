@@ -2,6 +2,7 @@ package co.postscriptum.model.bo;
 
 import lombok.Builder;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 @Builder
@@ -28,5 +29,15 @@ public class File {
     private byte[] iv;
 
     private PasswordEncryption encryption;
+
+    public String getFilename() {
+        if (StringUtils.isEmpty(ext)) {
+            return name;
+        }
+        if (name.endsWith("." + ext)) {
+            return name;
+        }
+        return name + "." + ext;
+    }
 
 }

@@ -8,7 +8,6 @@ import co.postscriptum.email.EmailSender;
 import co.postscriptum.email.Envelope;
 import co.postscriptum.email.EnvelopeType;
 import co.postscriptum.metrics.EmailDeliveryMetrics;
-import co.postscriptum.service.UserDataHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,28 +22,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Component
 public class EmailProcessor extends AbstractJob {
 
+    private final List<Envelope> queued = new CopyOnWriteArrayList<>();
+    private final List<Envelope> durableSent = new CopyOnWriteArrayList<>();
     @Value("${emailProcessor.logEmails}")
     private Boolean logEmails;
-
     @Autowired
     private DB db;
-
     @Autowired
     private EmailDeliveryMetrics emailDeliveryMetrics;
-
     @Autowired
     private EmailDelivery emailDelivery;
-
     @Autowired
     private EmailDiscWriter emailDiscWriter;
-
-    @Autowired
-    private EmailSender emailSender;
-
-    private final List<Envelope> queued = new CopyOnWriteArrayList<>();
-
-    private final List<Envelope> durableSent = new CopyOnWriteArrayList<>();
-
     private final EmailDelivery.OnDelivery handler = new EmailDelivery.OnDelivery() {
 
         @Override
@@ -85,10 +74,7 @@ public class EmailProcessor extends AbstractJob {
             String title = headers.get("title");
 
             db.withLoadedAccountByUuid(userUuid, account -> {
-
-                new UserDataHelper(account.getUserData()).addNotification(
-                        createDeliveryNotification(deliveryType, recipient, title));
-
+                account.getUserData().addNotification(createDeliveryNotification(deliveryType, recipient, title));
             });
 
         }
@@ -102,6 +88,8 @@ public class EmailProcessor extends AbstractJob {
         }
 
     };
+    @Autowired
+    private EmailSender emailSender;
 
     @Scheduled(fixedDelay = 2500)
     public void process() {

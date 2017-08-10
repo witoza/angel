@@ -46,6 +46,10 @@ public class AdminHelperService {
     @Getter
     private PublicKey adminPublicKey;
 
+    private static String pre(String str) {
+        return "<pre>" + str + "</pre>";
+    }
+
     @PostConstruct
     public void init() throws IOException {
         adminPublicKey = RSAOAEPUtils.toPublicKey(RSAOAEPUtils.fromPem(FileUtils.readFileToString(new File(adminPublicKeyPath))));
@@ -130,13 +134,9 @@ public class AdminHelperService {
         log.info("Add admin Notification: {}", message);
 
         db.withLoadedAccountByUsername(configuration.getAdminEmail(), account -> {
-            new UserDataHelper(account.getUserData()).addNotification(message);
+            account.getUserData().addNotification(message);
         });
 
-    }
-
-    private static String pre(String str) {
-        return "<pre>" + str + "</pre>";
     }
 
 }

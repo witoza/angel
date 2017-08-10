@@ -6,6 +6,7 @@ import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.FileDTO;
 import co.postscriptum.security.UserEncryptionKeyService;
 import co.postscriptum.service.FileService;
+import co.postscriptum.web.ResponseEntityUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,11 +41,13 @@ public class FileController {
     private final UserEncryptionKeyService userEncryptionKeyService;
 
     @GetMapping("/open")
-    public ResponseEntity<InputStreamResource> open(UserData userData, @RequestParam(value = "file_uuid") String fileUuid)
-            throws IOException {
-        return fileService.openFile(userData,
-                                    userEncryptionKeyService.requireEncryptionKey(),
-                                    FilenameUtils.removeExtension(fileUuid));
+    public ResponseEntity<InputStreamResource> open(UserData userData, @RequestParam(value = "file_uuid") String fileUuid) throws IOException {
+
+        File file = userData.requireFileByUuid(FilenameUtils.removeExtension(fileUuid));
+
+        InputStream inputStream = fileService.getFileContent(userData, file, userEncryptionKeyService.requireEncryptionKey(), null);
+
+        return ResponseEntityUtils.asInline(inputStream, file.getMime());
     }
 
     @PostMapping("/upload")
@@ -72,7 +76,7 @@ public class FileController {
 
     @PostMapping("/delete_file")
     public void deleteFile(UserData userData, @Valid @RequestBody UuidDTO dto) throws IOException {
-        fileService.deleteFile(userData, dto.uuid);
+        fileService.deleteFile(userData, dto.getUuid());
     }
 
     @PostMapping("/decrypt")
@@ -95,15 +99,15 @@ public class FileController {
 
         @NotEmpty
         @Size(min = 34, max = 34)
-        String msg_uuid;
+        protected String msg_uuid;
 
         @NotEmpty
         @Size(min = 34, max = 35)
-        String file_uuid;
+        protected String file_uuid;
 
         @NotEmpty
         @Size(max = 30)
-        String encryption_passwd;
+        protected String encryption_passwd;
 
     }
 

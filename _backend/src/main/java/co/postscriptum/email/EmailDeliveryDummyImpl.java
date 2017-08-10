@@ -1,6 +1,7 @@
 package co.postscriptum.email;
 
 import lombok.Builder;
+import lombok.Setter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -18,6 +19,7 @@ public class EmailDeliveryDummyImpl implements EmailDeliveryDummy {
 
     private final List<DeliveredEmail> deliveredEmails = new CopyOnWriteArrayList<>();
 
+    @Setter
     private int delayTimeMs = 3000;
 
     @Override
@@ -55,18 +57,17 @@ public class EmailDeliveryDummyImpl implements EmailDeliveryDummy {
                                           .build());
     }
 
-    public void setDelayTimeMs(int delayTimeMs) {
-        this.delayTimeMs = delayTimeMs;
-    }
-
     @Value
     @Builder
     private static class DeliveredEmail {
 
-        long time = System.currentTimeMillis();
-        String envelopeId;
-        String messageId;
-        Map<String, String> headers;
+        private long time = System.currentTimeMillis();
+
+        private String envelopeId;
+
+        private String messageId;
+
+        private Map<String, String> headers;
 
     }
 

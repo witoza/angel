@@ -1,5 +1,6 @@
 package co.postscriptum.fs;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 public class HDFS implements FS {
 
     @Value("${my.hdfs.db_path}")
+    @Setter
     private String dbPath;
 
     private String getAbsolutePath(String relativePath) {

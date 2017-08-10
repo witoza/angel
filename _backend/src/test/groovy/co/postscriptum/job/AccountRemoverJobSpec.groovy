@@ -11,7 +11,6 @@ import co.postscriptum.model.bo.Trigger
 import co.postscriptum.model.bo.User
 import co.postscriptum.model.bo.UserData
 import co.postscriptum.service.AdminHelperService
-import co.postscriptum.service.MessageReleaseService
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -97,14 +96,15 @@ class AccountRemoverJobSpec extends Specification {
         UserData userData = DataFactory.newUserData(user, null)
 
         Message message1 = DataFactory.newMessage()
-        ReleaseItem releaseItem1 = MessageReleaseService.createReleaseItem(message1, "recipient1@postscriptum.co")
+        ReleaseItem releaseItem1 = message1.addReleaseItem("recipient1@postscriptum.co")
 
         Message message2 = DataFactory.newMessage()
-        ReleaseItem releaseItem2 = MessageReleaseService.createReleaseItem(message2, "recipient2@postscriptum.co")
+        ReleaseItem releaseItem2 = message2.addReleaseItem("recipient2@postscriptum.co")
         releaseItem2.setFirstTimeAccess(System.currentTimeMillis())
 
         Message message3 = DataFactory.newMessage()
-        ReleaseItem releaseItem3 = MessageReleaseService.createReleaseItem(message3, "recipient3@postscriptum.co")
+        ReleaseItem releaseItem3 = message3.addReleaseItem("recipient3@postscriptum.co")
+
         userData.getMessages().addAll([message1, message2, message3])
 
         when:
@@ -174,7 +174,7 @@ class AccountRemoverJobSpec extends Specification {
 
         when: /can't contact recipient3/
         releaseItem3.reminders[0].setResolved(true)
-        releaseItem3.reminders[0].setInput(AccountRemoverJob.CAN_NOT_CONTACT_RECIPIENT)
+        releaseItem3.reminders[0].setInput(ReleaseItem.CAN_NOT_CONTACT_RECIPIENT)
         releaseItem3.reminders[0].setResolvedTime(System.currentTimeMillis())
         result = process(userData)
 

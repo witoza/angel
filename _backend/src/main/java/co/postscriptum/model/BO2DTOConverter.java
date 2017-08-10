@@ -6,7 +6,6 @@ import co.postscriptum.model.bo.PasswordEncryption;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.FileDTO;
 import co.postscriptum.model.dto.MessageDTO;
-import co.postscriptum.service.UserDataHelper;
 
 import java.util.ArrayList;
 
@@ -40,7 +39,7 @@ public class BO2DTOConverter {
         FileDTO fdto = new FileDTO();
 
         if (file.getBelongsTo() != null) {
-            fdto.setBelongsTo(toMessageDTO(new UserDataHelper(userData).requireMessageByUuid(file.getBelongsTo())));
+            fdto.setBelongsTo(toMessageDTO(userData.requireMessageByUuid(file.getBelongsTo())));
         }
 
         fdto.setUuid(file.getUuid());
