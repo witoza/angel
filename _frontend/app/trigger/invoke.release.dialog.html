@@ -1,0 +1,25 @@
+<md-dialog ng-controller="triggerCtrl">
+
+    <md-dialog-content>
+        <div class="md-dialog-content">
+            Notification emails about each message from Outbox folder will be send.<br/>
+            <ul>
+                <li>
+                    Emails will be send to <b>{{user.username}}</b> email address only.
+                </li>
+                <li>
+                    The links available inside emails will work only when you are logged in.
+                </li>
+            </ul>
+        </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+        <md-button ng-click="closeDialog()">
+            {{::i18n("%btn.cancel%")}}
+        </md-button>
+        <md-button class="md-primary" ng-click="send_release_notification()">
+            {{::i18n("%btn.send%")}}
+        </md-button>
+    </md-dialog-actions>
+</md-dialog>

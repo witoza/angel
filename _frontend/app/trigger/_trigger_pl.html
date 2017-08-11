@@ -105,12 +105,17 @@
                     <md-input-container md-no-float class="smallint_filed">
                         <input type="number" min="1" max="59" required ng-model="trigger.w">
                     </md-input-container>
-                    {{trigger_tu}}, wyślemy wszystkie wiadomości znajdujące się w katalogu <i>Do Wysłania</i>
+                    {{trigger_tu}}, opublikujemy wszystkie Twoje wiadomości z folderu <i>Do Wysłania</i>. Wiadomości zostaną
+                    udostępnione wybranym odbiorcom, którzy zostaną poinformowani o tym fakcie przez wiadomość email.
                 </div>
                 <div flex>
                     <i>
                         Upewnimy się że wysłane wiadomości zostały dostarczone - jeżeli adresat nie otworzy wiadomości w
                         przeciągu 14 dni od wysłania, podejmiemy ręczną próbę kontaktu z nim.
+                        <br/>
+                        <br/>
+                        Kliknij <a href ng-click="send_release_notification_dialog($event)">tutaj</a> aby wysłać
+                        przykładowe powiadomienie o opublikowanych wiadomościach.
                     </i>
                 </div>
             </div>

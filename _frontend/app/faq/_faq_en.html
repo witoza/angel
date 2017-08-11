@@ -5,69 +5,72 @@
 </center>
 
 <hr/>
-<p>
-    <span class="md-headline">What is the Trigger ?</span><br/>
-    <span class="md-body-1">
-        It is a mechanism that checks whether it's time to send out messages defined by you.
-        Messages from the folder <b>{{::i18n("%msg.folder.outbox%")}}</b> will be send out after some (configured) time from the date of your last activity in the system.
-        Each login to the system updates the date of last activity. If you do not log in to the system for a certain period of time,
-        you shall receive an e-mail containing a link. Clicking on that link updates the date of the last activity.
-    </span>
-</p>
-<hr/>
-<p>
-    <span class="md-headline">When my messages will be send out?</span><br/>
-    <span class="md-body-1">
-        If you do not log in to the system or click on the link checking whether you are alive (see <i> What is the Trigger? </i>), during the time period defined by you.
-    </span>
-</p>
-<hr/>
-<p>
-    <span class="md-headline">How does my messages will be made available to the recipients ?</span><br/>
-    <span class="md-body-1">
-        There will be an e-mail send to each message recipient with link to the system where they can read the defined messages.
-    </span>
-</p>
-<hr/>
-<p>
-    <span class="md-headline">Why the message content/attachments are not send directly to the recipient' mailbox ?</span><br/>
-    <span class="md-body-1">
-        There are several reasons, including:
-        <ul class="md-body-1">
-            <li>
-                we need to know if the e-mail has been received and read by the recipient. If the message is not opened
-                within 14 days from send out, our consultant will try to contact the recipient manually
-            </li>
-            <li>
-                for safety reasons we do not send user's data to any external systems from which could be stolen or
-                downloaded through an unencrypted access channel
-            </li>
-            <li>
-                the recipients may not want to receive user's data in any form
-            </li>
-        </ul>
-    </span>
-</p>
-<hr/>
-<p>
-    <span class="md-headline">My encryption key has been compromised, what should I do ?</span><br/>
-    <span class="md-body-1">
-       Remove the compromised account and create a new one.
-    </span>
-</p>
-<hr/>
-<p>
-    <span class="md-headline">I forgot the password to my message, can you help recover it?</span><br/>
-    <span class="md-body-1">
-        It is not possible. If you forget your password, the only thing we can do is to delete the message from the system, decrypting it is technically not feasible.
-    </span>
-</p>
-<hr/>
-<p>
-    <span class="md-headline">If you can not recover the password, how will you decrypt a message so it can be read by the recipients ?</span><br/>
-    <span class="md-body-1">
-        The message will not be decrypted and recipients will be asked to provide the password when they try to open the message - so you need to provide them the password beforehand.
-    </span>
+<p class="md-headline">What is the Trigger ?</p>
+<p class="md-body-1">
+    It is a mechanism that checks whether it is time to publish the messages defined by you.<br/><br/>
+    Prepared messages will be made available to their recipients when appropriate(configured) time has passed since your
+    last activity on the system.
+    Each login to the system updates the date of last activity. If you have not logged in for a period of time you will
+    receive an email containing a link, clicking on that link updates the date of the last activity.
+    If you do not click on the link and or sign in, the messages will be made available to the recipients.
 </p>
 
+<br/>
+<hr/>
+<p class="md-headline">When will my messages be released ?</p>
+<p class="md-body-1">
+    If you do not log in to the system or click on the link checking whether you are alive (see <i> What is the
+    Trigger? </i>), during the time period defined by you.
+</p>
 
+<br/>
+<hr/>
+<p class="md-headline">How will my messages be made available to the recipients ?</p>
+<p class="md-body-1">
+    There will be an email send to each message recipient with link to the system where they can read the defined
+    messages.
+</p>
+
+<br/>
+<hr/>
+<p class="md-headline">Why the messages are not send directly to the recipient' mailbox ?</p>
+<p class="md-body-1">
+    There are several reasons:
+<ul class="md-body-1">
+    <li>
+        we need to know if the email has been received and read by the recipient, as If the message is not opened
+        within 14 days from send out, our consultant will try to contact the recipient manually
+    </li>
+    <li>
+        for safety reasons we do not send user's data to any external systems from which could be stolen or
+        downloaded through an unencrypted access channel
+    </li>
+    <li>
+        the recipients may not wish to receive user's messages in any form
+    </li>
+</ul>
+</p>
+
+<br/>
+<hr/>
+<p class="md-headline">My encryption key has been compromised, what should I do ?</p>
+<p class="md-body-1">
+    Remove the compromised account and create a new one.
+</p>
+
+<br/>
+<hr/>
+<p class="md-headline">I forgot the password to my message, can you help recover it?</p>
+<p class="md-body-1">
+    It is not possible. If you forget your password, the only thing we can do is to delete the message from the system,
+    decrypting it is technically not feasible.
+</p>
+
+<br/>
+<hr/>
+<p class="md-headline">If you can not recover the password, how will you decrypt a message so it can be read by the
+    recipients ?</p>
+<p class="md-body-1">
+    The message will not be decrypted and recipients will be asked to provide the password when they try to open the
+    message - so you need to provide them the password beforehand.
+</p>

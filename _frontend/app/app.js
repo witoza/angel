@@ -277,6 +277,7 @@ angular
             .add_post_method("send_x_notification")
             .add_post_method("send_y_notification")
             .add_post_method("send_z_notification")
+            .add_post_method("send_release_notification_to_owner")
             .add_post_method("get_login_history")
             .add_post_method("get_bitcoin_address")
             .add_get_method("get_qr")

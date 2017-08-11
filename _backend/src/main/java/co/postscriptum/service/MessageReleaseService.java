@@ -34,6 +34,28 @@ public class MessageReleaseService {
 
     private final EmailProcessor emailProcessor;
 
+    public void sendOutNotificationReleaseMessage(UserData userData) {
+        getOutboxMessages(userData).forEach(message -> {
+            String recipient = userData.getUser().getUsername();
+
+            log.info("Releasing message.uuid: {} to owner {}", message.getUuid(), recipient);
+
+            ReleaseItem release = new ReleaseItem();
+            release.setRecipient(message.getRecipients().toString());
+
+            Map<String, Object> context = new HashMap<>();
+            context.put("msg", message);
+            context.put("lang", ObjectUtils.firstNonNull(message.getLang(), userData.getInternal().getLang()));
+            context.put("release", release);
+
+            emailProcessor.enqueue(envelopeCreatorService.create(EnvelopeType.RELEASE_ITEM,
+                                                                 userData,
+                                                                 recipient,
+                                                                 "send_message_to_recipient",
+                                                                 context));
+        });
+    }
+
     public ReleasedMessagesDetails releaseMessages(UserData userData, Optional<SecretKey> userEncryptionKeyOpt) {
 
         log.info("Releasing outbox messages for user.uuid: {}, hasUserEncryptionKey: {}",

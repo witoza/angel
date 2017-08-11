@@ -19,8 +19,8 @@ angular
                         forgot_token: "Nie pamiętam tokenu",
                         btn_reset_password: "Zresetuj hasło",
 
-                        reset_passwd_requested: "Wysłaliśmy Ci e-mail, jeśli znajduje się on w naszej bazie danych",
-                        reset_passwd_reques_info: "Wpisz swój adres e-mail i kliknij przycisk 'Zresetuj hasło'. <br/>Na podany adres zostanie wysłany link resetujący hasło.",
+                        reset_passwd_requested: "Wysłaliśmy Ci email, jeśli znajduje się on w naszej bazie danych",
+                        reset_passwd_reques_info: "Wpisz swój adres email i kliknij przycisk 'Zresetuj hasło'. <br/>Na podany adres zostanie wysłany link resetujący hasło.",
 
                         forgot_token_requested: "Email z detalami klucza OTP został wysłany na <b>{0}</b>",
                         forgot_token_request_info: "Detale klucza OTP zostaną wysłane na zdefiniowany adres email"

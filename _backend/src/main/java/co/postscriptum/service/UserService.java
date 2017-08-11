@@ -2,7 +2,6 @@ package co.postscriptum.service;
 
 import co.postscriptum.controller.UserController.UpdateUserDTO;
 import co.postscriptum.db.DB;
-import co.postscriptum.email.UserEmailService;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
 import co.postscriptum.internal.Utils;
@@ -29,7 +28,6 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -40,8 +38,6 @@ public class UserService {
     private final AdminHelperService adminHelperService;
 
     private final TOTPHelperService totpHelperService;
-
-    private final UserEmailService userEmailService;
 
     private final BitcoinService bitcoinService;
 
@@ -64,7 +60,6 @@ public class UserService {
             log.info("Can't figure out screenName from email: {}" + email);
             return email;
         }
-
     }
 
     public UserDTO getUserDTO(UserData userData, Optional<SecretKey> userEncryptionKey) {
@@ -247,18 +242,6 @@ public class UserService {
             return secretKey;
         }
 
-    }
-
-    public List<String> sendUserVerificationAfterX(UserData userData, boolean sendEmailOnlyToUser) {
-        return userEmailService.sendUserVerificationAfterX(userData, sendEmailOnlyToUser);
-    }
-
-    public List<String> sendUserVerificationAfterY(UserData userData, boolean sendEmailOnlyToUser) {
-        return userEmailService.sendUserVerificationAfterY(userData, sendEmailOnlyToUser);
-    }
-
-    public List<String> sendUserVerificationAfterZ(UserData userData, boolean sendEmailOnlyToUser) {
-        return userEmailService.sendUserVerificationAfterZ(userData, sendEmailOnlyToUser);
     }
 
     public void unloadUser(UserData userData) {

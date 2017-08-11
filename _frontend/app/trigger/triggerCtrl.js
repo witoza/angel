@@ -10,7 +10,7 @@ angular
                 pl: {
                     trigger: {
                         reminder_info1: "Wyślij przypomnienie tylko na mój adres email",
-                        reminder_info2: "Wyślij przypomnienie na adresy e-maili które zostały zdefiniowane jako odbiorcy dla tego etapu",
+                        reminder_info2: "Wyślij przypomnienie na adresy emaili które zostały zdefiniowane jako odbiorcy dla tego etapu",
                         reminder_example_sent: "Przykładowa wiadomość weryfikacyjna została wysłana do <b>{0}</b>.",
                     },
                     trigger_update: {
@@ -102,6 +102,26 @@ angular
                 let triggerInternal = $scope.user_copy.triggerInternal;
                 $modalScope.emails = MyUtils.get_valid_emails(triggerInternal.xemails + ";" + triggerInternal.yemails + ";" + triggerInternal.zemails);
                 $modalScope.sendEmailOnlyToUser = "true";
+            };
+
+            $scope.send_release_notification_dialog = function ($event) {
+                console.log("send_release_notification_to_owner");
+
+                MyDialog.showBasicDialog($event, {
+                    templateUrl: '/trigger/invoke.release.dialog.html',
+                }, $scope);
+            };
+
+            $scope.send_release_notification = function ($event) {
+                console.log("send_release_notification");
+
+                MyDialog.closeDialog().then(function () {
+                    return MyUserService.send_release_notification_to_owner()
+                        .then(function () {
+                            MyUtils.show_info("Notifications have been sent")
+                        });
+                });
+
             };
 
             $scope.updateUser = function () {

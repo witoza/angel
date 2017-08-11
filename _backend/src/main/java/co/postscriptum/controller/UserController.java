@@ -1,6 +1,7 @@
 package co.postscriptum.controller;
 
 import co.postscriptum.controller.dto.PasswordDTO;
+import co.postscriptum.email.UserEmailService;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.internal.QRGenerator;
 import co.postscriptum.internal.Utils;
@@ -11,6 +12,7 @@ import co.postscriptum.model.bo.TriggerInternal;
 import co.postscriptum.model.bo.UserData;
 import co.postscriptum.model.dto.UserDTO;
 import co.postscriptum.security.UserEncryptionKeyService;
+import co.postscriptum.service.MessageReleaseService;
 import co.postscriptum.service.UserService;
 import co.postscriptum.web.AuthenticationHelper;
 import co.postscriptum.web.ResponseEntityUtils;
@@ -53,6 +55,10 @@ public class UserController {
 
     private final UserEncryptionKeyService userEncryptionKeyService;
 
+    private final MessageReleaseService messageReleaseService;
+
+    private final UserEmailService userEmailService;
+
     @GetMapping("/current")
     public UserDTO current(UserData userData) {
         return userService.getUserDTO(userData, userEncryptionKeyService.getEncryptionKey());
@@ -69,18 +75,23 @@ public class UserController {
     }
 
     @PostMapping("/send_x_notification")
-    public List<String> sendTriggerAfterX(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendUserVerificationAfterX(userData, dto.getSendEmailOnlyToUser());
+    public List<String> sendUserVerificationAfterX(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
+        return userEmailService.sendUserVerificationAfterX(userData, dto.getSendEmailOnlyToUser());
     }
 
     @PostMapping("/send_y_notification")
-    public List<String> sendTriggerAfterY(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendUserVerificationAfterY(userData, dto.getSendEmailOnlyToUser());
+    public List<String> sendUserVerificationAfterY(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
+        return userEmailService.sendUserVerificationAfterY(userData, dto.getSendEmailOnlyToUser());
     }
 
     @PostMapping("/send_z_notification")
-    public List<String> sendTriggerAfterZ(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
-        return userService.sendUserVerificationAfterZ(userData, dto.getSendEmailOnlyToUser());
+    public List<String> sendUserVerificationAfterZ(UserData userData, @Valid @RequestBody InvokeTriggerStageDTO dto) {
+        return userEmailService.sendUserVerificationAfterZ(userData, dto.getSendEmailOnlyToUser());
+    }
+
+    @PostMapping("/send_release_notification_to_owner")
+    public void sendOutNotificationReleaseMessage(UserData userData) {
+        messageReleaseService.sendOutNotificationReleaseMessage(userData);
     }
 
     @PostMapping("/generate_totp_secret")

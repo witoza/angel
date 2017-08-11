@@ -53,7 +53,7 @@
             <p class="md-headline no_margins">Phase 2</p>
             <div layout-xs="column" layout="row" layout-padding>
                 <div flex-gt-xs="70">
-                    If you do not click on a link within the next
+                    If the link is not clicked in the next
                     <md-input-container md-no-float class="smallint_filed">
                         <input type="number" min="1" max="59" required ng-model="trigger.y">
                     </md-input-container>
@@ -102,16 +102,21 @@
             <p class="md-headline no_margins">Phase 4</p>
             <div layout-xs="column" layout="row" layout-padding>
                 <div flex-gt-xs="70">
-                    If the link is not clicked in the next
+                    Finally, if the link is not clicked in the next
                     <md-input-container md-no-float class="smallint_filed">
                         <input type="number" min="1" max="59" required ng-model="trigger.w">
                     </md-input-container>
-                    {{trigger_tu}}, we will send out all your messages from Outbox directory.
+                    {{trigger_tu}}, we will release all your messages from the Outbox directory. The messages will be
+                    made available to the selected recipients only and they will be notified about that fact by email.
                 </div>
                 <div flex>
                     <i>
                         We will make sure that those messages have been delivered, if the recipient does not open the
                         message within 14 days after sending out, we will contact him manually.
+                        <br/>
+                        <br/>
+                        Click <a href ng-click="send_release_notification_dialog($event)">here</a> to send a sample
+                        notification about message release.
                     </i>
                 </div>
             </div>

@@ -65,7 +65,7 @@ angular
             };
 
             $scope.showHelp2 = function ($event) {
-                MyDialog.showAlert($event, "<b>Screen name</b> is used instead of your e-mail address when referring to you.<br/>It is used on both website and emails.");
+                MyDialog.showAlert($event, "<b>Screen name</b> is used instead of your email address when referring to you.<br/>It is used on both website and emails.");
             };
 
             $scope.activeDir = 'account';

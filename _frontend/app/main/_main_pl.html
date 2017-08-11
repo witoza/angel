@@ -57,33 +57,31 @@
 
     <span class="md-headline">Krok 1: przygotowanie wiadomości</span>
 <ul>
-    <li>użytkownik tworzy nowe konto w systemie</li>
-    <li>użytkownik po zalogowaniu przygotowuje zestaw elektronicznych wiadomości które mają zostać dostarczone w
-        przypadku jego śmierci
+    <li>użytkownik przygotowuje zestaw elektronicznych wiadomości które mają zostać dostarczone w przypadku jego śmierci
     </li>
     <li>użytkownik konfiguruje parametry procedury która sprawdza czy użytkownik żyje</li>
-    <li>użytkownik konfiguruje dodatkowe opcje jak szyfrowanie wiadomości hasłem czy wybiera wersje językową
-        notyfikacji
     </li>
 </ul>
 
 <span class="md-headline">Krok 1: czuwanie</span>
 <ul>
-    <li>system co określony interwał wysyła na zdefiniowane przez użytkownika
-        adresy email wiadomości zawierające unikatowy link. Kliknięcie na ten link potwierdza to, że użytkownik żyje.
-        Jeżeli link nie zostanie kliknięty przez odpowiedni okres czasu, po kilku próbach kontaktu, system przechodzi do
-        realizacji wysyłki wiadomości
+    <li>Serwis co określony czas wysyła na zdefiniowane przez użytkownika adresy email wiadomości zawierające unikalny link
     </li>
+    <ul>
+        <li>kliknięcie na taki link potwierdza to, że użytkownik żyje</li>
+        <li>jeżeli link nie zostanie kliknięty w odpowidnim okresie czasu, po kilku próbach kontaktu, Serwis przechodzi
+            do realizacji opublikowania wiadomości
+        </li>
+    </ul>
 </ul>
 
-<span class="md-headline">Krok 3: wysłanie wiadomości</span>
+<span class="md-headline">Krok 3: opublikowanie wiadomości</span>
 <ul>
-    <li>system wysyła za pomocą poczty elektronicznej wcześniej zapisane wiadomości do adresatów</li>
-    <li>system prowadzi rejestr czy adresaci otworzyli przygotowaną dla nich wiadomość, jeżeli po 14 dniach wiadomość
-        nie zostanie otwarta, podejmujemy ręczną próbę kontakt z adresatem
+    <li>Serwis publikuje przygotowane wiadomości użytkownika, a adresy udostępnia tylko adresatom wiadmości</li>
+    <li>jeżeli adresat po upływie 14 dni nie otworzy wiadmości, zostanie podjęta ręczna próbę kontakt z nim
     </li>
-    <li>po 7 dniach od daty otwarcia ostatniej wiadomości, konto użytkownika oraz wszystkie jego dane są bezpowrotnie
-        usuwane
+    <li>po 7 dniach od daty otwarcia ostatniej wiadomości, konto użytkownika oraz wszystkie jego dane zostanie bezpowrotnie
+        usunięte
     </li>
 </ul>
 </p>
