@@ -3,6 +3,7 @@ package co.postscriptum.controller;
 import co.postscriptum.controller.dto.PasswordDTO;
 import co.postscriptum.exception.BadRequestException;
 import co.postscriptum.exception.ForbiddenException;
+import co.postscriptum.exception.InternalException;
 import co.postscriptum.internal.MyConfiguration;
 import co.postscriptum.internal.Utils;
 import co.postscriptum.model.bo.Lang;
@@ -78,7 +79,7 @@ public class LoginController {
         } catch (ForbiddenException | BadRequestException e) {
             throw new ForbiddenException("Can't register user", e);
         } catch (Exception e) {
-            throw new InternalError("Can't register user", e);
+            throw new InternalException("Can't register user", e);
         }
 
         verifiedUsers.updateCookie(response);

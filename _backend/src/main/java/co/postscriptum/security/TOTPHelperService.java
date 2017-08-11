@@ -24,7 +24,7 @@ public class TOTPHelperService {
         try {
             return TimeBasedOTPUtil.validate(totpToken, totpSecret.getBytes(), 6);
         } catch (GeneralSecurityException e) {
-            throw new InternalError("Can't calculate security token", e);
+            throw new InternalException("Can't calculate security token", e);
         }
     }
 
