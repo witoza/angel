@@ -9,6 +9,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,9 +23,9 @@ public class VerifiedUsers {
 
     public VerifiedUsers(HttpServletRequest request, String salt) {
         this.salt = salt;
-        this.verified = Utils.getCookieValue(request, VERIFIED_USERS_COOKIE_NAME)
-                             .map(cookieValue -> Splitter.on('|').splitToList(cookieValue))
-                             .orElse(Collections.emptyList());
+        this.verified = new ArrayList<>(Utils.getCookieValue(request, VERIFIED_USERS_COOKIE_NAME)
+                                             .map(cookieValue -> Splitter.on('|').splitToList(cookieValue))
+                                             .orElse(Collections.emptyList()));
     }
 
     private String userHash(UserData userData) {
