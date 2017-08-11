@@ -24,7 +24,7 @@ angular
                             info: "Ustaw język wyświetlania wiadomości oraz język powiadomień adresatów tej wiadomości",
                             set_default: "Ustaw domyślny",
                         },
-                        drafts_warning: "Tylko wiadomości umieszczone w folderze <i>{0}</i> zostaną wysłane",
+                        drafts_warning: "Tylko wiadomości umieszczone w folderze <b>{0}</b> zostaną wysłane",
                         validation: {
                             invalid_email_addr: "Nieprawidłowy adres email: <b>{0}</b>",
                             encrypted: "Wiadomość zaszyfrowana hasłem",
@@ -71,7 +71,7 @@ angular
                             info: "Set message display language and the language of the recipients notifications of this message",
                             set_default: "Reset default",
                         },
-                        drafts_warning: "Only messages in the folder <i>{0}</i> will be sent",
+                        drafts_warning: "Only messages in the folder <b>{0}</b> will be sent",
                         validation: {
                             invalid_email_addr: "Invalid email address: <b>{0}</b>",
                             encrypted: "Encrypted by password",

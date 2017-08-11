@@ -33,34 +33,46 @@
 
 <div class="md-body-1" ng-show="user.trigger.enabled && msgs['outbox'].length>0">
 
-    <div layout-xs="column" layout="row" layout-align="center center">
-        <div flex>
-            <p>Wiadomości weryfikacyjne zostaną wysłane do: </p>
-            <ul style="list-style-type:none">
-                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> po {{trigger.x}}
+    <p>Wiadomości weryfikacyjne zostaną wysłane do: </p>
+
+    <ul style="list-style-type:none">
+        <li layout="row">
+            <md-menu>
+                <md-button ng-click="$mdOpenMenu($event)" class="notifs-btn">
+                    <md-icon>settings</md-icon>
+                </md-button>
+                <md-menu-content>
+                    <md-menu-item>
+                        <md-button ng-click="configureTrigger();">
+                            Modyfikuj wyzwalacz
+                        </md-button>
+                    </md-menu-item>
+                </md-menu-content>
+            </md-menu>
+            <span>&nbsp;&nbsp;</span>
+            <span>
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails).join(", ")}}</b> po {{trigger.x}}
                     {{trigger_tu}}
-                </li>
-                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" +
+                <br/>
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" +
                     triggerInternal.yemails).join(", ")}}</b>
                     po
                     {{trigger.x + trigger.y}} {{trigger_tu}}
-                </li>
-                <li><b>{{MyUtils.get_valid_emails(triggerInternal.xemails+ ";" + triggerInternal.yemails +";"+
-                    triggerInternal.zemails).join(", ")}}</b> po {{trigger.z + trigger.y + trigger.z}} {{trigger_tu}}
-                </li>
-            </ul>
-            <span>
-                od daty ostatniej Twojej aktywności w systemie. Ostatecznie, <b>po upływie {{trigger.x + trigger.y +
-                trigger.z + trigger.w}} {{trigger_tu}}</b> (na chwilę obecną jest to <b>{{moment(trigger.last_access).add(trigger.x
-                +
-                trigger.y + trigger.z + trigger.w, trigger.timeUnit) | asDate}}</b>) wyślemy następujące wiadomości:
+                <br/>
+                <b>{{MyUtils.get_valid_emails(triggerInternal.xemails + ";" + triggerInternal.yemails + ";"
+                    +
+                    triggerInternal.zemails).join(", ")}}</b> po {{trigger.x + trigger.y + trigger.z}}
+                    {{trigger_tu}}
             </span>
-        </div>
-        <md-button class="notifs-btn" ng-click="configureTrigger()">
-            <md-icon>settings</md-icon>
-            <md-tooltip md-delay="100">Modyfikuj wyzwalacz</md-tooltip>
-        </md-button>
-    </div>
+        </li>
+    </ul>
+
+    <span>
+        od daty ostatniej Twojej aktywności w systemie. Ostatecznie, <b>po upływie {{trigger.x + trigger.y +
+        trigger.z + trigger.w}} {{trigger_tu}}</b> (na chwilę obecną jest to <b>{{moment(trigger.last_access).add(trigger.x
+        +
+        trigger.y + trigger.z + trigger.w, trigger.timeUnit) | asDate}}</b>) wyślemy następujące wiadomości:
+    </span>
 
     <ul style="list-style-type:none">
         <li ng-repeat="msg in msgs['outbox'] | orderBy:'-creationTime'">

@@ -10,15 +10,15 @@
             </p>
         </md-checkbox>
 
-        <span class="md-body-1">
+        <div class="md-body-1">
             <p class="md-headline no_margins">Phase 1</p>
             <div layout-xs="column" layout="row" layout-padding>
                 <div flex-gt-xs="70">
-                   After
+                    After
                     <md-input-container md-no-float class="smallint_filed">
                         <input type="number" min="1" max="59" required ng-model="trigger.x">
                     </md-input-container>
-                     <md-input-container>
+                    <md-input-container>
                         <md-select ng-model="trigger.timeUnit">
                             <md-option value="WEEKS">{{::i18n("%time_unit.WEEKS%")}}</md-option>
                             <md-option value="DAYS">{{::i18n("%time_unit.DAYS%")}}</md-option>
@@ -26,23 +26,27 @@
                             <md-option value="MINUTES">{{::i18n("%time_unit.MINUTES%")}}</md-option>
                         </md-select>
                     </md-input-container>
-                    from the date of your last activity in the system, we will send first verification email to email address
+                    from the date of your last activity in the system, we will send first verification email to email
+                    address
                     <md-input-container md-no-float class="email_filed">
                         <input ng-model="triggerInternal.xemails" placeholder="email addresses" required>
                     </md-input-container>
                 </div>
                 <div flex>
-                    Each verification email contains  <a href ng-href="/api/alive?user_uuid={{user.uuid|encodeUri}}&key={{triggerInternal.resetKey}}"
-                                                              target="_blank">
-                        unique, immutable link</a>. Clicking on that link updates the date of your last activity.
+                    <i>
+                        Each verification email contains
+                        <a href ng-href="/api/alive?user_uuid={{user.uuid|encodeUri}}&key={{triggerInternal.resetKey}}"
+                           target="_blank">
+                            unique, immutable link</a>. Clicking on that link updates the date of your last activity.
 
-                    <md-button class="md-icon-button help" ng-click="showHelp1()">
+                        <md-button class="md-icon-button help" ng-click="showHelp1()">
                             <md-icon>help</md-icon>
                         </md-button>
 
-                    <br/>
-                    <br/>
-                    Click <a href ng-click="send_x_notification($event)">here</a> to send a sample notification for phase 1, become familiar with its content and make sure it does not land in the Spam folder.
+                        <br/>
+                        Click <a href ng-click="send_x_notification($event)">here</a> to send a sample notification for
+                        phase 1, become familiar with its content and make sure it does not land in the Spam folder.
+                    </i>
                 </div>
             </div>
 
@@ -53,54 +57,65 @@
                     <md-input-container md-no-float class="smallint_filed">
                         <input type="number" min="1" max="59" required ng-model="trigger.y">
                     </md-input-container>
-                    {{trigger_tu}}, we will send a second verification email to recipients from Phase 1 and to the following email address:
-                     <md-input-container md-no-float class="email_filed">
-                        <input  ng-model="triggerInternal.yemails" placeholder="email addresses">
+                    {{trigger_tu}}, we will send a second verification email to recipients from Phase 1 and to the
+                    following email address:
+                    <md-input-container md-no-float class="email_filed">
+                        <input ng-model="triggerInternal.yemails" placeholder="email addresses">
                     </md-input-container>
                 </div>
                 <div flex>
-                    We recommend putting your other email addresses here.  Multiple email addresses have to be separated by a comma or semicolon.
-                    <br/>
-                    <br/>
-                    Click <a href ng-click="send_y_notification($event)">here</a> to send a sample notification for phase 2.
+                    <i>
+                        We recommend putting your other email addresses here. Multiple email addresses have to be
+                        separated
+                        by a comma or semicolon.
+                        <br/> <br/>
+                        Click <a href ng-click="send_y_notification($event)">here</a> to send a sample notification for
+                        phase 2.
+                    </i>
                 </div>
             </div>
 
             <p class="md-headline no_margins">Phase 3</p>
             <div layout-xs="column" layout="row" layout-padding>
                 <div flex-gt-xs="70">
-                     If the link is not clicked in the next
-                 <md-input-container md-no-float class="smallint_filed">
-                    <input type="number" min="1" max="59" required ng-model="trigger.z">
-                </md-input-container>
-                {{trigger_tu}}, we will send the last verification email to recipients from Phase 2 and to the following email address:
-                  <md-input-container md-no-float class="email_filed">
-                    <input  ng-model="triggerInternal.zemails" placeholder="email addresses">
-                </md-input-container>
+                    If the link is not clicked in the next
+                    <md-input-container md-no-float class="smallint_filed">
+                        <input type="number" min="1" max="59" required ng-model="trigger.z">
+                    </md-input-container>
+                    {{trigger_tu}}, we will send the last verification email to recipients from Phase 2 and to the
+                    following email address:
+                    <md-input-container md-no-float class="email_filed">
+                        <input ng-model="triggerInternal.zemails" placeholder="email addresses">
+                    </md-input-container>
                 </div>
                 <div flex>
-                    We recommend putting your friend's and/or family member's email address here, someone you trust.
-                    <br/>
-                    <br/>
-                    Click <a href ng-click="send_z_notification($event)">here</a> to send a sample notification for phase 3.
+                    <i>
+                        We recommend putting your friend's and/or family member's email address here, someone you trust.
+                        <br/>
+                        <br/>
+                        Click <a href ng-click="send_z_notification($event)">here</a> to send a sample notification for
+                        phase 3.
+                    </i>
                 </div>
             </div>
 
             <p class="md-headline no_margins">Phase 4</p>
             <div layout-xs="column" layout="row" layout-padding>
                 <div flex-gt-xs="70">
-                     If the link is not clicked in the next
+                    If the link is not clicked in the next
                     <md-input-container md-no-float class="smallint_filed">
                         <input type="number" min="1" max="59" required ng-model="trigger.w">
                     </md-input-container>
                     {{trigger_tu}}, we will send out all your messages from Outbox directory.
                 </div>
                 <div flex>
-                     We will make sure that those messages have been delivered, if the recipient does not open the message within 14 days after sending out, we will contact him manually.
+                    <i>
+                        We will make sure that those messages have been delivered, if the recipient does not open the
+                        message within 14 days after sending out, we will contact him manually.
+                    </i>
                 </div>
             </div>
-
-        </span>
+        </div>
     </div>
 
     <div layout="row" layout-align="center">
