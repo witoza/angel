@@ -12,7 +12,8 @@
         <br/>
         Below you can find a summary of security measures taken to secure users' data.
         <br/>
-        Note that The System is an open source software, you can extract all the information below from investigating the <a
+        Note that The System is an open source software, you can extract all the information below from investigating
+        the <a
             href="https://github.com/witoza/postscriptum.co">source code</a>.
         <br/>
         If you want to introduce improvement or have questions please <a href ng-click="open_contact()">contact us</a>.
@@ -21,18 +22,16 @@
 
 <br/>
 
+<p class="md-headline">Communication with The System</p>
 <p>
-    <span class="md-headline">Communication with The System</span>
-    <br/>
     Encrypted using TLS >= 1.0. The SSL certificate is given A+ mark on <a
         href="https://www.ssllabs.com/ssltest/analyze.html?d=postscriptum.co">SSLTest</a>.
 </p>
 
 <hr/>
 
+<p class="md-headline">Login password</p>
 <p>
-    <span class="md-headline">Login password</span>
-    <br/>
     Login password is verified by comparing value of <a href="https://en.wikipedia.org/wiki/Bcrypt">BCrypt</a> hash
     function from provided password and the BCrypt hash
     stored in Database.
@@ -46,17 +45,15 @@
 
 <hr/>
 
+<p class="md-headline">Multi factor authentication</p>
 <p>
-    <span class="md-headline">Multi factor authentication</span>
-    <br/>
     Supported via <a href="https://en.wikipedia.org/wiki/Time-based_One-time_Password_Algorithm">TOTP</a> codes.
 </p>
 
 <hr/>
 
+<p class="md-headline">User Data encryption</p>
 <p>
-    <span class="md-headline">User Data encryption</span>
-    <br/>
     During user signing-up process, random 256-bit <a
         href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES</a> Secret Key is generated (it
     is called User's <i>Encryption Key</i>). It is used to <a
@@ -94,55 +91,46 @@
 
 <hr/>
 
+<p class="md-headline">Optional message password</p>
 <p>
-    <span class="md-headline">Optional message password</span>
-    <br/>
     You can apply a password for your message which will AES-256-GCM encrypt your message's content (and
     files)
     on top of the base encryption provided by <i>Encryption Key</i>. That password is ephemeral and not stored anywhere,
     so
     each time you
-    open the message you will be asked to provide the correct password. Also the recipient will be asked for the same
+    open the message you will be asked to provide the correct password. Also the recipients will be asked for the same
     password to open the
     message once it has been released. You can specify a hint to help you to recall and them to figure out the correct
     password.
 </p>
-
 <hr/>
 
+<p class="md-headline">Database encryption</p>
 <p>
-    <span class="md-headline">Database encryption</span>
-    <br/>
-    On top of the base encryption applied for each account, there is another layer of encryption which encrypts whole
+    On top of the base encryption applied for each account there is another layer of encryption which encrypts whole
     database. In case of Database leak there is no metadata to be extracted from plaintext without Database Encryption
     Key.
 </p>
 
 <hr/>
-
+<p class="md-headline">Data storage</p>
 <p>
-    <span class="md-headline">Data storage</span>
-    <br/>
-    All of user's data is stored in <a href="https://aws.amazon.com/s3/">Amazon S3</a>. User's data is always stored
-    encrypted, and Database is encrypted as well.
+    User's data is stored in <a href="https://aws.amazon.com/s3/">Amazon S3</a>. User's data is always stored
+    encrypted and Database is encrypted as well.
+</p>
+<hr/>
+
+<p class="md-headline">User's account</p>
+<p>
+    To create an account in The System we only need your username (email address) and password. You can remove your
+    account and all stored data at any time.
 </p>
 
 <hr/>
 
+<p class="md-headline">Message release</p>
 <p>
-    <span class="md-headline">User's account</span>
-    <br/>
-    To create an account in The System we only need your username (email address) and password.
-    <br/>
-    You can remove your account and all stored data at any time.
-</p>
-
-<hr/>
-
-<p>
-    <span class="md-headline">Message release</span>
-    <br/>
-    Once the time is right, The System will release your messages.
+    Once the time is right the System will release your messages.
     <br/>
 <ul>
     <li>
@@ -160,14 +148,12 @@
         Operator's Private Key is not stored in Database, but offline secured by password.
     </li>
 </ul>
-
 </p>
 
 <hr/>
 
+<p class="md-headline">Forgotten login password</p>
 <p>
-    <span class="md-headline">Forgotten login password</span>
-    <br/>
     Since user's login password is used to derive secret key to encrypt user's <i>Encryption Key</i>, resetting login
     password
     is not simple. It requires System Operator's attention as private key is needed to decrypt user's <i>Encryption
@@ -175,4 +161,3 @@
     For that reason when resetting forgotten password, user has to wait for System Operator to decrypt <i>Encryption
     Key</i> and hence allow password change.
 </p>
-

@@ -48,7 +48,7 @@ public class MessageReleaseService {
             context.put("lang", ObjectUtils.firstNonNull(message.getLang(), userData.getInternal().getLang()));
             context.put("release", release);
 
-            emailProcessor.enqueue(envelopeCreatorService.create(EnvelopeType.RELEASE_ITEM,
+            emailProcessor.enqueue(envelopeCreatorService.create(EnvelopeType.RELEASE_ITEM_TEST,
                                                                  userData,
                                                                  recipient,
                                                                  "send_message_to_recipient",

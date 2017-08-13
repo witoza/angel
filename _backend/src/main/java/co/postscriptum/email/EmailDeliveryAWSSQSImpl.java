@@ -53,36 +53,40 @@ public class EmailDeliveryAWSSQSImpl implements EmailDelivery {
 
         ReceiveMessageResult result;
         do {
-
             log.info("Call AWSSQS::receiveMessage");
-
             result = sqsClient.receiveMessage(request);
 
             for (Message message : result.getMessages()) {
-                Map<String, Object> body = Utils.mapFromJson(message.getBody());
-
-                Map<String, Object> Message = Utils.mapFromJson((String) body.get("Message"));
-
-                String messageId = getMessageId(Message);
-                String envelopeId = getHeader(Message, "ENVELOPE_ID");
-                String headerData = getHeader(Message, "ENVELOPE_HEADER_DATA");
-
-                DeliveryType deliveryType = getDeliveryType(Message);
-
-                Map<String, Object> bounceCause = null;
-                if (deliveryType == DeliveryType.Bounce) {
-                    bounceCause = (Map<String, Object>) Message.get("bounce");
+                try {
+                    processMessage(onDelivery, message);
+                } catch (Exception e) {
+                    log.error("Exception while processing notification about message", e);
                 }
-
-                onDelivery.onDelivery(messageId, envelopeId, fromHeaderData(headerData), getDeliveryType(Message), bounceCause);
-
-                log.info("Call AWSSQS::deleteMessage");
+                log.info("Call AWSSQS::deleteMessage messageId: {}", message.getReceiptHandle());
                 sqsClient.deleteMessage(awsConfig.getSqsQueueName(), message.getReceiptHandle());
-
             }
 
         } while (result.getMessages().size() > 0);
 
+    }
+
+    private void processMessage(OnDelivery onDelivery, Message awsMessage) {
+        Map<String, Object> body = Utils.mapFromJson(awsMessage.getBody());
+
+        Map<String, Object> Message = Utils.mapFromJson((String) body.get("Message"));
+
+        String messageId = getMessageId(Message);
+        String envelopeId = getHeader(Message, "ENVELOPE_ID");
+        String headerData = getHeader(Message, "ENVELOPE_HEADER_DATA");
+
+        DeliveryType deliveryType = getDeliveryType(Message);
+
+        Map<String, Object> bounceCause = null;
+        if (deliveryType == DeliveryType.Bounce) {
+            bounceCause = (Map<String, Object>) Message.get("bounce");
+        }
+
+        onDelivery.onDelivery(messageId, envelopeId, fromHeaderData(headerData), getDeliveryType(Message), bounceCause);
     }
 
     private Map<String, String> fromHeaderData(String data) {

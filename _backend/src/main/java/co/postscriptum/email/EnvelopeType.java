@@ -14,6 +14,7 @@ public enum EnvelopeType {
     MESSAGES_ABOUT_TO_BE_RELEASED(true, false, false),
     RELEASE_SUMMARY(true, false, false),
     RELEASE_ITEM(true, true, true),
+    RELEASE_ITEM_TEST(false, false, false),
 
     USER_PREREGISTER_NOT_EXIST(false, false, false),
     USER_PREREGISTER_EXIST(false, false, false),

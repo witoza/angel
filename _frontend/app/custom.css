@@ -31,17 +31,33 @@ body.md-toast-animating {
 }
 
 .notifs {
-    background: #cb4437;
-    border-bottom: 1px solid #fff;
-    border-left: 1px solid #fff;
+    background: hsl(3, 81.8%, 49.6%);
+    /*border-bottom: 1px solid #fff;*/
+    /*border-left: 1px solid #fff;*/
     color: #fff;
-    line-height: 15px;
-    min-width: 15px;
+    line-height: 17px;
+    min-width: 18px;
     opacity: 1;
     position: absolute;
     text-align: center;
     top: 2px;
     left: 22px;
+    z-index: 1;
+    border-radius: 10px;
+}
+
+.subs {
+    background: rgb(123,123,123);
+    border-top: 1px solid #fff;
+    border-left: 1px solid #fff;
+    color: #fff;
+    line-height: 12px;
+    min-width: 12px;
+    opacity: 1;
+    position: absolute;
+    text-align: center;
+    top: 20px;
+    left: 21px;
     z-index: 1;
     border-radius: 2px;
 }
