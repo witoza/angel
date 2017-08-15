@@ -118,7 +118,7 @@ public class MessageReleaseService {
             releasedMessage.getInvalidRecipients().forEach(recipient -> {
                 sb.append("\n - " + recipient + ": " + i18nInvalidRecipient);
             });
-
+            sb.append("\n");
         });
 
         return sb.toString();

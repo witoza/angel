@@ -282,7 +282,9 @@ public class UserService {
 
     public String getPaymentBitcoinAddress(UserData userData) {
         if (!needPayment(userData)) {
-            throw new ForbiddenException("Can't obtain payment address for paid off account");
+            throw new ForbiddenException("The account has been paid off until " +
+                                                 Utils.format(userData.getInternal().getUserPlan().getPaidUntil()) +
+                                                 ". Kindly refresh this page.");
         }
         return bitcoinService.getPaymentForUser(userData).getBtcAddress();
     }

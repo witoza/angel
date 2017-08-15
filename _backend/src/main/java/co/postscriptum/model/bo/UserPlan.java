@@ -20,7 +20,7 @@ public class UserPlan {
             payments = new ArrayList<>();
         }
         payments.add(payment);
-        paidUntil = System.currentTimeMillis() + Utils.daysToMillis(356);
+        paidUntil = System.currentTimeMillis() + Utils.daysToMillis(365);
     }
 
     public boolean needPayment() {
